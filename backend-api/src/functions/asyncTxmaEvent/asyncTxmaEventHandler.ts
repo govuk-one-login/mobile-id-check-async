@@ -9,6 +9,7 @@ import {
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
@@ -30,7 +31,6 @@ import {
   IAsyncTxmaEventRequestBody,
   validateRequestBody,
 } from "./validateRequestBody/validateRequestBody";
-import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -102,7 +102,11 @@ async function handleGetSessionError({
 }: {
   errorData: GetSessionFailed;
 }): Promise<APIGatewayProxyResult> {
-  if (errorData.errorType === GetSessionError.CLIENT_ERROR) {
+  const { errorType } = errorData;
+  if (
+    errorType === GetSessionError.SESSION_NOT_FOUND ||
+    errorType === GetSessionError.SESSION_NOT_VALID
+  ) {
     return unauthorizedResponse(
       "invalid_session",
       "Session does not exist or in incorrect state",

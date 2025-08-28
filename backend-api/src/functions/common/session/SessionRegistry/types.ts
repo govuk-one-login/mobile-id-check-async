@@ -61,35 +61,43 @@ interface BiometricSessionFinishedInvalidSessionAttribute {
 
 // Get session
 
+export interface SessionRetrieved {
+  attributes: SessionAttributes;
+}
+
 export enum GetSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
   CLIENT_ERROR = "CLIENT_ERROR",
+  SESSION_NOT_VALID = "SESSION_NOT_VALID",
+  SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }
 
 export type GetSessionFailed =
-  | GetSessionInternalServerError
-  | GetSessionClientError;
+  | GetSessionSessionNotFoundError
+  | GetSessionSessionInvalidFailure
+  | GetSessionInternalServerError;
 
 export interface GetSessionInternalServerError {
   errorType: GetSessionError.INTERNAL_SERVER_ERROR;
 }
 
-export interface GetSessionClientError {
-  errorType: GetSessionError.CLIENT_ERROR;
-}
-
-export interface GetSessionErrorSessionNotFound {
-  errorType: GetSessionError.CLIENT_ERROR;
+export interface GetSessionSessionNotFoundError {
+  errorType: GetSessionError.SESSION_NOT_FOUND;
 }
 
 export interface GetSessionSessionInvalidErrorData {
-  errorType: GetSessionError.CLIENT_ERROR;
-  data: GetSessionValidateSessionErrorData;
+  errorType: GetSessionError.SESSION_NOT_VALID;
+  data: ValidateSessionErrorData;
 }
 
-export interface GetSessionValidateSessionErrorData {
+export interface GetSessionSessionInvalidFailure {
+  errorType: GetSessionError.SESSION_NOT_VALID;
+  data: ValidateSessionErrorData;
+}
+
+export interface ValidateSessionErrorData {
+  allAttributes?: unknown;
   invalidAttributes?: ValidateSessionInvalidAttributes[];
-  sessionAttributes?: unknown;
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {

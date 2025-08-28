@@ -13,6 +13,7 @@ import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import { GetSessionBiometricTokenIssued } from "../../../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
 import { SessionState } from "../../../common/session/session";
+import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 import {
   GetSessionError,
   GetSessionFailed,
@@ -33,7 +34,6 @@ import {
 } from "../../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
-import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -475,7 +475,7 @@ describe("DynamoDbAdapter", () => {
       it("Returns failure with a client error", () => {
         expect(result).toEqual(
           errorResult({
-            errorType: GetSessionError.CLIENT_ERROR,
+            errorType: GetSessionError.SESSION_NOT_FOUND,
           }),
         );
       });
@@ -537,7 +537,7 @@ describe("DynamoDbAdapter", () => {
             invalidAttributes: [
               { sessionState: SessionState.AUTH_SESSION_CREATED },
             ],
-            sessionAttributes:
+            allAttributes:
               invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           });
         });
@@ -545,12 +545,12 @@ describe("DynamoDbAdapter", () => {
         it("Returns failure with a client error", () => {
           expect(result).toStrictEqual(
             errorResult({
-              errorType: GetSessionError.CLIENT_ERROR,
+              errorType: GetSessionError.SESSION_NOT_VALID,
               data: {
                 invalidAttributes: [
                   { sessionState: SessionState.AUTH_SESSION_CREATED },
                 ],
-                sessionAttributes:
+                allAttributes:
                   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
               },
             }),

@@ -10,6 +10,7 @@ export enum SessionState {
 
 export type SessionAttributes =
   | BaseSessionAttributes
+  | BiometricTokenSessionAttributes
   | BiometricTokenIssuedSessionAttributes
   | BiometricSessionFinishedAttributes
   | AuthSessionAbortedAttributes;
