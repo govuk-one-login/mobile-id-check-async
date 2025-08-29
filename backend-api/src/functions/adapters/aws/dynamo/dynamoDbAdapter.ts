@@ -11,12 +11,12 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 import {
   NativeAttributeValue,
   marshall,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
@@ -24,22 +24,23 @@ import {
   SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
-import { CreateSessionAttributes } from "../../../services/session/types";
+import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 import {
   GetSessionError,
-  GetSessionErrorSessionNotFound,
   GetSessionFailed,
   GetSessionInternalServerError,
-  GetSessionSessionInvalidErrorData,
-  GetSessionValidateSessionErrorData,
+  GetSessionSessionNotValidError,
+  GetSessionSessionNotFoundError,
   SessionUpdateFailed,
   SessionUpdateFailedConditionalCheckFailure,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
   UpdateOperationDataToLog,
   UpdateSessionError,
+  ValidateSessionErrorData,
 } from "../../../common/session/SessionRegistry/types";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
+import { CreateSessionAttributes } from "../../../services/session/types";
 import {
   FailureWithValue,
   Result,
@@ -47,7 +48,6 @@ import {
   successResult,
 } from "../../../utils/result";
 import { oneHourAgoInMilliseconds } from "../../../utils/utils";
-import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -199,9 +199,9 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     if (validateSessionResult.isError) {
       const { invalidAttributes } = validateSessionResult.value;
-      return this.handleGetSessionInvalidError({
+      return this.handleGetSessionSessionNotValidError({
+        allSessionAttributes: sessionAttributes,
         invalidAttributes,
-        sessionAttributes,
       });
     }
 
@@ -347,28 +347,28 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
   }
 
-  private handleGetSessionNotFoundError(): FailureWithValue<GetSessionErrorSessionNotFound> {
+  private handleGetSessionNotFoundError(): FailureWithValue<GetSessionSessionNotFoundError> {
     logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
 
     return errorResult({
-      errorType: GetSessionError.CLIENT_ERROR,
+      errorType: GetSessionError.SESSION_NOT_FOUND,
     });
   }
 
-  private handleGetSessionInvalidError({
+  private handleGetSessionSessionNotValidError({
+    allSessionAttributes,
     invalidAttributes,
-    sessionAttributes,
-  }: GetSessionValidateSessionErrorData): FailureWithValue<GetSessionSessionInvalidErrorData> {
+  }: ValidateSessionErrorData): FailureWithValue<GetSessionSessionNotValidError> {
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
+      allSessionAttributes,
       invalidAttributes,
-      sessionAttributes,
     });
 
     return errorResult({
-      errorType: GetSessionError.CLIENT_ERROR,
+      errorType: GetSessionError.SESSION_NOT_VALID,
       data: {
+        allSessionAttributes,
         invalidAttributes,
-        sessionAttributes,
       },
     });
   }

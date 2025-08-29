@@ -10,6 +10,7 @@ export enum SessionState {
 
 export type SessionAttributes =
   | BaseSessionAttributes
+  | AuthSessionCreatedSessionAttributes
   | BiometricTokenIssuedSessionAttributes
   | BiometricSessionFinishedAttributes
   | AuthSessionAbortedAttributes;
@@ -25,6 +26,11 @@ export interface BaseSessionAttributes {
   subjectIdentifier: string;
   timeToLive: number;
   redirectUri?: string;
+}
+
+export interface AuthSessionCreatedSessionAttributes
+  extends BaseSessionAttributes {
+  sessionState: SessionState.AUTH_SESSION_CREATED;
 }
 
 export interface BiometricTokenIssuedSessionAttributes

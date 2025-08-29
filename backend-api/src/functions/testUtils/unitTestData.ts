@@ -179,6 +179,27 @@ export const invalidBaseSessionAttributeSessionState = {
   timeToLive: 12345,
 };
 
+export const validMobileAppBiometricTokenSessionAttributes = {
+  ...validBaseSessionAttributes,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+  documentType: "NFC_PASSPORT",
+  redirectUri: mockRedirectUri,
+};
+
+const allMobileAppBiometricTokenSessionAttributesData = {
+  ...validMobileAppBiometricTokenSessionAttributes,
+  createdAt: invalidCreatedAt,
+  sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
+};
+
+export const invalidMobileAppBiometricTokenSessionAttributesData = {
+  allSessionAttributes: allMobileAppBiometricTokenSessionAttributesData,
+  invalidAttributes: {
+    createdAt: allMobileAppBiometricTokenSessionAttributesData.createdAt,
+    sessionState: allMobileAppBiometricTokenSessionAttributesData.sessionState,
+  },
+};
+
 export const validBiometricTokenIssuedSessionAttributes = {
   ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
