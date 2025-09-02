@@ -61,10 +61,6 @@ interface BiometricSessionFinishedInvalidSessionAttribute {
 
 // Get session
 
-export interface SessionRetrieved {
-  attributes: SessionAttributes;
-}
-
 export enum GetSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
   CLIENT_ERROR = "CLIENT_ERROR",
