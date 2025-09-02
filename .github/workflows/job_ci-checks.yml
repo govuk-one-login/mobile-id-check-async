@@ -109,5 +109,4 @@ jobs:
         with:
           directory: ${{ inputs.WORKING_DIRECTORY }}
           quiet: true
-          soft_fail: true
           framework: cloudformation

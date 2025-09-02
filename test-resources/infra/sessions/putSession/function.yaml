@@ -13,6 +13,14 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/sessions/putSessionHandler.ts
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: Function-level concurrent execution limit not needed for dev environment
+          - id: CKV_AWS_116
+            comment: DLQ is not required
+          - id: CKV_AWS_173
+            comment: Environment variables content not sensitive
     Properties:
       Description: Lambda for putting items into the Sessions table
       Events:
@@ -39,9 +47,15 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sessions
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   PutSessionFunctionRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: VpcPolicy does not take a resource
     Properties:
       Description: Execution role for the test sessions handler
       RoleName: !Sub ${AWS::StackName}-sessions

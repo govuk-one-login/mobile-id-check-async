@@ -20,4 +20,8 @@ Resources:
         Enabled: true
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
+        KMSMasterKeyId: !Ref SymmetricKeyAlias
         SSEEnabled: true
+        SSEType: KMS
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true

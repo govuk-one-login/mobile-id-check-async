@@ -9,6 +9,9 @@ Resources:
       EndpointConfiguration: REGIONAL
       StageName:
         Ref: Environment
+      CacheClusterEnabled: true
+      CacheClusterSize: '0.5'
+      TracingEnabled: true
       OpenApiVersion: 3.0.1
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}
@@ -21,6 +24,7 @@ Resources:
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiBurstLimit ]
           ThrottlingRateLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiRateLimit ]
+          CachingEnabled: true
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -32,6 +36,7 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
       RetentionInDays: 30
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   StsMockApiDomainName:
     Type: AWS::ApiGateway::DomainName

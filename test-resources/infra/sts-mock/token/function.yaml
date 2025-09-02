@@ -13,6 +13,14 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/sts-mock/token/tokenHandler.ts
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: Function-level concurrent execution limit not needed for dev environment
+          - id: CKV_AWS_116
+            comment: DLQ is not required
+          - id: CKV_AWS_173
+            comment: Environment variables content not sensitive
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       FunctionName: !Sub ${AWS::StackName}-sts-mock-token
@@ -63,6 +71,7 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sts-mock-token
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   TokenFunctionRole:
     Type: AWS::IAM::Role

@@ -13,6 +13,14 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/asyncAbortSession/asyncAbortSessionHandler.ts
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: Function-level concurrent execution limit not needed for dev environment
+          - id: CKV_AWS_116
+            comment: Lambdas invoked via API Gateway do not support DLQs
+          - id: CKV_AWS_173
+            comment: Environment variables content not sensitive
     Properties:
       FunctionName: !Sub ${AWS::StackName}-abort-session      
       Handler: asyncAbortSessionHandler.lambdaHandler
@@ -53,6 +61,7 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
+      KmsKeyId: !GetAtt SymmetricKey.Arn
   
   AsyncAbortSessionSubscriptionFilter:    
     Type: AWS::Logs::SubscriptionFilter
@@ -65,6 +74,11 @@ Resources:
 
   AsyncAbortSessionLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: VpcPolicy does not take a resource
     Properties:
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
       AssumeRolePolicyDocument:

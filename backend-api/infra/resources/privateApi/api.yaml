@@ -6,6 +6,9 @@ Resources:
       Name: !Sub ${AWS::StackName}-private-api
       Description: Private API gateway for Client Credentials flow
       AlwaysDeploy: true
+      CacheClusterEnabled: true
+      CacheClusterSize: '0.5'
+      TracingEnabled: true
       EndpointConfiguration:
         Type: PRIVATE
         VPCEndpointIds: 
@@ -60,6 +63,7 @@ Resources:
             - PrivateApigw
             - !Ref Environment
             - ApiRateLimit
+          CachingEnabled: true
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -71,6 +75,7 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   AsyncPrivateApiSubscriptionFilter:    
     Type: AWS::Logs::SubscriptionFilter

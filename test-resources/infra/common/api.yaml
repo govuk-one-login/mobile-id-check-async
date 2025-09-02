@@ -8,6 +8,9 @@ Resources:
       Description: API for test assets
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
+      CacheClusterEnabled: true
+      CacheClusterSize: '0.5'
+      TracingEnabled: true
       OpenApiVersion: 3.0.1
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApiAccessLogs}
@@ -26,6 +29,7 @@ Resources:
             - TestResourcesApiGateway
             - !Ref Environment
             - ApiRateLimit
+          CachingEnabled: true
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -88,6 +92,7 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   TestResourcesApiDomainName:
     Type: AWS::ApiGateway::DomainName

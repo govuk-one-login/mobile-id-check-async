@@ -12,6 +12,14 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: Function-level concurrent execution limit not needed for dev environment
+          - id: CKV_AWS_116
+            comment: Lambdas invoked via API Gateway do not support DLQs
+          - id: CKV_AWS_173
+            comment: Environment variables content not sensitive
     Properties:
       FunctionName: !Sub ${AWS::StackName}-finish-biometric-session      
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
@@ -52,6 +60,7 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   AsyncFinishBiometricSessionSubscriptionFilter:    
     Type: AWS::Logs::SubscriptionFilter
@@ -64,6 +73,11 @@ Resources:
 
   AsyncFinishBiometricSessionLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: VpcPolicy does not take a resource
     Properties:
       RoleName: !Sub ${AWS::StackName}-finish-biometric-session-lambda
       AssumeRolePolicyDocument:

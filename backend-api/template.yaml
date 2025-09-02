@@ -920,6 +920,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -957,6 +965,11 @@ Resources:
 
   AsyncAbortSessionLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -1028,6 +1041,7 @@ Resources:
   AsyncAbortSessionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
       RetentionInDays: 30
 
@@ -1320,6 +1334,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -1369,6 +1391,11 @@ Resources:
 
   AsyncActiveSessionLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -1450,6 +1477,7 @@ Resources:
   AsyncActiveSessionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
       RetentionInDays: 30
 
@@ -1931,6 +1959,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -1993,6 +2029,11 @@ Resources:
 
   AsyncBiometricTokenLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -2078,6 +2119,7 @@ Resources:
   AsyncBiometricTokenLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
       RetentionInDays: 30
 
@@ -2559,6 +2601,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -2607,6 +2657,11 @@ Resources:
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -2689,6 +2744,7 @@ Resources:
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-credential
       RetentionInDays: 30
 
@@ -3170,6 +3226,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -3207,6 +3271,11 @@ Resources:
 
   AsyncFinishBiometricSessionLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -3278,6 +3347,7 @@ Resources:
   AsyncFinishBiometricSessionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
       RetentionInDays: 30
 
@@ -3737,7 +3807,16 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
+      DeadLetterQueue:
+        TargetArn: VendorProcessingDlq.Arn
+        Type: SQS
       DeploymentPreference:
         Alarms: !If
           - UseCanaryDeployment
@@ -3835,6 +3914,11 @@ Resources:
 
   AsyncIssueBiometricCredentialLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -3949,6 +4033,7 @@ Resources:
   AsyncIssueBiometricCredentialLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
       RetentionInDays: 30
 
@@ -4175,6 +4260,7 @@ Resources:
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
@@ -4569,6 +4655,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -4613,6 +4707,11 @@ Resources:
 
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -4687,6 +4786,7 @@ Resources:
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
       RetentionInDays: 30
 
@@ -5094,6 +5194,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Events:
         AsyncTxmaEvent:
@@ -5124,6 +5232,11 @@ Resources:
 
   AsyncTxmaEventLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -5181,6 +5294,7 @@ Resources:
   AsyncTxmaEventLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
 
@@ -5349,6 +5463,7 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: A KMS Key for encrypting the SQS for IPVCore messages
+      EnableKeyRotation: true
       Enabled: true
       KeyPolicy: !If
         - isNotDevOrBuild
@@ -5507,6 +5622,11 @@ Resources:
 
   JsonWebKeysBucketAccessLogs:
     Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - comment: This is the access logs bucket. It should not log itself.
+            id: CKV_AWS_18
     Properties:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -5618,6 +5738,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2020
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Description: Convert ID Check public encryption keys to JWKS format and upload to S3
       Environment:
@@ -5643,6 +5771,11 @@ Resources:
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -5702,6 +5835,7 @@ Resources:
   JsonWebKeysFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
       RetentionInDays: 30
 
@@ -5868,6 +6002,8 @@ Resources:
                 - !Ref Environment
                 - PerformanceTestingVpceId
               - !Ref AWS::NoValue
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -5892,7 +6028,8 @@ Resources:
               - PerformanceTestingVpceId
             - !Ref AWS::NoValue
       MethodSettings:
-        - DataTraceEnabled: false
+        - CachingEnabled: true
+          DataTraceEnabled: false
           HttpMethod: '*'
           LoggingLevel: INFO
           MetricsEnabled: true
@@ -5908,6 +6045,7 @@ Resources:
       Name: !Sub ${AWS::StackName}-private-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
+      TracingEnabled: true
 
   PrivateApiLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5986,6 +6124,8 @@ Resources:
                   - perfTesterRoleArn
               Resource: !Sub execute-api:/*
               Sid: AllowPerfTesterRoleAccess
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -5994,7 +6134,8 @@ Resources:
       Description: Regional equivalent of the private Api to enable testing from outside AWS
       EndpointConfiguration: REGIONAL
       MethodSettings:
-        - HttpMethod: '*'
+        - CachingEnabled: true
+          HttpMethod: '*'
           LoggingLevel: INFO
           MetricsEnabled: true
           ResourcePath: /*
@@ -6008,11 +6149,13 @@ Resources:
             - ApiRateLimit
       Name: !Sub ${AWS::StackName}-proxy-api
       StageName: !Ref Environment
+      TracingEnabled: true
     Condition: ProxyApiDeployment
 
   ProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
       RetentionInDays: 30
     Condition: ProxyApiDeployment
@@ -6086,6 +6229,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: Lambdas invoked via API Gateway do not support DLQs
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Environment:
         Variables:
@@ -6105,6 +6256,7 @@ Resources:
   ProxyLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
       RetentionInDays: 30
     Condition: ProxyApiDeployment
@@ -6121,6 +6273,11 @@ Resources:
 
   ProxyLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -6218,6 +6375,8 @@ Resources:
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -6226,7 +6385,8 @@ Resources:
       Description: Regional API gateway for Client Credentials flow
       EndpointConfiguration: REGIONAL
       MethodSettings:
-        - DataTraceEnabled: false
+        - CachingEnabled: true
+          DataTraceEnabled: false
           HttpMethod: '*'
           LoggingLevel: INFO
           MetricsEnabled: true
@@ -6244,10 +6404,12 @@ Resources:
       StageName: !Ref Environment
       Tags:
         FMSRegionalPolicy: false
+      TracingEnabled: true
 
   SessionsApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
       RetentionInDays: 30
 
@@ -6416,17 +6578,65 @@ Resources:
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       SSESpecification:
+        KMSMasterKeyId: !Ref SymmetricKeyAlias
         SSEEnabled: true
+        SSEType: KMS
       TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}
       TimeToLiveSpecification:
         AttributeName: timeToLive
         Enabled: true
 
+  SymmetricKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Symmetric Key.
+      EnableKeyRotation: true
+      Enabled: true
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:*
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource:
+              - '*'
+          - Action:
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
+            Condition:
+              ArnLike:
+                kms:EncryptionContext:aws:logs:arn: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*
+            Effect: Allow
+            Principal:
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
+            Resource:
+              - '*'
+        Version: "2012-10-17"
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  SymmetricKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-symmetric-key
+      TargetKeyId: !Ref SymmetricKey
+
   TxMAKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
       Description: A KMS Key for encrypting the SQS Queue for TxMA
+      EnableKeyRotation: true
       Enabled: true
       KeyPolicy:
         Statement:

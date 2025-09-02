@@ -8,6 +8,9 @@ Resources:
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
+      CacheClusterEnabled: true
+      CacheClusterSize: '0.5'
+      TracingEnabled: true
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
@@ -25,6 +28,7 @@ Resources:
             - SessionsApigw
             - !Ref Environment
             - ApiRateLimit
+          CachingEnabled: true
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -38,6 +42,7 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
       RetentionInDays: 30
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   SessionsApiSubscriptionFilter:    
     Type: AWS::Logs::SubscriptionFilter

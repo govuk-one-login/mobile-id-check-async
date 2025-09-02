@@ -53,6 +53,12 @@ Mappings:
     dev:
       BaseDns: review-b-async.dev.account.gov.uk
 
+  KMS:
+    build:
+      PendingDeletionInDays: 30
+    dev:
+      PendingDeletionInDays: 7
+
   StsMockApiGateway:
     build:
       ApiBurstLimit: 400
@@ -144,8 +150,12 @@ Resources:
           KeyType: HASH
         - AttributeName: sk
           KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       SSESpecification:
+        KMSMasterKeyId: !Ref SymmetricKeyAlias
         SSEEnabled: true
+        SSEType: KMS
       TableName: !Sub ${AWS::StackName}-credential-results-${Environment}
       TimeToLiveSpecification:
         AttributeName: timeToLiveInSeconds
@@ -174,6 +184,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: DLQ is not required
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Environment:
         Variables:
@@ -195,11 +213,17 @@ Resources:
   DequeueCredentialResultLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-credential-result
       RetentionInDays: 30
 
   DequeueCredentialResultRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -286,6 +310,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: DLQ is not required
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Environment:
         Variables:
@@ -306,11 +338,17 @@ Resources:
   DequeueEventsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-events
       RetentionInDays: 30
 
   DequeueEventsRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -388,8 +426,12 @@ Resources:
           KeyType: HASH
         - AttributeName: sk
           KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       SSESpecification:
+        KMSMasterKeyId: !Ref SymmetricKeyAlias
         SSEEnabled: true
+        SSEType: KMS
       TableName: !Sub ${AWS::StackName}-events-table-${Environment}
       TimeToLiveSpecification:
         AttributeName: timeToLiveInSeconds
@@ -416,6 +458,11 @@ Resources:
 
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - comment: This is the access logs bucket. It should not log itself.
+            id: CKV_AWS_18
     Properties:
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -524,6 +571,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: DLQ is not required
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Description: Lambda for putting items into the Sessions table
       Events:
@@ -548,11 +603,17 @@ Resources:
   PutSessionFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sessions
       RetentionInDays: 30
 
   PutSessionFunctionRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - comment: VpcPolicy does not take a resource
+            id: CKV_AWS_111
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -595,6 +656,8 @@ Resources:
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -603,7 +666,8 @@ Resources:
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       MethodSettings:
-        - DataTraceEnabled: true
+        - CachingEnabled: true
+          DataTraceEnabled: true
           HttpMethod: '*'
           LoggingLevel: INFO
           MetricsEnabled: true
@@ -619,10 +683,12 @@ Resources:
       Name: !Sub ${AWS::StackName}-sts-mock-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
+      TracingEnabled: true
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
       RetentionInDays: 30
 
@@ -669,6 +735,49 @@ Resources:
       Name: !Ref StsMockApiDomainName
       Type: A
 
+  SymmetricKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Symmetric Key.
+      EnableKeyRotation: true
+      Enabled: true
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:*
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource:
+              - '*'
+          - Action:
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
+            Condition:
+              ArnLike:
+                kms:EncryptionContext:aws:logs:arn: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*
+            Effect: Allow
+            Principal:
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
+            Resource:
+              - '*'
+        Version: "2012-10-17"
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  SymmetricKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-symmetric-key
+      TargetKeyId: !Ref SymmetricKey
+
   TestResourcesApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -676,6 +785,8 @@ Resources:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       AlwaysDeploy: true
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -684,7 +795,8 @@ Resources:
       Description: API for test assets
       EndpointConfiguration: REGIONAL
       MethodSettings:
-        - DataTraceEnabled: false
+        - CachingEnabled: true
+          DataTraceEnabled: false
           HttpMethod: '*'
           LoggingLevel: INFO
           MetricsEnabled: true
@@ -700,10 +812,12 @@ Resources:
       Name: !Sub ${AWS::StackName}-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
+      TracingEnabled: true
 
   TestResourcesApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
 
@@ -813,6 +927,14 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Function-level concurrent execution limit not needed for dev environment
+            id: CKV_AWS_115
+          - comment: DLQ is not required
+            id: CKV_AWS_116
+          - comment: Environment variables content not sensitive
+            id: CKV_AWS_173
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       Environment:
@@ -852,6 +974,7 @@ Resources:
   TokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
+      KmsKeyId: !GetAtt SymmetricKey.Arn
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sts-mock-token
       RetentionInDays: 30
 

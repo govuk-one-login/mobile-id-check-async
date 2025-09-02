@@ -13,6 +13,14 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/dequeueEvents/dequeueEventsHandler.ts
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: Function-level concurrent execution limit not needed for dev environment
+          - id: CKV_AWS_116
+            comment: DLQ is not required
+          - id: CKV_AWS_173
+            comment: Environment variables content not sensitive
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue-events
       Handler: dequeueEventsHandler.lambdaHandler
@@ -35,9 +43,15 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-events
+      KmsKeyId: !GetAtt SymmetricKey.Arn
 
   DequeueEventsRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: VpcPolicy does not take a resource
     Properties:
       RoleName: !Sub ${AWS::StackName}-dequeue-events-role
       AssumeRolePolicyDocument:

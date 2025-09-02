@@ -47,6 +47,7 @@ Resources:
     Properties:
       Description: A KMS Key for encrypting the SQS Queue for TxMA
       Enabled: true
+      EnableKeyRotation: true
       KeyPolicy:
         Version: "2012-10-17"
         Statement:

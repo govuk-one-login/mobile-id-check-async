@@ -48,6 +48,7 @@ Resources:
     Properties:
       Description: A KMS Key for encrypting the SQS for IPVCore messages
       Enabled: true
+      EnableKeyRotation: true
       KeyPolicy: !If
         - isNotDevOrBuild
         - Version: "2012-10-17"

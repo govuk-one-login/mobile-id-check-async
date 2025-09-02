@@ -40,6 +40,11 @@ Resources:
 
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_18
+            comment: This is the access logs bucket. It should not log itself.
     Properties:
       BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-access-logs-${Environment}
       VersioningConfiguration:

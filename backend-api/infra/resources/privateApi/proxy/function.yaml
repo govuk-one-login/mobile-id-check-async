@@ -12,6 +12,14 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/proxy/proxyHandler.ts
+      checkov:
+        skip:
+          - id: CKV_AWS_115
+            comment: Function-level concurrent execution limit not needed for dev environment
+          - id: CKV_AWS_116
+            comment: Lambdas invoked via API Gateway do not support DLQs
+          - id: CKV_AWS_173
+            comment: Environment variables content not sensitive
     Properties:
       Environment:
         Variables:
@@ -33,6 +41,7 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
+      KmsKeyId: !GetAtt SymmetricKey.Arn
     Condition: ProxyApiDeployment
 
   ProxyLambdaSubscriptionFilter:    
@@ -46,6 +55,11 @@ Resources:
 
   ProxyLambdaRole:
     Type: AWS::IAM::Role
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: VpcPolicy does not take a resource
     Properties:
       RoleName: !Sub ${AWS::StackName}-proxy-lambda-role
       AssumeRolePolicyDocument:

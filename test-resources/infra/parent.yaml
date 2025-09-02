@@ -89,6 +89,12 @@ Mappings:
     build:
       BaseDns: review-b-async.build.account.gov.uk
 
+  KMS:
+    dev:
+      PendingDeletionInDays: 7
+    build:
+      PendingDeletionInDays: 30
+
 Conditions:
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
