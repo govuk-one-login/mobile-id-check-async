@@ -62,7 +62,7 @@ describe("Biometric token get session operation", () => {
   });
 
   describe("Session attribute validation", () => {
-    describe("Given the session is in the wrong state - sessionState = AUTH_SESSION_CREATED", () => {
+    describe("Given the session is in the wrong state", () => {
       const invalidSessionAttributesWrongSessionState = {
         createdAt: validCreatedAt,
         sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
