@@ -2,6 +2,7 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import {
   GetSessionError,
   UpdateSessionError,
@@ -11,7 +12,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
   expectedSecurityHeaders,
-  invalidMobileAppBiometricTokenSessionAttributesData,
+  invalidBiometricTokenGetSessionAttributesErrorData,
   mockGovukSigninJourneyId,
   mockInertEventService,
   mockInertSessionRegistry,
@@ -19,14 +20,13 @@ import {
   mockSuccessfulEventService,
   mockWriteBiometricTokenIssuedEventSuccessResult,
   mockWriteGenericEventSuccessResult,
+  validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
   validBiometricTokenIssuedSessionAttributesMobileApp,
-  validMobileAppBiometricTokenSessionAttributes,
 } from "../testUtils/unitTestData";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
-import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -274,7 +274,7 @@ describe("Async Biometric Token", () => {
             getSession: jest.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.SESSION_NOT_VALID,
-                data: invalidMobileAppBiometricTokenSessionAttributesData,
+                data: invalidBiometricTokenGetSessionAttributesErrorData,
               }),
             ),
           });
@@ -334,7 +334,6 @@ describe("Async Biometric Token", () => {
             sub: "mockSubjectIdentifier",
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-            redirect_uri: "https://www.mockRedirectUri.com",
             suspected_fraud_signal: undefined,
           });
         });
@@ -544,7 +543,7 @@ describe("Async Biometric Token", () => {
           dependencies.getSessionRegistry = () => ({
             getSession: jest.fn().mockResolvedValue(
               successResult({
-                validMobileAppBiometricTokenSessionAttributes,
+                validBaseSessionAttributes,
               }),
             ),
             updateSession: jest.fn().mockResolvedValue(
@@ -926,6 +925,6 @@ const mockBiometricTokenSessionRegistrySuccess: SessionRegistry = {
 
 const mockBiometricTokenGetSessionSuccess = jest.fn().mockResolvedValue(
   successResult({
-    attributes: validMobileAppBiometricTokenSessionAttributes,
+    attributes: validBaseSessionAttributes,
   }),
 );

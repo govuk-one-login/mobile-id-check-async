@@ -3,8 +3,8 @@ import {
   invalidCreatedAt,
   mockSessionId,
   NOW_IN_MILLISECONDS,
+  validBaseSessionAttributes,
   validCreatedAt,
-  validMobileAppBiometricTokenSessionAttributes,
 } from "../../../../testUtils/unitTestData";
 import {
   emptySuccess,
@@ -45,17 +45,17 @@ describe("Biometric token get session operation", () => {
     });
 
     describe("Given a valid BiometricTokenSessionAttributes item was provided", () => {
-      const validBiometricTokenSessionAttributesItem = marshall(
-        validMobileAppBiometricTokenSessionAttributes,
+      const validBaseSessionAttributesItem = marshall(
+        validBaseSessionAttributes,
       );
 
       it("Returns successResult with BiometricTokenSessionAttributes session attributes", () => {
         const result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
-          marshall(validMobileAppBiometricTokenSessionAttributes),
+          marshall(validBaseSessionAttributes),
         );
 
         expect(result).toEqual(
-          successResult(unmarshall(validBiometricTokenSessionAttributesItem)),
+          successResult(unmarshall(validBaseSessionAttributesItem)),
         );
       });
     });
@@ -125,14 +125,9 @@ describe("Biometric token get session operation", () => {
     });
 
     describe("Given the session is valid", () => {
-      const validSessionAttributes = {
-        sessionState: SessionState.AUTH_SESSION_CREATED,
-        createdAt: validMobileAppBiometricTokenSessionAttributes.createdAt,
-      };
-
       it("Returns an empty success result", () => {
         const result = getSessionOperation.validateSession(
-          validSessionAttributes,
+          validBaseSessionAttributes,
         );
 
         expect(result).toEqual(emptySuccess());
