@@ -1,11 +1,8 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
 import { isOlderThan60Minutes } from "../../../../utils/utils";
-import {
-  AuthSessionCreatedSessionAttributes,
-  SessionState,
-} from "../../session";
-import { getAuthSessionAttributes } from "../../sessionAttributes/sessionAttributes";
+import { BaseSessionAttributes, SessionState } from "../../session";
+import { getBaseSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import {
   GetSessionAttributesInvalidAttributesError,
   ValidateSessionAttributes,
@@ -17,11 +14,8 @@ import { GetSessionOperation } from "../GetSessionOperation";
 export class GetSessionBiometricToken implements GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
-  ): Result<
-    AuthSessionCreatedSessionAttributes,
-    GetSessionAttributesInvalidAttributesError
-  > {
-    return getAuthSessionAttributes(item);
+  ): Result<BaseSessionAttributes, GetSessionAttributesInvalidAttributesError> {
+    return getBaseSessionAttributes(item);
   }
 
   validateSession(

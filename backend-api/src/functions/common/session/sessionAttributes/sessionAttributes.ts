@@ -3,7 +3,6 @@ import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import {
   AuthSessionAbortedAttributes,
-  AuthSessionCreatedSessionAttributes,
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
@@ -46,29 +45,6 @@ const isCommonSessionAttributes = (
   if ("redirectUri" in item && typeof item.redirectUri !== "string") {
     return false;
   }
-  return true;
-};
-
-export const getAuthSessionAttributes = (
-  item: Record<string, AttributeValue>,
-): Result<
-  AuthSessionCreatedSessionAttributes,
-  GetSessionAttributesInvalidAttributesError
-> => {
-  const sessionAttributes: Record<string, unknown> = unmarshall(item);
-  if (!isAuthSessionAttributes(sessionAttributes)) {
-    return errorResult({
-      sessionAttributes,
-    });
-  }
-
-  return successResult(sessionAttributes);
-};
-
-const isAuthSessionAttributes = (
-  item: Record<string, NativeAttributeValue>,
-): item is AuthSessionCreatedSessionAttributes => {
-  if (!isCommonSessionAttributes(item)) return false;
   return true;
 };
 
