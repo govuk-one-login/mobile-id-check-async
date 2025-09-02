@@ -16,7 +16,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { GetSessionBiometricToken } from "../common/session/getOperations/BiometricToken/GetSessionBiometricToken";
+import { GetSessionAuthSessionCreated } from "../common/session/getOperations/GetSessionAuthSessionCreated/GetSessionAuthSessionCreated";
 import {
   BaseSessionAttributes,
   BiometricTokenIssuedSessionAttributes,
@@ -82,7 +82,7 @@ export async function lambdaHandlerConstructor(
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
-    new GetSessionBiometricToken(),
+    new GetSessionAuthSessionCreated(),
   );
 
   if (getSessionResult.isError) {

@@ -12,15 +12,15 @@ import {
   successResult,
 } from "../../../../utils/result";
 import { SessionState } from "../../session";
-import { GetSessionBiometricToken } from "./GetSessionBiometricToken";
+import { GetSessionAuthSessionCreated } from "./GetSessionAuthSessionCreated";
 
 describe("Biometric token get session operation", () => {
-  let getSessionOperation: GetSessionBiometricToken;
+  let getSessionOperation: GetSessionAuthSessionCreated;
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    getSessionOperation = new GetSessionBiometricToken();
+    getSessionOperation = new GetSessionAuthSessionCreated();
   });
 
   describe("Given I request the getSessionAttributesFromDynamoDbItem", () => {

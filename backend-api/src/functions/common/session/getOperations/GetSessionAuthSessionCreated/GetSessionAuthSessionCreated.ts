@@ -11,7 +11,7 @@ import {
 } from "../../SessionRegistry/types";
 import { GetSessionOperation } from "../GetSessionOperation";
 
-export class GetSessionBiometricToken implements GetSessionOperation {
+export class GetSessionAuthSessionCreated implements GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
   ): Result<BaseSessionAttributes, GetSessionAttributesInvalidAttributesError> {

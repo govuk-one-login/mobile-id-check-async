@@ -27,7 +27,7 @@ import {
 import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
-import { GetSessionBiometricToken } from "../common/session/getOperations/BiometricToken/GetSessionBiometricToken";
+import { GetSessionAuthSessionCreated } from "../common/session/getOperations/GetSessionAuthSessionCreated/GetSessionAuthSessionCreated";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -806,7 +806,7 @@ describe("Async Biometric Token", () => {
     it("Passes correct arguments to get session", () => {
       expect(
         mockBiometricTokenSessionRegistrySuccess.getSession,
-      ).toHaveBeenCalledWith(mockSessionId, new GetSessionBiometricToken());
+      ).toHaveBeenCalledWith(mockSessionId, new GetSessionAuthSessionCreated());
     });
 
     it("Passes correct arguments to get secrets", () => {
