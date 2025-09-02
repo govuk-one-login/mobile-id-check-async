@@ -11,7 +11,7 @@ import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
-import { GetSessionBiometricTokenIssued } from "../../../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
+import { GetSessionBiometricTokenIssued } from "../../../common/session/getOperations/GetSessionBiometricTokenIssued/GetSessionBiometricTokenIssued";
 import { SessionState } from "../../../common/session/session";
 import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 import {

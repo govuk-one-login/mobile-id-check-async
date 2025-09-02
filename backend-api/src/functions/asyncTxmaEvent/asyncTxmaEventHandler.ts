@@ -14,7 +14,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
+import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/GetSessionBiometricTokenIssued/GetSessionBiometricTokenIssued";
 import { SessionAttributes } from "../common/session/session";
 import {
   GetSessionError,
