@@ -39,7 +39,7 @@ import {
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { randomUUID } from "crypto";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
-import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
+import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/GetSessionIssueBiometricCredential/GetSessionIssueBiometricCredential";
 import {
   BiometricSessionFinishedAttributes,
   SessionAttributes,

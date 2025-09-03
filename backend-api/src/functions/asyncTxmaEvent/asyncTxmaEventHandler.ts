@@ -9,11 +9,12 @@ import {
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
+import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/GetSessionBiometricTokenIssued/GetSessionBiometricTokenIssued";
 import { SessionAttributes } from "../common/session/session";
 import {
   GetSessionError,
@@ -30,7 +31,6 @@ import {
   IAsyncTxmaEventRequestBody,
   validateRequestBody,
 } from "./validateRequestBody/validateRequestBody";
-import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -102,7 +102,12 @@ async function handleGetSessionError({
 }: {
   errorData: GetSessionFailed;
 }): Promise<APIGatewayProxyResult> {
-  if (errorData.errorType === GetSessionError.CLIENT_ERROR) {
+  if (
+    [
+      GetSessionError.SESSION_NOT_FOUND,
+      GetSessionError.SESSION_NOT_VALID,
+    ].includes(errorData.errorType)
+  ) {
     return unauthorizedResponse(
       "invalid_session",
       "Session does not exist or in incorrect state",

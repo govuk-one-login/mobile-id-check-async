@@ -3,45 +3,48 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import {
-  IAsyncBiometricTokenDependencies,
-  runtimeDependencies,
-} from "./handlerDependencies";
+import { randomUUID } from "crypto";
+import { GetSecrets } from "../common/config/secrets";
 import {
   badRequestResponse,
   okResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
-import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { GetSessionAuthSessionCreated } from "../common/session/getOperations/GetSessionAuthSessionCreated/GetSessionAuthSessionCreated";
 import {
-  BiometricTokenConfig,
-  getBiometricTokenConfig,
-} from "./biometricTokenConfig";
-import { GetSecrets } from "../common/config/secrets";
+  BaseSessionAttributes,
+  BiometricTokenIssuedSessionAttributes,
+} from "../common/session/session";
+import {
+  GetSessionError,
+  GetSessionFailed,
+  SessionUpdateFailed,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry/types";
+import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+import { IEventService } from "../services/events/types";
+import { DocumentType } from "../types/document";
 import {
   emptyFailure,
   FailureWithValue,
   Result,
   successResult,
 } from "../utils/result";
-import { DocumentType } from "../types/document";
-import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import {
-  UpdateSessionError,
-  SessionUpdateFailed,
-} from "../common/session/SessionRegistry/types";
-import { randomUUID } from "crypto";
-import { IEventService } from "../services/events/types";
+  BiometricTokenConfig,
+  getBiometricTokenConfig,
+} from "./biometricTokenConfig";
 import {
-  BaseSessionAttributes,
-  BiometricTokenIssuedSessionAttributes,
-} from "../common/session/session";
-import { setupLogger } from "../common/logging/setupLogger";
-import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
+  IAsyncBiometricTokenDependencies,
+  runtimeDependencies,
+} from "./handlerDependencies";
+import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -69,6 +72,27 @@ export async function lambdaHandlerConstructor(
 
   appendPersistentIdentifiersToLogger({ sessionId });
 
+  const sessionRegistry = dependencies.getSessionRegistry(
+    config.SESSION_TABLE_NAME,
+  );
+
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
+  const getSessionResult = await sessionRegistry.getSession(
+    sessionId,
+    new GetSessionAuthSessionCreated(),
+  );
+
+  if (getSessionResult.isError) {
+    return handleGetSessionError(eventService, {
+      getSessionResult,
+      sessionId,
+      issuer: config.ISSUER,
+      ipAddress,
+      txmaAuditEncoded,
+    });
+  }
+
   const submitterKeyResult = await getSubmitterKeyForDocumentType(
     documentType,
     config,
@@ -78,10 +102,6 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   const submitterKey = submitterKeyResult.value;
-
-  const eventService = dependencies.getEventService(config.TXMA_SQS);
-
-  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
 
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
@@ -97,9 +117,6 @@ export async function lambdaHandlerConstructor(
   }
 
   const opaqueId = generateOpaqueId();
-  const sessionRegistry = dependencies.getSessionRegistry(
-    config.SESSION_TABLE_NAME,
-  );
 
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
@@ -142,6 +159,45 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
   runtimeDependencies,
 );
+
+interface HandleGetSessionErrorData {
+  getSessionResult: FailureWithValue<GetSessionFailed>;
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
+async function handleGetSessionError(
+  eventService: IEventService,
+  data: HandleGetSessionErrorData,
+): Promise<APIGatewayProxyResult> {
+  const { getSessionResult, sessionId, issuer, ipAddress, txmaAuditEncoded } =
+    data;
+  switch (getSessionResult.value.errorType) {
+    case GetSessionError.SESSION_NOT_FOUND:
+      return handleSessionNotFound(eventService, {
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
+    case GetSessionError.SESSION_NOT_VALID:
+      return handleInvalidSessionFailure(eventService, {
+        sessionAttributes: getSessionResult.value.data.allSessionAttributes,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
+    case GetSessionError.INTERNAL_SERVER_ERROR:
+      return handleInternalServerError(eventService, {
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
+  }
+}
 
 async function getSubmitterKeyForDocumentType(
   documentType: DocumentType,
@@ -188,6 +244,14 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
+interface HandleUpdateSessionErrorData {
+  updateSessionResult: FailureWithValue<SessionUpdateFailed>;
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
 interface HandleConditionalCheckFailureData {
   sessionAttributes: BaseSessionAttributes;
   issuer: string;
@@ -195,7 +259,7 @@ interface HandleConditionalCheckFailureData {
   txmaAuditEncoded: string | undefined;
 }
 
-async function handleConditionalCheckFailure(
+async function handleInvalidSessionFailure(
   eventService: IEventService,
   data: HandleConditionalCheckFailureData,
 ): Promise<APIGatewayProxyResult> {
@@ -298,14 +362,6 @@ async function handleInternalServerError(
   return serverErrorResponse;
 }
 
-interface HandleUpdateSessionErrorData {
-  updateSessionResult: FailureWithValue<SessionUpdateFailed>;
-  sessionId: string;
-  issuer: string;
-  ipAddress: string;
-  txmaAuditEncoded: string | undefined;
-}
-
 async function handleUpdateSessionError(
   eventService: IEventService,
   data: HandleUpdateSessionErrorData,
@@ -319,17 +375,17 @@ async function handleUpdateSessionError(
   } = data;
   let sessionAttributes;
   switch (updateSessionResult.value.errorType) {
-    case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
-      sessionAttributes = updateSessionResult.value.attributes;
-      return handleConditionalCheckFailure(eventService, {
-        sessionAttributes,
+    case UpdateSessionError.SESSION_NOT_FOUND:
+      return handleSessionNotFound(eventService, {
+        sessionId,
         issuer,
         ipAddress,
         txmaAuditEncoded,
       });
-    case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, {
-        sessionId,
+    case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
+      sessionAttributes = updateSessionResult.value.attributes;
+      return handleInvalidSessionFailure(eventService, {
+        sessionAttributes,
         issuer,
         ipAddress,
         txmaAuditEncoded,

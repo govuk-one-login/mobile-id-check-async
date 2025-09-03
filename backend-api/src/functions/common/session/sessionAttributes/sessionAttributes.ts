@@ -2,10 +2,10 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import {
+  AuthSessionAbortedAttributes,
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
-  AuthSessionAbortedAttributes,
   SessionState,
 } from "../session";
 import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";

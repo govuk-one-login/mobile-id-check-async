@@ -186,6 +186,14 @@ export const validBiometricTokenIssuedSessionAttributes = {
   opaqueId: "mockOpaqueId",
 };
 
+export const invalidBiometricTokenGetSessionAttributesErrorData = {
+  allSessionAttributes: invalidBaseSessionAttributeSessionState,
+  invalidAttributes: {
+    createdAt: invalidCreatedAt,
+    sessionState: invalidBaseSessionAttributeSessionState.sessionState,
+  },
+};
+
 export const validBiometricTokenIssuedSessionAttributesMobileApp = {
   ...validBiometricTokenIssuedSessionAttributes,
   redirectUri: mockRedirectUri,

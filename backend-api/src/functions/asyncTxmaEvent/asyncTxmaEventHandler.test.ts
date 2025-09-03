@@ -2,7 +2,9 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { GetSessionError } from "../common/session/SessionRegistry/types";
+import { txmaBillingEventNames } from "../services/events/types";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
@@ -19,8 +21,6 @@ import {
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
-import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { txmaBillingEventNames } from "../services/events/types";
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;
@@ -186,7 +186,7 @@ describe("Async TxMA Event", () => {
             ...mockInertSessionRegistry,
             getSession: jest.fn().mockResolvedValue(
               errorResult({
-                errorType: GetSessionError.CLIENT_ERROR,
+                errorType: GetSessionError.SESSION_NOT_FOUND,
               }),
             ),
           });
@@ -215,7 +215,7 @@ describe("Async TxMA Event", () => {
             ...mockInertSessionRegistry,
             getSession: jest.fn().mockResolvedValue(
               errorResult({
-                errorType: GetSessionError.CLIENT_ERROR,
+                errorType: GetSessionError.SESSION_NOT_VALID,
               }),
             ),
           });
