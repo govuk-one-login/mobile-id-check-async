@@ -252,7 +252,7 @@ interface HandleUpdateSessionErrorData {
   txmaAuditEncoded: string | undefined;
 }
 
-interface HandleConditionalCheckFailureData {
+interface HandleInvalidSessionFailureData {
   sessionAttributes: BaseSessionAttributes;
   issuer: string;
   ipAddress: string;
@@ -261,7 +261,7 @@ interface HandleConditionalCheckFailureData {
 
 async function handleInvalidSessionFailure(
   eventService: IEventService,
-  data: HandleConditionalCheckFailureData,
+  data: HandleInvalidSessionFailureData,
 ): Promise<APIGatewayProxyResult> {
   const { sessionAttributes, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
