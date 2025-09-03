@@ -5225,6 +5225,65 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  BrpBiometricSessionsNotReadyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialApproximateReceiveCountMetricFilter
+      - CredentialsIssuedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Fewer than 75% of BRP VCs are being issued after the first call to retrieve a biometric session from the vendor. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-brp-biometric-sessions-not-ready
+      ComparisonOperator: LessThanThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      InsufficientDataActions: []
+      Metrics:
+        - Id: brpVCsIssuedOnFirstAttempt
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+                - Name: DocumentType
+                  Value: UK_NFC_BRP
+                - Name: ReceiveCount
+                  Value: "1"
+              MetricName: AsyncIssueBiometricCredentialApproximateReceiveCount
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 3600
+            Stat: SampleCount
+          ReturnData: false
+        - Id: brpVCsIssuedOnAnyAttempt
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: DocumentType
+                  Value: UK_NFC_BRP
+              MetricName: CredentialsIssued
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 3600
+            Stat: Sum
+          ReturnData: false
+        - Expression: (FILL(brpVCsIssuedOnFirstAttempt, 0)/FILL(brpVCsIssuedOnAnyAttempt, 0)) * 100
+          Id: percentageOfBrpVCsIssuedOnFirstAttempt
+          ReturnData: false
+        - Expression: IF(FILL(brpVCsIssuedOnAnyAttempt, 0) >= 5, percentageOfBrpVCsIssuedOnFirstAttempt, 100)
+          Id: threshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 75
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   CodeDeployServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -5257,6 +5316,65 @@ Resources:
           MetricName: CredentialsIssued
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
+
+  DrivingLicenceBiometricSessionsNotReadyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialApproximateReceiveCountMetricFilter
+      - CredentialsIssuedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Fewer than 90% of driving licence VCs are being issued after the first call to retrieve a biometric session from the vendor. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-driving-licence-biometric-sessions-not-ready
+      ComparisonOperator: LessThanThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      InsufficientDataActions: []
+      Metrics:
+        - Id: drivingLicenceVCsIssuedOnFirstAttempt
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+                - Name: DocumentType
+                  Value: UK_DRIVING_LICENCE
+                - Name: ReceiveCount
+                  Value: "1"
+              MetricName: AsyncIssueBiometricCredentialApproximateReceiveCount
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 3600
+            Stat: SampleCount
+          ReturnData: false
+        - Id: drivingLicenceVCsIssuedOnAnyAttempt
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: DocumentType
+                  Value: UK_DRIVING_LICENCE
+              MetricName: CredentialsIssued
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 3600
+            Stat: Sum
+          ReturnData: false
+        - Expression: (FILL(drivingLicenceVCsIssuedOnFirstAttempt, 0)/FILL(drivingLicenceVCsIssuedOnAnyAttempt, 0)) * 100
+          Id: percentageOfDrivingLicenceVCsIssuedOnFirstAttempt
+          ReturnData: false
+        - Expression: IF(FILL(drivingLicenceVCsIssuedOnAnyAttempt, 0) >= 5, percentageOfDrivingLicenceVCsIssuedOnFirstAttempt, 100)
+          Id: threshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 90
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5842,6 +5960,65 @@ Resources:
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
     Condition: NeverDeploy
+
+  PassportBiometricSessionsNotReadyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialApproximateReceiveCountMetricFilter
+      - CredentialsIssuedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Fewer than 90% of passport VCs are being issued after the first call to retrieve a biometric session from the vendor. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-passport-biometric-sessions-not-ready
+      ComparisonOperator: LessThanThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      InsufficientDataActions: []
+      Metrics:
+        - Id: passportVCsIssuedOnFirstAttempt
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+                - Name: DocumentType
+                  Value: NFC_PASSPORT
+                - Name: ReceiveCount
+                  Value: "1"
+              MetricName: AsyncIssueBiometricCredentialApproximateReceiveCount
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 3600
+            Stat: SampleCount
+          ReturnData: false
+        - Id: passportVCsIssuedOnAnyAttempt
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: DocumentType
+                  Value: NFC_PASSPORT
+              MetricName: CredentialsIssued
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 3600
+            Stat: Sum
+          ReturnData: false
+        - Expression: (FILL(passportVCsIssuedOnFirstAttempt, 0)/FILL(passportVCsIssuedOnAnyAttempt, 0)) * 100
+          Id: percentageOfPassportVCsIssuedOnFirstAttempt
+          ReturnData: false
+        - Expression: IF(FILL(passportVCsIssuedOnAnyAttempt, 0) >= 5, percentageOfPassportVCsIssuedOnFirstAttempt, 100)
+          Id: threshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 90
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   PrivateApi:
     Type: AWS::Serverless::Api

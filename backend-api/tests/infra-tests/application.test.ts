@@ -410,6 +410,9 @@ describe("Backend application infrastructure", () => {
         ["abort-session-concurrency-reaching-limit"],
         ["txma-event-concurrency-reaching-limit"],
         ["zero-journeys-started"],
+        ["passport-biometric-sessions-not-ready"],
+        ["driving-licence-biometric-sessions-not-ready"],
+        ["brp-biometric-sessions-not-ready"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
