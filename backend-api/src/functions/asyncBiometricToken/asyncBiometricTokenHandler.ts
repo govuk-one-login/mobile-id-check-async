@@ -374,7 +374,7 @@ async function handleSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
-interface HandleInvalidSessionFailureData {
+interface HandleInvalidSessionData {
   sessionAttributes: BaseSessionAttributes;
   issuer: string;
   ipAddress: string;
@@ -383,7 +383,7 @@ interface HandleInvalidSessionFailureData {
 
 async function handleInvalidSession(
   eventService: IEventService,
-  data: HandleInvalidSessionFailureData,
+  data: HandleInvalidSessionData,
 ): Promise<APIGatewayProxyResult> {
   const { sessionAttributes, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
