@@ -87,8 +87,8 @@ export interface GetSessionSessionNotValidError {
 }
 
 export interface ValidateSessionErrorData {
-  allSessionAttributes?: unknown;
-  invalidAttributes?: ValidateSessionInvalidAttributes[];
+  allSessionAttributes: SessionAttributes;
+  invalidAttributes: ValidateSessionInvalidAttributes[];
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {
