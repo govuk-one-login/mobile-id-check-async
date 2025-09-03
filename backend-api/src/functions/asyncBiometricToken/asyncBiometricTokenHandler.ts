@@ -183,7 +183,7 @@ async function handleGetSessionError(
         txmaAuditEncoded,
       });
     case GetSessionError.SESSION_NOT_VALID:
-      return handleInvalidSessionFailure(eventService, {
+      return handleInvalidSession(eventService, {
         sessionAttributes: getSessionResult.value.data.allSessionAttributes,
         issuer,
         ipAddress,
@@ -259,7 +259,7 @@ interface HandleInvalidSessionFailureData {
   txmaAuditEncoded: string | undefined;
 }
 
-async function handleInvalidSessionFailure(
+async function handleInvalidSession(
   eventService: IEventService,
   data: HandleInvalidSessionFailureData,
 ): Promise<APIGatewayProxyResult> {
@@ -384,7 +384,7 @@ async function handleUpdateSessionError(
       });
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleInvalidSessionFailure(eventService, {
+      return handleInvalidSession(eventService, {
         sessionAttributes,
         issuer,
         ipAddress,
