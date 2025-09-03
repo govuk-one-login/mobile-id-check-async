@@ -183,7 +183,7 @@ async function handleGetSessionError(
         txmaAuditEncoded,
       });
     case GetSessionError.SESSION_NOT_VALID:
-      return handleInvalidSessionFailure(eventService, {
+      return handleInvalidSession(eventService, {
         sessionAttributes: getSessionResult.value.data.allSessionAttributes,
         issuer,
         ipAddress,
@@ -240,126 +240,12 @@ async function getSubmitterKeyForDocumentType(
   }
 }
 
-function generateOpaqueId(): string {
-  return randomUUID();
-}
-
 interface HandleUpdateSessionErrorData {
   updateSessionResult: FailureWithValue<SessionUpdateFailed>;
   sessionId: string;
   issuer: string;
   ipAddress: string;
   txmaAuditEncoded: string | undefined;
-}
-
-interface HandleConditionalCheckFailureData {
-  sessionAttributes: BaseSessionAttributes;
-  issuer: string;
-  ipAddress: string;
-  txmaAuditEncoded: string | undefined;
-}
-
-async function handleInvalidSessionFailure(
-  eventService: IEventService,
-  data: HandleConditionalCheckFailureData,
-): Promise<APIGatewayProxyResult> {
-  const { sessionAttributes, issuer, ipAddress, txmaAuditEncoded } = data;
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    sub: sessionAttributes.subjectIdentifier,
-    sessionId: sessionAttributes.sessionId,
-    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-    getNowInMilliseconds: Date.now,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    redirect_uri: sessionAttributes.redirectUri,
-    suspected_fraud_signal: undefined,
-  });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-      },
-    });
-    return serverErrorResponse;
-  }
-  return unauthorizedResponse(
-    "invalid_session",
-    "User session is not in a valid state for this operation.",
-  );
-}
-
-interface HandleSessionNotFoundData {
-  sessionId: string;
-  issuer: string;
-  ipAddress: string;
-  txmaAuditEncoded: string | undefined;
-}
-
-async function handleSessionNotFound(
-  eventService: IEventService,
-  data: HandleSessionNotFoundData,
-): Promise<APIGatewayProxyResult> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    sub: undefined,
-    sessionId,
-    govukSigninJourneyId: undefined,
-    getNowInMilliseconds: Date.now,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
-  });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-      },
-    });
-    return serverErrorResponse;
-  }
-  return unauthorizedResponse("invalid_session", "Session not found");
-}
-
-interface HandleInternalServerErrorData {
-  sessionId: string;
-  issuer: string;
-  ipAddress: string;
-  txmaAuditEncoded: string | undefined;
-}
-
-async function handleInternalServerError(
-  eventService: IEventService,
-  data: HandleInternalServerErrorData,
-): Promise<APIGatewayProxyResult> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    sub: undefined,
-    sessionId,
-    govukSigninJourneyId: undefined,
-    getNowInMilliseconds: Date.now,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
-  });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-      },
-    });
-  }
-  return serverErrorResponse;
 }
 
 async function handleUpdateSessionError(
@@ -384,7 +270,7 @@ async function handleUpdateSessionError(
       });
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleInvalidSessionFailure(eventService, {
+      return handleInvalidSession(eventService, {
         sessionAttributes,
         issuer,
         ipAddress,
@@ -450,4 +336,118 @@ async function handleOkResponse(
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
   return okResponse(responseBody);
+}
+
+interface HandleSessionNotFoundData {
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
+async function handleSessionNotFound(
+  eventService: IEventService,
+  data: HandleSessionNotFoundData,
+): Promise<APIGatewayProxyResult> {
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    sub: undefined,
+    sessionId,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
+    });
+    return serverErrorResponse;
+  }
+  return unauthorizedResponse("invalid_session", "Session not found");
+}
+
+interface HandleInvalidSessionData {
+  sessionAttributes: BaseSessionAttributes;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
+async function handleInvalidSession(
+  eventService: IEventService,
+  data: HandleInvalidSessionData,
+): Promise<APIGatewayProxyResult> {
+  const { sessionAttributes, issuer, ipAddress, txmaAuditEncoded } = data;
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
+    });
+    return serverErrorResponse;
+  }
+  return unauthorizedResponse(
+    "invalid_session",
+    "User session is not in a valid state for this operation.",
+  );
+}
+
+interface HandleInternalServerErrorData {
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
+async function handleInternalServerError(
+  eventService: IEventService,
+  data: HandleInternalServerErrorData,
+): Promise<APIGatewayProxyResult> {
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sub: undefined,
+    sessionId,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      },
+    });
+  }
+  return serverErrorResponse;
+}
+
+function generateOpaqueId(): string {
+  return randomUUID();
 }
