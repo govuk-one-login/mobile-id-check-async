@@ -186,7 +186,7 @@ paths:
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncTokenFunction}/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncTokenFunction}:live/invocations"
         type: "aws_proxy"
   /async/credential:
     post:
@@ -334,5 +334,5 @@ paths:
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncCredentialFunction}/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncCredentialFunction}:live/invocations"
         type: "aws_proxy"
