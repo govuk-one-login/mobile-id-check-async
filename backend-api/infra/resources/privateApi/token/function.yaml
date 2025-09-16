@@ -15,6 +15,13 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-token      
       Handler: asyncTokenHandler.lambdaHandler
+      Events:
+        PostToken:
+          Type: Api
+          Properties:
+            Path: /async/token
+            Method: post
+            RestApiId: !Ref PrivateApi
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       ReservedConcurrentExecutions: !If
         - isDev

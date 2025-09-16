@@ -2578,6 +2578,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - SessionDurationInSeconds
+      Events:
+        PostCredential:
+          Properties:
+            Method: post
+            Path: /async/credential
+            RestApiId: !Ref PrivateApi
+          Type: Api
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
@@ -4584,6 +4591,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - ClientRegistrySecretPath
+      Events:
+        PostToken:
+          Properties:
+            Method: post
+            Path: /async/token
+            RestApiId: !Ref PrivateApi
+          Type: Api
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
