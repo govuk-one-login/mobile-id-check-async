@@ -57,7 +57,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: 
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CSLSEGRESS, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev

@@ -40,9 +40,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   VendorProcessingKeyAlias:
     Type: AWS::KMS::Alias

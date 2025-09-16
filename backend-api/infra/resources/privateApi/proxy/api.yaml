@@ -18,13 +18,13 @@ Resources:
           ResourcePath: /*
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
-            - ProxyApigw
-            - !Ref Environment
+            - EnvironmentVariables
             - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - ProxyApigw
             - !Ref Environment
+          ThrottlingRateLimit: !FindInMap
+            - EnvironmentVariables
             - ApiRateLimit
+            - !Ref Environment
       AccessLogSetting:
         DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
         Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
@@ -44,9 +44,9 @@ Resources:
               Effect: Allow
               Principal:
                 AWS: !FindInMap
-                  - ProxyApigw
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - perfTesterRoleArn
+                  - !Ref Environment
               Action:
                 - "execute-api:Invoke"
               Resource: !Sub "execute-api:/*"
@@ -63,7 +63,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter    
     Properties:
       DestinationArn: 
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CSLSEGRESS, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
     Condition: DeployProxyCsls
@@ -76,15 +76,15 @@ Resources:
         - !Sub
           - proxy-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
+            - EnvironmentVariables
             - BaseDns
+            - !Ref Environment
         - !Sub
           - proxy.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
+            - EnvironmentVariables
             - BaseDns
+            - !Ref Environment
       EndpointConfiguration:
         Types:
           - REGIONAL

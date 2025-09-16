@@ -37,7 +37,7 @@ Resources:
           STS_BASE_URL: !If
             - UseDevOverrideStsBaseUrl
             - !Ref DevOverrideStsBaseUrl
-            - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+            - !FindInMap [EnvironmentVariables, StsBaseUrl, !Ref Environment]
           AUDIENCE: !Sub https://${SessionsApiDomainName}
       VpcConfig:
         SubnetIds:
@@ -66,7 +66,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn:
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CSLSEGRESS, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncActiveSessionLogGroup
     Condition: isNotDev

@@ -41,7 +41,7 @@ Resources:
       InsufficientDataActions: []
       AlarmDescription: !Sub
         - "Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
+        - SupportManualUrl: !FindInMap [StaticVariables, SupportManual]
       AlarmName: !Sub "${AWS::StackName}-zero-vcs-issued"
       EvaluationPeriods: 4
       DatapointsToAlarm: 4

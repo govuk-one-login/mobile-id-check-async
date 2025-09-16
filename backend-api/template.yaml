@@ -67,269 +67,208 @@ Parameters:
     Default: unused
 
 Mappings:
-  CslsConfiguration:
-    build:
-      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-    integration:
-      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-    production:
-      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-    staging:
-      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-
-  DNS:
-    build:
-      BaseDns: review-b-async.build.account.gov.uk
-    dev:
-      BaseDns: review-b-async.dev.account.gov.uk
-    integration:
-      BaseDns: review-b-async.integration.account.gov.uk
-    production:
-      BaseDns: review-b-async.account.gov.uk
-    staging:
-      BaseDns: review-b-async.staging.account.gov.uk
-
-  EnvironmentConfiguration:
-    build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    integration:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    production:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables
-    staging:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-
   EnvironmentVariables:
-    build:
-      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricSubmitterKeySecretPathBrp: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
-      BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
-      BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_KEY
-      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
-      ClientRegistrySecretPath: build/clientRegistry
-      EnableBiometricResidenceCard: "true"
-      EnableBiometricResidencePermit: "true"
-      EnableDrivingLicence: "true"
-      EnableNfcPassport: "true"
-      EnableUtopiaTestDocument: "true"
-      ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
-      ReadIdMockBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
-      STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
-      SessionDurationInSeconds: 86400
-      TestResourcesBaseUrl: https://test-resources.review-b-async.build.account.gov.uk
-    dev:
-      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
-      BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
-      BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
-      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
-      ClientRegistrySecretPath: dev/clientRegistry
-      EnableBiometricResidenceCard: "true"
-      EnableBiometricResidencePermit: "true"
-      EnableDrivingLicence: "true"
-      EnableNfcPassport: "true"
-      EnableUtopiaTestDocument: "true"
-      ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
-      ReadIdMockBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
-      STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
-      SessionDurationInSeconds: 86400
-      TestResourcesBaseUrl: https://test-resources.review-b-async.dev.account.gov.uk
-    integration:
-      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
-      BiometricSubmitterKeySecretPathDl: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
-      BiometricSubmitterKeySecretPathPassport: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
-      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
-      ClientRegistrySecretPath: integration/clientRegistry
-      EnableBiometricResidenceCard: "true"
-      EnableBiometricResidencePermit: "true"
-      EnableDrivingLicence: "true"
-      EnableNfcPassport: "true"
-      EnableUtopiaTestDocument: "true"
-      ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
-      STSBASEURL: https://token.integration.account.gov.uk
-      SessionDurationInSeconds: 86400
-    production:
-      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
-      BiometricSubmitterKeySecretPathDl: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
-      BiometricSubmitterKeySecretPathPassport: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_KEY
-      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
-      ClientRegistrySecretPath: production/clientRegistry
-      EnableBiometricResidenceCard: "true"
-      EnableBiometricResidencePermit: "true"
-      EnableDrivingLicence: "true"
-      EnableNfcPassport: "true"
-      EnableUtopiaTestDocument: "false"
-      ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
-      STSBASEURL: https://token.account.gov.uk
-      SessionDurationInSeconds: 86400
-    staging:
-      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
-      BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
-      BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
-      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
-      ClientRegistrySecretPath: staging/clientRegistry
-      EnableBiometricResidenceCard: "true"
-      EnableBiometricResidencePermit: "true"
-      EnableDrivingLicence: "true"
-      EnableNfcPassport: "true"
-      EnableUtopiaTestDocument: "true"
-      ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
-      STSBASEURL: https://token.staging.account.gov.uk
-      SessionDurationInSeconds: 86400
-
-  IPVCore:
-    build:
-      AccountId: not-used
-    dev:
-      AccountId: not-used
-    integration:
-      AccountId: arn:aws:iam::991138514218:root
-    production:
-      AccountId: arn:aws:iam::075701497069:root
-    staging:
-      AccountId: arn:aws:iam::335257547869:root
-
-  KMS:
-    build:
-      PendingDeletionInDays: 30
-    dev:
-      PendingDeletionInDays: 7
-    integration:
-      PendingDeletionInDays: 30
-    production:
-      PendingDeletionInDays: 30
-    staging:
-      PendingDeletionInDays: 30
-
-  Lambda:
-    build:
-      AsyncCredentialReservedConcurrentExecutions: 160
-      AsyncTokenReservedConcurrentExecutions: 160
-      IssueBiometricCredentialReservedConcurrentExecutions: 34
-      JsonWebKeysReservedConcurrentExecutions: 1
-      LogLevel: INFO
-      ReservedConcurrentExecutions: 80
-    dev:
-      AsyncCredentialReservedConcurrentExecutions: 0
-      AsyncTokenReservedConcurrentExecutions: 0
-      IssueBiometricCredentialReservedConcurrentExecutions: 0
-      JsonWebKeysReservedConcurrentExecutions: 1
-      LogLevel: DEBUG
-      ReservedConcurrentExecutions: 0
-    integration:
-      AsyncCredentialReservedConcurrentExecutions: 15
-      AsyncTokenReservedConcurrentExecutions: 15
-      IssueBiometricCredentialReservedConcurrentExecutions: 34
-      JsonWebKeysReservedConcurrentExecutions: 1
-      LogLevel: INFO
-      ReservedConcurrentExecutions: 15
-    production:
-      AsyncCredentialReservedConcurrentExecutions: 160
-      AsyncTokenReservedConcurrentExecutions: 160
-      IssueBiometricCredentialReservedConcurrentExecutions: 34
-      JsonWebKeysReservedConcurrentExecutions: 1
-      LogLevel: INFO
-      ReservedConcurrentExecutions: 80
-    staging:
-      AsyncCredentialReservedConcurrentExecutions: 15
-      AsyncTokenReservedConcurrentExecutions: 15
-      IssueBiometricCredentialReservedConcurrentExecutions: 34
-      JsonWebKeysReservedConcurrentExecutions: 1
-      LogLevel: INFO
-      ReservedConcurrentExecutions: 15
-
-  PrivateApigw:
-    build:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      IpvCoreVpceId: ""
-      PerformanceTestingVpceId: vpce-0a5d1c69016ab3b56
-    dev:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
-      IpvCoreVpceId: ""
-      PerformanceTestingVpceId: vpce-0a5d1c69016ab3b56
-    integration:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      IpvCoreVpceId: vpce-0f47068fdf9ad0c3d
-      PerformanceTestingVpceId: ""
-    production:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      IpvCoreVpceId: vpce-0e40247a557c2169e
-      PerformanceTestingVpceId: ""
-    staging:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      IpvCoreVpceId: vpce-0cc0de10742b83b8a
-      PerformanceTestingVpceId: ""
-
-  ProxyApigw:
-    build:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
-    dev:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
-      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
-    integration:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      perfTesterRoleArn: ""
-    production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
-      perfTesterRoleArn: ""
-    staging:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-      perfTesterRoleArn: ""
-
-  SessionsApigw:
-    build:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-    dev:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
-    integration:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-    production:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
-    staging:
-      ApiBurstLimit: 400
-      ApiRateLimit: 200
+    AccountId:
+      build: not-used
+      dev: not-used
+      integration: arn:aws:iam::991138514218:root
+      production: arn:aws:iam::075701497069:root
+      staging: arn:aws:iam::335257547869:root
+    ApiBurstLimit:
+      build: 400
+      dev: 20
+      integration: 400
+      production: 0
+      staging: 400
+    ApiRateLimit:
+      build: 200
+      dev: 10
+      integration: 200
+      production: 0
+      staging: 200
+    AsyncCredentialReservedConcurrentExecutions:
+      build: 160
+      dev: 0
+      integration: 15
+      production: 160
+      staging: 15
+    AsyncTokenReservedConcurrentExecutions:
+      build: 160
+      dev: 0
+      integration: 15
+      production: 160
+      staging: 15
+    BaseDns:
+      build: review-b-async.build.account.gov.uk
+      dev: review-b-async.dev.account.gov.uk
+      integration: review-b-async.integration.account.gov.uk
+      production: review-b-async.account.gov.uk
+      staging: review-b-async.staging.account.gov.uk
+    BiometricSubmitterKeySecretCacheDurationInSeconds:
+      build: 900
+      dev: 900
+      integration: 900
+      production: 900
+      staging: 900
+    BiometricSubmitterKeySecretPathBrp:
+      build: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+      dev: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+      integration: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+      production: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+      staging: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+    BiometricSubmitterKeySecretPathDl:
+      build: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+      dev: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+      integration: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+      production: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+      staging: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+    BiometricSubmitterKeySecretPathPassport:
+      build: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      dev: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      integration: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      production: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      staging: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+    BiometricViewerAccessKey:
+      build: /build/BIOMETRIC_VIEWER_ACCESS_KEY
+      dev: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
+      integration: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
+      production: /production/BIOMETRIC_VIEWER_ACCESS_KEY
+      staging: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
+    BiometricViewerAccessKeySecretCacheDurationInSeconds:
+      build: 900
+      dev: 900
+      integration: 900
+      production: 900
+      staging: 900
+    ClientRegistrySecretPath:
+      build: build/clientRegistry
+      dev: dev/clientRegistry
+      integration: integration/clientRegistry
+      production: production/clientRegistry
+      staging: staging/clientRegistry
+    CslsEgress:
+      build: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      integration: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      production: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      staging: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    DynatraceSecretArn:
+      build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dev: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      integration: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      production: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables
+      staging: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    EnableBiometricResidenceCard:
+      build: "true"
+      dev: "true"
+      integration: "true"
+      production: "true"
+      staging: "true"
+    EnableBiometricResidencePermit:
+      build: "true"
+      dev: "true"
+      integration: "true"
+      production: "true"
+      staging: "true"
+    EnableDrivingLicence:
+      build: "true"
+      dev: "true"
+      integration: "true"
+      production: "true"
+      staging: "true"
+    EnableNfcPassport:
+      build: "true"
+      dev: "true"
+      integration: "true"
+      production: "true"
+      staging: "true"
+    EnableUtopiaTestDocument:
+      build: "true"
+      dev: "true"
+      integration: "true"
+      production: "false"
+      staging: "true"
+    IpvCoreVpceId:
+      build: ""
+      dev: ""
+      integration: vpce-0f47068fdf9ad0c3d
+      production: vpce-0e40247a557c2169e
+      staging: vpce-0cc0de10742b83b8a
+    IssueBiometricCredentialReservedConcurrentExecutions:
+      build: 34
+      dev: 0
+      integration: 34
+      production: 34
+      staging: 34
+    JsonWebKeysReservedConcurrentExecutions:
+      build: 1
+      dev: 1
+      integration: 1
+      production: 1
+      staging: 1
+    LogLevel:
+      build: INFO
+      dev: DEBUG
+      integration: INFO
+      production: INFO
+      staging: INFO
+    PendingDeletionInDays:
+      build: 30
+      dev: 7
+      integration: 30
+      production: 30
+      staging: 30
+    PerformanceTestingVpceId:
+      build: vpce-0a5d1c69016ab3b56
+      dev: vpce-0a5d1c69016ab3b56
+      integration: ""
+      production: ""
+      staging: ""
+    ReadIdBaseUrl:
+      build: https://readid-proxy.review-b-async.build.account.gov.uk/v2
+      dev: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
+      integration: https://readid-proxy.review-b-async.integration.account.gov.uk
+      production: https://readid-proxy.review-b-async.account.gov.uk
+      staging: https://readid-proxy.review-b-async.staging.account.gov.uk
+    ReadIdMockBaseUrl:
+      build: https://readid-mock.review-b-async.build.account.gov.uk/v2
+      dev: https://readid-mock.review-b-async.dev.account.gov.uk/v2
+    ReservedConcurrentExecutions:
+      build: 80
+      dev: 0
+      integration: 15
+      production: 80
+      staging: 15
+    SessionDurationInSeconds:
+      build: 86400
+      dev: 86400
+      integration: 86400
+      production: 86400
+      staging: 86400
+    StsBaseUrl:
+      build: https://sts-mock.review-b-async.build.account.gov.uk
+      dev: https://sts-mock.review-b-async.dev.account.gov.uk
+      integration: https://token.integration.account.gov.uk
+      production: https://token.account.gov.uk
+      staging: https://token.staging.account.gov.uk
+    TestResourcesBaseUrl:
+      build: https://test-resources.review-b-async.build.account.gov.uk
+      dev: https://test-resources.review-b-async.dev.account.gov.uk
+    TxmaAccount:
+      build: arn:aws:iam::750703655225:root
+      dev: arn:aws:iam::248098332657:root
+      integration: arn:aws:iam::729485541398:root
+      production: arn:aws:iam::451773080033:root
+      staging: arn:aws:iam::178023842775:root
+    perfTesterRoleArn:
+      build: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+      dev: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+      integration: ""
+      production: ""
+      staging: ""
 
   StaticVariables:
-    urls:
-      SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
-      WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
-
-  TxMA:
-    build:
-      TxmaAccount: arn:aws:iam::750703655225:root
-    dev:
-      TxmaAccount: arn:aws:iam::248098332657:root
-    integration:
-      TxmaAccount: arn:aws:iam::729485541398:root
-    production:
-      TxmaAccount: arn:aws:iam::451773080033:root
-    staging:
-      TxmaAccount: arn:aws:iam::178023842775:root
+    SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
+    WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
 
 Conditions:
   DeployAlarms: !Or
@@ -475,41 +414,41 @@ Globals:
         DT_CLUSTER_ID: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'
           - SecretArn: !FindInMap
-              - EnvironmentConfiguration
+              - EnvironmentVariables
+              - DynatraceSecretArn
               - !Ref Environment
-              - dynatraceSecretArn
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'
           - SecretArn: !FindInMap
-              - EnvironmentConfiguration
+              - EnvironmentVariables
+              - DynatraceSecretArn
               - !Ref Environment
-              - dynatraceSecretArn
         DT_CONNECTION_BASE_URL: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'
           - SecretArn: !FindInMap
-              - EnvironmentConfiguration
+              - EnvironmentVariables
+              - DynatraceSecretArn
               - !Ref Environment
-              - dynatraceSecretArn
         DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'
           - SecretArn: !FindInMap
-              - EnvironmentConfiguration
+              - EnvironmentVariables
+              - DynatraceSecretArn
               - !Ref Environment
-              - dynatraceSecretArn
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
         DT_TENANT: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'
           - SecretArn: !FindInMap
-              - EnvironmentConfiguration
+              - EnvironmentVariables
+              - DynatraceSecretArn
               - !Ref Environment
-              - dynatraceSecretArn
         IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSqs.QueueUrl
         ISSUER: !Sub
           - https://${BaseDns}
           - BaseDns: !FindInMap
-              - DNS
-              - !Ref Environment
+              - EnvironmentVariables
               - BaseDns
+              - !Ref Environment
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
@@ -519,9 +458,9 @@ Globals:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_2_20250307-045250_with_collector_nodejs:1
     LoggingConfig:
       ApplicationLogLevel: !FindInMap
-        - Lambda
-        - !Ref Environment
+        - EnvironmentVariables
         - LogLevel
+        - !Ref Environment
       LogFormat: JSON
       SystemLogLevel: INFO
     MemorySize: 512
@@ -533,9 +472,9 @@ Globals:
       - isDev
       - !Ref AWS::NoValue
       - !FindInMap
-        - Lambda
-        - !Ref Environment
+        - EnvironmentVariables
         - ReservedConcurrentExecutions
+        - !Ref Environment
     Runtime: nodejs22.x
     Timeout: 5
 
@@ -1035,9 +974,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncAbortSessionLogGroup
     Condition: isNotDev
@@ -1338,8 +1277,8 @@ Resources:
             - !Ref DevOverrideStsBaseUrl
             - !FindInMap
               - EnvironmentVariables
+              - StsBaseUrl
               - !Ref Environment
-              - STSBASEURL
       Events:
         AsyncActiveSession:
           Properties:
@@ -1514,9 +1453,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncActiveSessionLogGroup
     Condition: isNotDev
@@ -1531,7 +1470,6 @@ Resources:
         - 'Trigger an alarm if the Async Active Session Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-active-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -1943,27 +1881,27 @@ Resources:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - BiometricSubmitterKeySecretCacheDurationInSeconds
+            - !Ref Environment
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - BiometricSubmitterKeySecretPathBrp
+            - !Ref Environment
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - BiometricSubmitterKeySecretPathDl
+            - !Ref Environment
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - BiometricSubmitterKeySecretPathPassport
+            - !Ref Environment
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
             - !Ref DevOverrideReadIdBaseUrl
             - !FindInMap
               - EnvironmentVariables
-              - !Ref Environment
               - ReadIdBaseUrl
+              - !Ref Environment
       Events:
         AsyncBiometricToken:
           Properties:
@@ -2036,20 +1974,20 @@ Resources:
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathPassport}
                     - submitterKeyPathPassport: !FindInMap
                         - EnvironmentVariables
-                        - !Ref Environment
                         - BiometricSubmitterKeySecretPathPassport
+                        - !Ref Environment
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathBrp}
                     - submitterKeyPathBrp: !FindInMap
                         - EnvironmentVariables
-                        - !Ref Environment
                         - BiometricSubmitterKeySecretPathBrp
+                        - !Ref Environment
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathDl}
                     - submitterKeyPathDl: !FindInMap
                         - EnvironmentVariables
-                        - !Ref Environment
                         - BiometricSubmitterKeySecretPathDl
+                        - !Ref Environment
             Version: "2012-10-17"
           PolicyName: AsyncBiometricTokenParameterStorePolicy
         - PolicyDocument:
@@ -2142,9 +2080,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
     Condition: isNotDev
@@ -2159,7 +2097,6 @@ Resources:
         - 'Trigger an alarm if the Async Biometric Token Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -2572,12 +2509,12 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - ClientRegistrySecretPath
+            - !Ref Environment
           SESSION_DURATION_IN_SECONDS: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - SessionDurationInSeconds
+            - !Ref Environment
       Events:
         PostCredential:
           Properties:
@@ -2591,9 +2528,9 @@ Resources:
         - isDev
         - !Ref AWS::NoValue
         - !FindInMap
-          - Lambda
-          - !Ref Environment
+          - EnvironmentVariables
           - AsyncCredentialReservedConcurrentExecutions
+          - !Ref Environment
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
@@ -2645,8 +2582,8 @@ Resources:
                     - arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${clientRegistrySecretPath}-??????
                     - clientRegistrySecretPath: !FindInMap
                         - EnvironmentVariables
-                        - !Ref Environment
                         - ClientRegistrySecretPath
+                        - !Ref Environment
             Version: "2012-10-17"
           PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
         - PolicyDocument:
@@ -2760,9 +2697,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncCredentialLogGroup
     Condition: isNotDev
@@ -2777,7 +2714,6 @@ Resources:
         - 'Trigger an alarm if the Async Credential Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-credential-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -3349,9 +3285,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
@@ -3366,7 +3302,6 @@ Resources:
         - 'Trigger an alarm if the Async Finish Biometric Session Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -3756,39 +3691,39 @@ Resources:
         Variables:
           BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - BiometricViewerAccessKeySecretCacheDurationInSeconds
+            - !Ref Environment
           BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - BiometricViewerAccessKey
+            - !Ref Environment
           ENABLE_BIOMETRIC_RESIDENCE_CARD: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - EnableBiometricResidenceCard
+            - !Ref Environment
           ENABLE_BIOMETRIC_RESIDENCE_PERMIT: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - EnableBiometricResidencePermit
+            - !Ref Environment
           ENABLE_DRIVING_LICENCE: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - EnableDrivingLicence
+            - !Ref Environment
           ENABLE_NFC_PASSPORT: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - EnableNfcPassport
+            - !Ref Environment
           ENABLE_UTOPIA_TEST_DOCUMENT: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - EnableUtopiaTestDocument
+            - !Ref Environment
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
             - !Ref DevOverrideReadIdBaseUrl
             - !FindInMap
               - EnvironmentVariables
-              - !Ref Environment
               - ReadIdBaseUrl
+              - !Ref Environment
           VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
@@ -3796,9 +3731,9 @@ Resources:
         - isDev
         - !Ref AWS::NoValue
         - !FindInMap
-          - Lambda
-          - !Ref Environment
+          - EnvironmentVariables
           - IssueBiometricCredentialReservedConcurrentExecutions
+          - !Ref Environment
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
@@ -3820,7 +3755,6 @@ Resources:
         - 'Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -3939,8 +3873,8 @@ Resources:
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${biometricViewerAccessKey}
                     - biometricViewerAccessKey: !FindInMap
                         - EnvironmentVariables
-                        - !Ref Environment
                         - BiometricViewerAccessKey
+                        - !Ref Environment
             Version: "2012-10-17"
           PolicyName: AsyncIssueBiometricCredentialParameterStorePolicy
         - PolicyDocument:
@@ -4098,9 +4032,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
     Condition: isNotDev
@@ -4189,9 +4123,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncPrivateApiAccessLogs
     Condition: isNotDev
@@ -4589,8 +4523,8 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
             - EnvironmentVariables
-            - !Ref Environment
             - ClientRegistrySecretPath
+            - !Ref Environment
       Events:
         PostToken:
           Properties:
@@ -4604,9 +4538,9 @@ Resources:
         - isDev
         - !Ref AWS::NoValue
         - !FindInMap
-          - Lambda
-          - !Ref Environment
+          - EnvironmentVariables
           - AsyncTokenReservedConcurrentExecutions
+          - !Ref Environment
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
@@ -4650,8 +4584,8 @@ Resources:
                     - arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${clientRegistrySecretPath}-??????
                     - clientRegistrySecretPath: !FindInMap
                         - EnvironmentVariables
-                        - !Ref Environment
                         - ClientRegistrySecretPath
+                        - !Ref Environment
             Version: "2012-10-17"
           PolicyName: AsyncTokenFunctionSecretsManagerPolicy
         - PolicyDocument:
@@ -4765,9 +4699,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncTokenLogGroup
     Condition: isNotDev
@@ -4782,7 +4716,6 @@ Resources:
         - 'Trigger an alarm if the Async Token Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-token-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -5202,9 +5135,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
     Condition: isNotDev
@@ -5400,7 +5333,6 @@ Resources:
         - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
-            - urls
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-low-threshold-ipv-core-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -5429,7 +5361,6 @@ Resources:
         - 'Trigger a warning alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-message-visible
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -5458,7 +5389,6 @@ Resources:
         - 'Trigger a warning alarm when message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
-            - urls
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-low-threshold-ipv-core-dlq-message-visible
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -5497,9 +5427,9 @@ Resources:
               Effect: Allow
               Principal:
                 AWS: !FindInMap
-                  - IPVCore
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - AccountId
+                  - !Ref Environment
               Resource:
                 - '*'
           Version: "2012-10-17"
@@ -5516,9 +5446,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   IPVCoreKeyAlias:
     Type: AWS::KMS::Alias
@@ -5559,9 +5489,9 @@ Resources:
             Principal:
               AWS:
                 - !FindInMap
-                  - IPVCore
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - AccountId
+                  - !Ref Environment
             Resource:
               - !GetAtt IPVCoreOutboundSqs.Arn
         Version: "2012-10-17"
@@ -5579,7 +5509,6 @@ Resources:
         - 'Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 5 minutes or older. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
-            - urls
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-ipv-core-sqs-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -5761,9 +5690,9 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
       ReservedConcurrentExecutions: !FindInMap
-        - Lambda
-        - !Ref Environment
+        - EnvironmentVariables
         - JsonWebKeysReservedConcurrentExecutions
+        - !Ref Environment
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
@@ -5841,9 +5770,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref JsonWebKeysFunctionLogGroup
     Condition: isNotDev
@@ -5867,9 +5796,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   KMSEncryptionKeyAlias:
     Type: AWS::KMS::Alias
@@ -5897,9 +5826,9 @@ Resources:
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   KMSSigningKeyAlias:
     Type: AWS::KMS::Alias
@@ -6048,16 +5977,16 @@ Resources:
             - !If
               - IntegrateIpvCore
               - !FindInMap
-                - PrivateApigw
-                - !Ref Environment
+                - EnvironmentVariables
                 - IpvCoreVpceId
+                - !Ref Environment
               - !Ref AWS::NoValue
             - !If
               - IntegratePerformanceTesting
               - !FindInMap
-                - PrivateApigw
-                - !Ref Environment
+                - EnvironmentVariables
                 - PerformanceTestingVpceId
+                - !Ref Environment
               - !Ref AWS::NoValue
       DefinitionBody:
         Fn::Transform:
@@ -6071,16 +6000,16 @@ Resources:
           - !If
             - IntegrateIpvCore
             - !FindInMap
-              - PrivateApigw
-              - !Ref Environment
+              - EnvironmentVariables
               - IpvCoreVpceId
+              - !Ref Environment
             - !Ref AWS::NoValue
           - !If
             - IntegratePerformanceTesting
             - !FindInMap
-              - PrivateApigw
-              - !Ref Environment
+              - EnvironmentVariables
               - PerformanceTestingVpceId
+              - !Ref Environment
             - !Ref AWS::NoValue
       MethodSettings:
         - DataTraceEnabled: false
@@ -6089,13 +6018,13 @@ Resources:
           MetricsEnabled: true
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
-            - PrivateApigw
-            - !Ref Environment
+            - EnvironmentVariables
             - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - PrivateApigw
             - !Ref Environment
+          ThrottlingRateLimit: !FindInMap
+            - EnvironmentVariables
             - ApiRateLimit
+            - !Ref Environment
       Name: !Sub ${AWS::StackName}-private-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
@@ -6110,7 +6039,6 @@ Resources:
         - 'Latency on the Private API has reached 2500ms in each of the past five minutes. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
-            - urls
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-private-api-latency
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -6172,9 +6100,9 @@ Resources:
               Effect: Allow
               Principal:
                 AWS: !FindInMap
-                  - ProxyApigw
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - perfTesterRoleArn
+                  - !Ref Environment
               Resource: !Sub execute-api:/*
               Sid: AllowPerfTesterRoleAccess
       DefinitionBody:
@@ -6190,13 +6118,13 @@ Resources:
           MetricsEnabled: true
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
-            - ProxyApigw
-            - !Ref Environment
+            - EnvironmentVariables
             - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - ProxyApigw
             - !Ref Environment
+          ThrottlingRateLimit: !FindInMap
+            - EnvironmentVariables
             - ApiRateLimit
+            - !Ref Environment
       Name: !Sub ${AWS::StackName}-proxy-api
       StageName: !Ref Environment
     Condition: ProxyApiDeployment
@@ -6224,15 +6152,15 @@ Resources:
         - !Sub
           - proxy-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
+              - EnvironmentVariables
               - BaseDns
+              - !Ref Environment
         - !Sub
           - proxy.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
+              - EnvironmentVariables
               - BaseDns
+              - !Ref Environment
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -6258,9 +6186,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
     Condition: DeployProxyCsls
@@ -6366,9 +6294,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref ProxyLambdaLogGroup
     Condition: DeployProxyCsls
@@ -6423,13 +6351,13 @@ Resources:
           MetricsEnabled: true
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
-            - SessionsApigw
-            - !Ref Environment
+            - EnvironmentVariables
             - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - SessionsApigw
             - !Ref Environment
+          ThrottlingRateLimit: !FindInMap
+            - EnvironmentVariables
             - ApiRateLimit
+            - !Ref Environment
       Name: !Sub ${AWS::StackName}-sessions-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
@@ -6457,15 +6385,15 @@ Resources:
         - !Sub
           - sessions-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
+              - EnvironmentVariables
               - BaseDns
+              - !Ref Environment
         - !Sub
           - sessions.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
+              - EnvironmentVariables
               - BaseDns
+              - !Ref Environment
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -6549,9 +6477,9 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !FindInMap
-        - CslsConfiguration
-        - !Ref Environment
+        - EnvironmentVariables
         - CSLSEGRESS
+        - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref SessionsApiAccessLogs
     Condition: isNotDev
@@ -6633,9 +6561,9 @@ Resources:
             Effect: Allow
             Principal:
               AWS: !FindInMap
-                - TxMA
-                - !Ref Environment
+                - EnvironmentVariables
                 - TxmaAccount
+                - !Ref Environment
             Resource:
               - '*'
         Version: "2012-10-17"
@@ -6643,9 +6571,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   TxMAKeyAlias:
     Type: AWS::KMS::Alias
@@ -6685,9 +6613,9 @@ Resources:
             Principal:
               AWS:
                 - !FindInMap
-                  - TxMA
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - TxmaAccount
+                  - !Ref Environment
             Resource:
               - !GetAtt TxMASqs.Arn
         Version: "2012-10-17"
@@ -6780,9 +6708,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   VendorProcessingKeyAlias:
     Type: AWS::KMS::Alias
@@ -6851,9 +6779,9 @@ Resources:
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   VerifiableCredentialSigningKeyAlias:
     Type: AWS::KMS::Alias
@@ -7035,7 +6963,6 @@ Resources:
         - 'Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
-            - urls
             - SupportManual
       AlarmName: !Sub ${AWS::StackName}-zero-vcs-issued
       ComparisonOperator: LessThanOrEqualToThreshold
@@ -7103,8 +7030,8 @@ Outputs:
       - !Ref DevOverrideReadIdMockBaseUrl
       - !FindInMap
         - EnvironmentVariables
-        - !Ref Environment
         - ReadIdMockBaseUrl
+        - !Ref Environment
     Condition: IsDevOrBuild
 
   SessionsApiUrl:
@@ -7118,8 +7045,8 @@ Outputs:
       - !Ref DevOverrideStsBaseUrl
       - !FindInMap
         - EnvironmentVariables
+        - StsBaseUrl
         - !Ref Environment
-        - STSBASEURL
     Condition: IsDevOrBuild
 
   TestResourcesApiUrl:
@@ -7129,8 +7056,8 @@ Outputs:
       - !Ref DevOverrideTestResourcesBaseUrl
       - !FindInMap
         - EnvironmentVariables
-        - !Ref Environment
         - TestResourcesBaseUrl
+        - !Ref Environment
     Condition: IsDevOrBuild
 
   TxmaKmsEncryptionKeyArn:

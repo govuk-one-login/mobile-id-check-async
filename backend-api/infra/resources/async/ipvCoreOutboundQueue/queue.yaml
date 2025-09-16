@@ -31,9 +31,9 @@ Resources:
             Principal:
               AWS:
                 - !FindInMap
-                  - IPVCore
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - AccountId
+                  - !Ref Environment
     Condition: isNotDevOrBuild
 
   IPVCoreOutboundDlq:
@@ -62,9 +62,9 @@ Resources:
             - Effect: Allow
               Principal:
                 AWS: !FindInMap
-                  - IPVCore
-                  - !Ref Environment
+                  - EnvironmentVariables
                   - AccountId
+                  - !Ref Environment
               Action:
                 - kms:Decrypt
               Resource:
@@ -82,9 +82,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
+        - EnvironmentVariables
         - PendingDeletionInDays
+        - !Ref Environment
 
   IPVCoreKeyAlias:
     Type: AWS::KMS::Alias

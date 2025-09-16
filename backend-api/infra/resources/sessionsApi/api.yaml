@@ -18,13 +18,13 @@ Resources:
           DataTraceEnabled: false
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
-            - SessionsApigw
-            - !Ref Environment
+            - EnvironmentVariables
             - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - SessionsApigw
             - !Ref Environment
+          ThrottlingRateLimit: !FindInMap
+            - EnvironmentVariables
             - ApiRateLimit
+            - !Ref Environment
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: 
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CSLSEGRESS, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref SessionsApiAccessLogs
     Condition: isNotDev
@@ -56,15 +56,15 @@ Resources:
         - !Sub
           - sessions-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
+            - EnvironmentVariables
             - BaseDns
+            - !Ref Environment
         - !Sub
           - sessions.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
+            - EnvironmentVariables
             - BaseDns
+            - !Ref Environment
       EndpointConfiguration:
         Types:
           - REGIONAL

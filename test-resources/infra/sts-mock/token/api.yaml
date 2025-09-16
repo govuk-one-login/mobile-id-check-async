@@ -19,8 +19,8 @@ Resources:
           HttpMethod: "*"
           DataTraceEnabled: true
           MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiBurstLimit ]
-          ThrottlingRateLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiRateLimit ]
+          ThrottlingBurstLimit: !FindInMap [EnvironmentVariables, ApiBurstLimit, !Ref Environment]
+          ThrottlingRateLimit: !FindInMap [EnvironmentVariables, ApiRateLimit, !Ref Environment]
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
