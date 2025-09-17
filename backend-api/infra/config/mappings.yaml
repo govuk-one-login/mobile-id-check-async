@@ -120,12 +120,6 @@ Mappings:
       production: 900
 
     # Feature Flags
-    SessionDurationInSeconds:
-      dev: 86400
-      build: 86400
-      staging: 86400
-      integration: 86400
-      production: 86400
     EnableBiometricResidenceCard:
       dev: "true"
       build: "true"
@@ -241,3 +235,9 @@ Mappings:
       staging: 30
       integration: 30
       production: 30
+    SessionDurationInSeconds:
+      dev: 86400
+      build: 86400
+      staging: 86400
+      integration: 86400
+      production: 86400
