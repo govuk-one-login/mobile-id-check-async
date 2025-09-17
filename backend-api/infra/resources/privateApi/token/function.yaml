@@ -48,15 +48,6 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-  
-  AsyncTokenFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncTokenFunction.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
