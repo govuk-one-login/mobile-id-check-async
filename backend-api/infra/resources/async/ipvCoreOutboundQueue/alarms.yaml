@@ -7,7 +7,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 5 minutes or older. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, WarningAlarmsRunbook, value]
       AlarmName: !Sub "${AWS::StackName}-ipv-core-sqs-age-of-oldest-message"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -33,7 +33,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "Trigger a warning alarm when message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, WarningAlarmsRunbook, value]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-ipv-core-dlq-message-visible"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -59,7 +59,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "Trigger a warning alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [StaticVariables, SupportManual]
+        - SupportManualUrl: !FindInMap [StaticVariables, SupportManual, value]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-ipv-core-dlq-message-visible"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -85,7 +85,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, WarningAlarmsRunbook, value]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-ipv-core-dlq-age-of-oldest-message"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"

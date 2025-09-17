@@ -620,7 +620,7 @@ describe("Backend application infrastructure", () => {
           expect(description).toContain("SupportManualUrl");
           expect(substitutions).toEqual({
             SupportManualUrl: {
-              "Fn::FindInMap": ["StaticVariables", "SupportManual"],
+              "Fn::FindInMap": ["StaticVariables", "SupportManual", "value"],
             },
           });
         });

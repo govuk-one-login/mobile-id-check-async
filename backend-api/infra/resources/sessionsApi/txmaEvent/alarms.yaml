@@ -7,7 +7,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-txma-event-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -70,7 +70,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-txma-event-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -133,7 +133,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-txma-event-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -196,7 +196,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-txma-event-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -265,7 +265,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Reserved concurrency usage for Async Txma Event lambda has exceeded 80%. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       MetricName: ConcurrentExecutions
       Namespace: AWS/Lambda
       Dimensions:
@@ -287,7 +287,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-txma-event-lambda-throttle"
       AlarmDescription: !Sub
         - "Trigger an alarm if the Async TxMA Event Lambda throttles. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual, value ]
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:

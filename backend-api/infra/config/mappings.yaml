@@ -1,7 +1,9 @@
 Mappings:
   StaticVariables:
-    WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
-    SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
+    WarningAlarmsRunbook:
+      value: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
+    SupportManual:
+      value: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
 
   EnvironmentVariables:
     # URLs

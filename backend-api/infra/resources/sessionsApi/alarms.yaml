@@ -7,7 +7,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "Latency on the Sessions API has reached 2500ms in each of the past five minutes. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-sessions-api-latency"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
