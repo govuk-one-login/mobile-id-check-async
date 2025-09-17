@@ -42,7 +42,6 @@ import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/a
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/GetSessionIssueBiometricCredential/GetSessionIssueBiometricCredential";
 import {
   BiometricSessionFinishedAttributes,
-  SessionAttributes,
   SessionState,
 } from "../common/session/session";
 import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
@@ -158,6 +157,7 @@ export async function lambdaHandlerConstructor(
       sub: sessionAttributes?.subjectIdentifier,
       sessionId,
       govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
+      transactionId: biometricSessionId,
       getNowInMilliseconds: Date.now,
       componentId: config.ISSUER,
       ipAddress: undefined,
@@ -374,7 +374,7 @@ const logErrorWritingErrorEvent = (): void => {
 
 const handleSendErrorMessageToOutboundQueue = async (
   dependencies: IssueBiometricCredentialDependencies,
-  sessionAttributes: SessionAttributes,
+  sessionAttributes: BiometricSessionFinishedAttributes,
   config: IssueBiometricCredentialConfig,
   error: { error: string; error_description: string },
 ): Promise<Result<void, void>> => {
@@ -416,6 +416,7 @@ const handleGetCredentialFailure = async (
     subjectIdentifier,
     sessionId,
     govukSigninJourneyId,
+    biometricSessionId,
     issuer,
     redirectUri,
   } = sessionAttributes;
@@ -480,6 +481,7 @@ const handleGetCredentialFailure = async (
     sub: subjectIdentifier,
     sessionId,
     govukSigninJourneyId,
+    transactionId: biometricSessionId,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress: undefined,
@@ -538,6 +540,7 @@ const handleUpdateSessionError = async (
     eventName: getErrorEventName(),
     getNowInMilliseconds: Date.now,
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    transactionId: sessionAttributes.biometricSessionId,
     ipAddress: undefined,
     redirect_uri: sessionAttributes.redirectUri,
     sessionId: sessionAttributes.sessionId,

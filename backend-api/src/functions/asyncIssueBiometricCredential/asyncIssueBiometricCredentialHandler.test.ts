@@ -1,11 +1,14 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { Advisory } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { expect } from "@jest/globals";
+import { Context, SQSEvent } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
-import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
-import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
-import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
+import {
+  GetSessionError,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry/types";
+import { buildLambdaContext } from "../testUtils/mockContext";
 import {
   mockAnalyticsData,
   mockAuditData,
@@ -19,10 +22,11 @@ import {
   mockInertEventService,
   mockInertSessionRegistry,
   mockIssuer,
-  mockSqsInboundMessageId,
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
+  mockSqsInboundMessageId,
+  mockSqsResponseMessageId,
   mockSubjectIdentifier,
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
@@ -30,19 +34,15 @@ import {
   ONE_HOUR_AGO_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
-  mockSqsResponseMessageId,
 } from "../testUtils/unitTestData";
-import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
-import {
-  GetSessionError,
-  UpdateSessionError,
-} from "../common/session/SessionRegistry/types";
+import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
 import {
   BiometricSession,
   GetBiometricSessionError,
 } from "./getBiometricSession/getBiometricSession";
-import { Advisory } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -648,6 +648,7 @@ describe("Async Issue Biometric Credential", () => {
                 redirect_uri: undefined,
                 sub: "mockSubjectIdentifier",
                 suspected_fraud_signal: undefined,
+                transactionId: mockBiometricSessionId,
                 txmaAuditEncoded: undefined,
               });
             });
@@ -877,6 +878,7 @@ describe("Async Issue Biometric Credential", () => {
                 sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
                 sub: "mockSubjectIdentifier",
                 suspected_fraud_signal: expectedSuspectedFraudSignal,
+                transactionId: mockBiometricSessionId,
                 txmaAuditEncoded: undefined,
               });
             });
@@ -988,6 +990,7 @@ describe("Async Issue Biometric Credential", () => {
                   sessionId: mockSessionId,
                   sub: mockSubjectIdentifier,
                   suspected_fraud_signal: undefined,
+                  transactionId: mockBiometricSessionId,
                   txmaAuditEncoded: undefined,
                 }),
               );
@@ -1040,6 +1043,7 @@ describe("Async Issue Biometric Credential", () => {
                   sessionId: mockSessionId,
                   sub: mockSubjectIdentifier,
                   suspected_fraud_signal: undefined,
+                  transactionId: mockBiometricSessionId,
                   txmaAuditEncoded: undefined,
                 }),
               );
@@ -1081,6 +1085,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
     });
+
     describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
       beforeEach(async () => {
         dependencies = {
@@ -1208,7 +1213,7 @@ describe("Async Issue Biometric Credential", () => {
               getNowInMilliseconds: Date.now,
               sessionId: mockSessionId,
               govukSigninJourneyId: mockGovukSigninJourneyId,
-              transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
+              transactionId: mockBiometricSessionId,
               ipAddress: undefined,
               redirect_uri: undefined,
               sub: mockSubjectIdentifier,
