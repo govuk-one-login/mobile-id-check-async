@@ -68,7 +68,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: 
-        !FindInMap [EnvironmentVariables, CSLSEGRESS, !Ref Environment]
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncTokenLogGroup
     Condition: isNotDev

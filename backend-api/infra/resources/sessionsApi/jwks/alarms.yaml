@@ -7,7 +7,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -70,7 +70,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /.well-known/jwks.json endpoint. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"

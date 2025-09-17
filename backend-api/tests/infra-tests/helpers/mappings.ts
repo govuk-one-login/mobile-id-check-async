@@ -20,73 +20,15 @@ export class Mappings {
   constructor(template: Template) {
     this.template = template;
   }
-  validatePrivateAPIMapping(args: {
-    environmentFlags: EnvironmentFlags;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "PrivateApigw" });
-  }
-  validateSessionsApiMapping(args: {
-    environmentFlags: EnvironmentFlags;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "SessionsApigw" });
-  }
-  validateProxyAPIMapping(args: {
-    environmentFlags: EnvironmentFlags;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "ProxyApigw" });
-  }
-  validateKMSMapping(args: {
-    environmentFlags: EnvironmentFlags;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "KMS" });
-  }
-  validateEnvironmentVariablesMapping(args: {
-    environmentFlags: EnvironmentFlags;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMapping({
-      ...args,
-      mappingTopLevelKey: "EnvironmentVariables",
-    });
-  }
 
-  private validateMapping(args: {
+  validateMapping(args: {
     environmentFlags: EnvironmentFlags;
-    mappingTopLevelKey: string;
     mappingBottomLevelKey: string;
   }) {
-    const mappings = this.template.findMappings(args.mappingTopLevelKey);
+    const mappings = this.template.findMappings("EnvironmentVariables");
     for (const env of this.environments) {
       expect(
-        mappings[args.mappingTopLevelKey][env][args.mappingBottomLevelKey],
-      ).toStrictEqual(args.environmentFlags[env as keyof EnvironmentFlags]);
-      // Typescript needs you to strongly type the key if it's also used as a type
-    }
-  }
-
-  validatePartialEnvironmentVariablesMapping(args: {
-    environmentFlags: Partial<EnvironmentFlags>;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMappingPartialEnvironmentFlags({
-      ...args,
-      mappingTopLevelKey: "EnvironmentVariables",
-    });
-  }
-
-  private validateMappingPartialEnvironmentFlags(args: {
-    environmentFlags: Partial<EnvironmentFlags>;
-    mappingTopLevelKey: string;
-    mappingBottomLevelKey: string;
-  }) {
-    const mappings = this.template.findMappings(args.mappingTopLevelKey);
-    for (const env of this.environments) {
-      expect(
-        mappings[args.mappingTopLevelKey][env][args.mappingBottomLevelKey],
+        mappings["EnvironmentVariables"][args.mappingBottomLevelKey][env],
       ).toStrictEqual(args.environmentFlags[env as keyof EnvironmentFlags]);
       // Typescript needs you to strongly type the key if it's also used as a type
     }

@@ -59,7 +59,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-issue-biometric-credential-parse-failure"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -88,7 +88,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-parse-failure"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -117,7 +117,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-vendor-likeness-disabled"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -146,7 +146,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-issue-biometric-credential-biometric-session-not-valid"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -175,7 +175,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-biometric-session-not-valid"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -204,7 +204,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Trigger when a Veriff result has succeeded but the driving licence is expired. This indicates that the vendor has disabled their expiry checks. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-driving-licence-expired"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -233,7 +233,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 2 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-issue-biometric-credential-error-writing-audit-event"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -262,7 +262,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-error-writing-audit-event"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -291,7 +291,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 5 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -320,7 +320,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
@@ -463,7 +463,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Reserved concurrency usage for Async Issue Biometric Credential lambda has exceeded 80%. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       MetricName: ConcurrentExecutions
       Namespace: AWS/Lambda
       Dimensions:

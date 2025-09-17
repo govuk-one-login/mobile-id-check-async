@@ -14,7 +14,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when no journeys have been started successfully in the past 25 minutes. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-zero-journeys-started"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: JourneysStarted
@@ -88,7 +88,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when fewer than 10% of journeys have completed (VC issued) in the past 20 minutes. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual ]
       AlarmName: !Sub "${AWS::StackName}-low-journey-completion"
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
@@ -138,7 +138,7 @@ Resources:
       InsufficientDataActions: []
       AlarmDescription: !Sub
         - "Fewer than 90% of passport VCs are being issued after the first call to retrieve a biometric session from the vendor. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-passport-biometric-sessions-not-ready"
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
@@ -194,7 +194,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Fewer than 90% of driving licence VCs are being issued after the first call to retrieve a biometric session from the vendor. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-driving-licence-biometric-sessions-not-ready"
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
@@ -250,7 +250,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Fewer than 75% of BRP VCs are being issued after the first call to retrieve a biometric session from the vendor. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-brp-biometric-sessions-not-ready"
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
@@ -303,7 +303,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-lambda-claimed-account-concurrency-reaching-limit"
       Namespace: AWS/Lambda
       MetricName: ClaimedAccountConcurrency
