@@ -19,11 +19,11 @@ Resources:
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
             - EnvironmentVariables
-            - ApiBurstLimit
+            - ProxyApiBurstLimit
             - !Ref Environment
           ThrottlingRateLimit: !FindInMap
             - EnvironmentVariables
-            - ApiRateLimit
+            - ProxyApiRateLimit
             - !Ref Environment
       AccessLogSetting:
         DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
@@ -45,7 +45,7 @@ Resources:
               Principal:
                 AWS: !FindInMap
                   - EnvironmentVariables
-                  - perfTesterRoleArn
+                  - PerfTesterRoleArn
                   - !Ref Environment
               Action:
                 - "execute-api:Invoke"

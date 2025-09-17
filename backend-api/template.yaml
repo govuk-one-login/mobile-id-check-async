@@ -68,24 +68,6 @@ Parameters:
 
 Mappings:
   EnvironmentVariables:
-    AccountId:
-      build: not-used
-      dev: not-used
-      integration: arn:aws:iam::991138514218:root
-      production: arn:aws:iam::075701497069:root
-      staging: arn:aws:iam::335257547869:root
-    ApiBurstLimit:
-      build: 400
-      dev: 20
-      integration: 400
-      production: 0
-      staging: 400
-    ApiRateLimit:
-      build: 200
-      dev: 10
-      integration: 200
-      production: 0
-      staging: 200
     AsyncCredentialReservedConcurrentExecutions:
       build: 160
       dev: 0
@@ -151,6 +133,12 @@ Mappings:
       integration: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       production: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       staging: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    DefaultReservedConcurrentExecutions:
+      build: 80
+      dev: 0
+      integration: 15
+      production: 80
+      staging: 15
     DynatraceSecretArn:
       build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       dev: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
@@ -187,6 +175,12 @@ Mappings:
       integration: "true"
       production: "false"
       staging: "true"
+    IPVCoreAccountId:
+      build: not-used
+      dev: not-used
+      integration: arn:aws:iam::991138514218:root
+      production: arn:aws:iam::075701497069:root
+      staging: arn:aws:iam::335257547869:root
     IpvCoreVpceId:
       build: ""
       dev: ""
@@ -205,24 +199,54 @@ Mappings:
       integration: 1
       production: 1
       staging: 1
-    LogLevel:
-      build: INFO
-      dev: DEBUG
-      integration: INFO
-      production: INFO
-      staging: INFO
-    PendingDeletionInDays:
+    KmsPendingDeletionInDays:
       build: 30
       dev: 7
       integration: 30
       production: 30
       staging: 30
+    LambdaLogLevel:
+      build: INFO
+      dev: DEBUG
+      integration: INFO
+      production: INFO
+      staging: INFO
+    PerfTesterRoleArn:
+      build: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+      dev: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+      integration: ""
+      production: ""
+      staging: ""
     PerformanceTestingVpceId:
       build: vpce-0a5d1c69016ab3b56
       dev: vpce-0a5d1c69016ab3b56
       integration: ""
       production: ""
       staging: ""
+    PrivateApiBurstLimit:
+      build: 400
+      dev: 20
+      integration: 400
+      production: 400
+      staging: 400
+    PrivateApiRateLimit:
+      build: 200
+      dev: 10
+      integration: 200
+      production: 200
+      staging: 200
+    ProxyApiBurstLimit:
+      build: 400
+      dev: 20
+      integration: 400
+      production: 0
+      staging: 400
+    ProxyApiRateLimit:
+      build: 200
+      dev: 10
+      integration: 200
+      production: 0
+      staging: 200
     ReadIdBaseUrl:
       build: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       dev: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
@@ -232,18 +256,24 @@ Mappings:
     ReadIdMockBaseUrl:
       build: https://readid-mock.review-b-async.build.account.gov.uk/v2
       dev: https://readid-mock.review-b-async.dev.account.gov.uk/v2
-    ReservedConcurrentExecutions:
-      build: 80
-      dev: 0
-      integration: 15
-      production: 80
-      staging: 15
     SessionDurationInSeconds:
       build: 86400
       dev: 86400
       integration: 86400
       production: 86400
       staging: 86400
+    SessionsApiBurstLimit:
+      build: 400
+      dev: 20
+      integration: 400
+      production: 400
+      staging: 400
+    SessionsApiRateLimit:
+      build: 200
+      dev: 10
+      integration: 200
+      production: 200
+      staging: 200
     StsBaseUrl:
       build: https://sts-mock.review-b-async.build.account.gov.uk
       dev: https://sts-mock.review-b-async.dev.account.gov.uk
@@ -253,18 +283,12 @@ Mappings:
     TestResourcesBaseUrl:
       build: https://test-resources.review-b-async.build.account.gov.uk
       dev: https://test-resources.review-b-async.dev.account.gov.uk
-    TxmaAccount:
+    TxmaAccountId:
       build: arn:aws:iam::750703655225:root
       dev: arn:aws:iam::248098332657:root
       integration: arn:aws:iam::729485541398:root
       production: arn:aws:iam::451773080033:root
       staging: arn:aws:iam::178023842775:root
-    perfTesterRoleArn:
-      build: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
-      dev: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
-      integration: ""
-      production: ""
-      staging: ""
 
   StaticVariables:
     SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
@@ -459,7 +483,7 @@ Globals:
     LoggingConfig:
       ApplicationLogLevel: !FindInMap
         - EnvironmentVariables
-        - LogLevel
+        - LambdaLogLevel
         - !Ref Environment
       LogFormat: JSON
       SystemLogLevel: INFO
@@ -473,7 +497,7 @@ Globals:
       - !Ref AWS::NoValue
       - !FindInMap
         - EnvironmentVariables
-        - ReservedConcurrentExecutions
+        - DefaultReservedConcurrentExecutions
         - !Ref Environment
     Runtime: nodejs22.x
     Timeout: 5
@@ -5428,7 +5452,7 @@ Resources:
               Principal:
                 AWS: !FindInMap
                   - EnvironmentVariables
-                  - AccountId
+                  - IPVCoreAccountId
                   - !Ref Environment
               Resource:
                 - '*'
@@ -5447,7 +5471,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   IPVCoreKeyAlias:
@@ -5490,7 +5514,7 @@ Resources:
               AWS:
                 - !FindInMap
                   - EnvironmentVariables
-                  - AccountId
+                  - IPVCoreAccountId
                   - !Ref Environment
             Resource:
               - !GetAtt IPVCoreOutboundSqs.Arn
@@ -5797,7 +5821,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   KMSEncryptionKeyAlias:
@@ -5827,7 +5851,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   KMSSigningKeyAlias:
@@ -6019,11 +6043,11 @@ Resources:
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
             - EnvironmentVariables
-            - ApiBurstLimit
+            - PrivateApiBurstLimit
             - !Ref Environment
           ThrottlingRateLimit: !FindInMap
             - EnvironmentVariables
-            - ApiRateLimit
+            - PrivateApiRateLimit
             - !Ref Environment
       Name: !Sub ${AWS::StackName}-private-api
       OpenApiVersion: 3.0.1
@@ -6101,7 +6125,7 @@ Resources:
               Principal:
                 AWS: !FindInMap
                   - EnvironmentVariables
-                  - perfTesterRoleArn
+                  - PerfTesterRoleArn
                   - !Ref Environment
               Resource: !Sub execute-api:/*
               Sid: AllowPerfTesterRoleAccess
@@ -6119,11 +6143,11 @@ Resources:
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
             - EnvironmentVariables
-            - ApiBurstLimit
+            - ProxyApiBurstLimit
             - !Ref Environment
           ThrottlingRateLimit: !FindInMap
             - EnvironmentVariables
-            - ApiRateLimit
+            - ProxyApiRateLimit
             - !Ref Environment
       Name: !Sub ${AWS::StackName}-proxy-api
       StageName: !Ref Environment
@@ -6352,11 +6376,11 @@ Resources:
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
             - EnvironmentVariables
-            - ApiBurstLimit
+            - SessionsApiBurstLimit
             - !Ref Environment
           ThrottlingRateLimit: !FindInMap
             - EnvironmentVariables
-            - ApiRateLimit
+            - SessionsApiRateLimit
             - !Ref Environment
       Name: !Sub ${AWS::StackName}-sessions-api
       OpenApiVersion: 3.0.1
@@ -6562,7 +6586,7 @@ Resources:
             Principal:
               AWS: !FindInMap
                 - EnvironmentVariables
-                - TxmaAccount
+                - TxmaAccountId
                 - !Ref Environment
             Resource:
               - '*'
@@ -6572,7 +6596,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   TxMAKeyAlias:
@@ -6614,7 +6638,7 @@ Resources:
               AWS:
                 - !FindInMap
                   - EnvironmentVariables
-                  - TxmaAccount
+                  - TxmaAccountId
                   - !Ref Environment
             Resource:
               - !GetAtt TxMASqs.Arn
@@ -6709,7 +6733,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   VendorProcessingKeyAlias:
@@ -6780,7 +6804,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   VerifiableCredentialSigningKeyAlias:

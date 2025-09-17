@@ -19,11 +19,11 @@ Resources:
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
             - EnvironmentVariables
-            - ApiBurstLimit
+            - SessionsApiBurstLimit
             - !Ref Environment
           ThrottlingRateLimit: !FindInMap
             - EnvironmentVariables
-            - ApiRateLimit
+            - SessionsApiRateLimit
             - !Ref Environment
       DefinitionBody:
         Fn::Transform:

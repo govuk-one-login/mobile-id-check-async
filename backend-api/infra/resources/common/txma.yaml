@@ -31,7 +31,7 @@ Resources:
               AWS:
                 - !FindInMap
                   - EnvironmentVariables
-                  - TxmaAccount
+                  - TxmaAccountId
                   - !Ref Environment
     Condition: isNotDevOrBuild
 
@@ -61,7 +61,7 @@ Resources:
             Principal:
               AWS: !FindInMap
                 - EnvironmentVariables
-                - TxmaAccount
+                - TxmaAccountId
                 - !Ref Environment
             Action:
               - kms:Decrypt
@@ -72,7 +72,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   TxMAKeyAlias:

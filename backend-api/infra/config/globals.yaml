@@ -10,7 +10,7 @@ Globals:
       - !Ref AWS::NoValue
       - !FindInMap
         - EnvironmentVariables
-        - ReservedConcurrentExecutions
+        - DefaultReservedConcurrentExecutions
         - !Ref Environment
     CodeSigningConfigArn: !If
       - UseCodeSigning
@@ -22,7 +22,7 @@ Globals:
       - !Ref AWS::NoValue
     LoggingConfig:
       ApplicationLogLevel:
-        !FindInMap [EnvironmentVariables, LogLevel , !Ref Environment]
+        !FindInMap [EnvironmentVariables, LambdaLogLevel , !Ref Environment]
       SystemLogLevel: INFO
       LogFormat: JSON
     Architectures:

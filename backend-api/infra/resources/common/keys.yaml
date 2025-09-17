@@ -21,7 +21,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   KMSSigningKeyAlias:
@@ -50,7 +50,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   KMSEncryptionKeyAlias:
@@ -79,7 +79,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   VerifiableCredentialSigningKeyAlias:

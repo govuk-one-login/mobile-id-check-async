@@ -1326,7 +1326,7 @@ describe("Backend application infrastructure", () => {
           "Fn::FindInMap": [
             "KMS",
             { Ref: "Environment" },
-            "PendingDeletionInDays",
+            "KmsPendingDeletionInDays",
           ],
         });
       });
@@ -1343,7 +1343,7 @@ describe("Backend application infrastructure", () => {
       const mappingHelper = new Mappings(template);
       mappingHelper.validateKMSMapping({
         environmentFlags: expectedKmsDeletionMapping,
-        mappingBottomLevelKey: "PendingDeletionInDays",
+        mappingBottomLevelKey: "KmsPendingDeletionInDays",
       });
     });
   });

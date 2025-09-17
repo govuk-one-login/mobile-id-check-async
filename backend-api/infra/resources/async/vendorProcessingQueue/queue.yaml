@@ -41,7 +41,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   VendorProcessingKeyAlias:

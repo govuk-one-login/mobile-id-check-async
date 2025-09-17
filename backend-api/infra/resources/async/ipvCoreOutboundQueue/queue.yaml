@@ -32,7 +32,7 @@ Resources:
               AWS:
                 - !FindInMap
                   - EnvironmentVariables
-                  - AccountId
+                  - IPVCoreAccountId
                   - !Ref Environment
     Condition: isNotDevOrBuild
 
@@ -63,7 +63,7 @@ Resources:
               Principal:
                 AWS: !FindInMap
                   - EnvironmentVariables
-                  - AccountId
+                  - IPVCoreAccountId
                   - !Ref Environment
               Action:
                 - kms:Decrypt
@@ -83,7 +83,7 @@ Resources:
       MultiRegion: false
       PendingWindowInDays: !FindInMap
         - EnvironmentVariables
-        - PendingDeletionInDays
+        - KmsPendingDeletionInDays
         - !Ref Environment
 
   IPVCoreKeyAlias:
