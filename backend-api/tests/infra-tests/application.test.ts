@@ -1,7 +1,6 @@
 import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
-import { Mappings } from "./helpers/mappings";
 
 const { schema } = require("yaml-cfn");
 
@@ -16,170 +15,14 @@ const template = Template.fromJSON(yamltemplate, {
 });
 
 describe("Backend application infrastructure", () => {
-  describe("EnvironmentVariable mapping values", () => {
-    test("STS base url is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: "https://sts-mock.review-b-async.dev.account.gov.uk",
-        build: "https://sts-mock.review-b-async.build.account.gov.uk",
-        staging: "https://token.staging.account.gov.uk",
-        integration: "https://token.integration.account.gov.uk",
-        production: "https://token.account.gov.uk",
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "StsBaseUrl",
-        },
-      });
-    });
-
-    test("Test resources base url is set", () => {
-      const expectedEnvironmentVariables = {
-        dev: "https://test-resources.review-b-async.dev.account.gov.uk",
-        build: "https://test-resources.review-b-async.build.account.gov.uk",
-      };
-
-      template.hasMapping(
-        "EnvironmentVariables",
-        Match.objectLike({
-          TestResourcesBaseUrl: {
-            dev: expectedEnvironmentVariables.dev,
-            build: expectedEnvironmentVariables.build,
-          },
-        }),
-      );
-    });
-
-    test("ReadIdBaseUrl is the ReadID Proxy", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: "https://readid-proxy.review-b-async.dev.account.gov.uk/v2",
-        build: "https://readid-proxy.review-b-async.build.account.gov.uk/v2",
-        staging: "https://readid-proxy.review-b-async.staging.account.gov.uk",
-        integration:
-          "https://readid-proxy.review-b-async.integration.account.gov.uk",
-        production: "https://readid-proxy.review-b-async.account.gov.uk",
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "ReadIdBaseUrl",
-        },
-      });
-    });
-
-    test("Session duration is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: 86400,
-        build: 86400,
-        staging: 86400,
-        integration: 86400,
-        production: 86400,
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "SessionDurationInSeconds",
-        },
-      });
-    });
-
-    describe("getBiometricCredential envVars", () => {
-      test("EnableBiometricResidenceCard is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: "true",
-          build: "true",
-          staging: "true",
-          integration: "true",
-          production: "true",
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "EnableBiometricResidenceCard",
-          },
-        });
-      });
-
-      test("EnableBiometricResidencePermit is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: "true",
-          build: "true",
-          staging: "true",
-          integration: "true",
-          production: "true",
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "EnableBiometricResidencePermit",
-          },
-        });
-      });
-
-      test("EnableDrivingLicence is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: "true",
-          build: "true",
-          staging: "true",
-          integration: "true",
-          production: "true",
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "EnableDrivingLicence",
-          },
-        });
-      });
-
-      test("EnableNfcPassport is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: "true",
-          build: "true",
-          staging: "true",
-          integration: "true",
-          production: "true",
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "EnableNfcPassport",
-          },
-        });
-      });
-
-      test("EnableUtopiaTestDocument is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: "true",
-          build: "true",
-          staging: "true",
-          integration: "true",
-          production: "false",
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "EnableUtopiaTestDocument",
-          },
-        });
-      });
-    });
+  test("All mappings have expected values for all environments", () => {
+    const expectedMappings = load(
+      readFileSync("tests/infra-tests/expectedMappings.yaml", "utf-8"),
+      {
+        schema: schema,
+      },
+    );
+    expect(yamltemplate.Mappings).toEqual(expectedMappings);
   });
 
   describe("Private APIgw", () => {
@@ -242,70 +85,6 @@ describe("Backend application infrastructure", () => {
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
-      });
-
-      test("IPV Core VPCe mappings are set", () => {
-        const expectedIpvCoreVpceIdMapping = {
-          dev: "",
-          build: "",
-          staging: "vpce-0cc0de10742b83b8a",
-          integration: "vpce-0f47068fdf9ad0c3d",
-          production: "vpce-0e40247a557c2169e",
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedIpvCoreVpceIdMapping,
-            mappingBottomLevelKey: "IpvCoreVpceId",
-          },
-        });
-      });
-
-      test("Performance testing VPCe mappings are set", () => {
-        const expectedPerformanceTestMapping = {
-          dev: "vpce-0a5d1c69016ab3b56",
-          build: "vpce-0a5d1c69016ab3b56",
-          staging: "",
-          integration: "",
-          production: "",
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedPerformanceTestMapping,
-            mappingBottomLevelKey: "PerformanceTestingVpceId",
-          },
-        });
-      });
-
-      test("Rate and burst limit mappings are set", () => {
-        const expectedBurstLimits = {
-          dev: 20,
-          build: 400,
-          staging: 400,
-          integration: 400,
-          production: 400,
-        };
-        const expectedRateLimits = {
-          dev: 10,
-          build: 200,
-          staging: 200,
-          integration: 200,
-          production: 200,
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedBurstLimits,
-            mappingBottomLevelKey: "PrivateApiBurstLimit",
-          },
-        });
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedRateLimits,
-            mappingBottomLevelKey: "PrivateApiRateLimit",
-          },
-        });
       });
 
       test("Rate limit and burst mappings are applied to the APIgw", () => {
@@ -687,36 +466,6 @@ describe("Backend application infrastructure", () => {
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
-      test("Rate and burst limit mappings are set", () => {
-        const expectedBurstLimits = {
-          dev: 20,
-          build: 400,
-          staging: 400,
-          integration: 400,
-          production: 400,
-        };
-        const expectedRateLimits = {
-          dev: 10,
-          build: 200,
-          staging: 200,
-          integration: 200,
-          production: 200,
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedBurstLimits,
-            mappingBottomLevelKey: "SessionsApiBurstLimit",
-          },
-        });
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedRateLimits,
-            mappingBottomLevelKey: "SessionsApiRateLimit",
-          },
-        });
-      });
-
       test("Rate limit and burst mappings are applied to the APIgw", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties(
@@ -800,36 +549,6 @@ describe("Backend application infrastructure", () => {
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
-      test("Rate and burst limit mappings are set", () => {
-        const expectedBurstLimits = {
-          dev: 20,
-          build: 400,
-          staging: 400,
-          integration: 400,
-          production: 0,
-        };
-        const expectedRateLimits = {
-          dev: 10,
-          build: 200,
-          staging: 200,
-          integration: 200,
-          production: 0,
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedBurstLimits,
-            mappingBottomLevelKey: "ProxyApiBurstLimit",
-          },
-        });
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedRateLimits,
-            mappingBottomLevelKey: "ProxyApiRateLimit",
-          },
-        });
-      });
-
       test("Rate limit and burst mappings are applied to the APIgw", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
@@ -902,22 +621,6 @@ describe("Backend application infrastructure", () => {
       });
 
       test("Global reserved concurrency is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: 0,
-          build: 80,
-          staging: 15,
-          integration: 15,
-          production: 80,
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "DefaultReservedConcurrentExecutions",
-          },
-        });
-
         const reservedConcurrentExecutions =
           template.toJSON().Globals.Function.ReservedConcurrentExecutions;
 
@@ -958,22 +661,6 @@ describe("Backend application infrastructure", () => {
       });
 
       test("Global application and system log level is set", () => {
-        const expectedEnvironmentVariablesValues = {
-          dev: "DEBUG",
-          build: "INFO",
-          staging: "INFO",
-          integration: "INFO",
-          production: "INFO",
-        };
-
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateMapping({
-          ...{
-            environmentFlags: expectedEnvironmentVariablesValues,
-            mappingBottomLevelKey: "LambdaLogLevel",
-          },
-        });
-
         const loggingConfig = template.toJSON().Globals.Function.LoggingConfig;
         expect(loggingConfig).toStrictEqual({
           ApplicationLogLevel: {
@@ -1142,23 +829,6 @@ describe("Backend application infrastructure", () => {
     });
 
     test("IssueBiometricCredential lambda reserved concurrency is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: 0,
-        build: 34,
-        staging: 34,
-        integration: 34,
-        production: 34,
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey:
-            "IssueBiometricCredentialReservedConcurrentExecutions",
-        },
-      });
-
       template.hasResourceProperties("AWS::Serverless::Function", {
         Handler: "asyncIssueBiometricCredentialHandler.lambdaHandler",
         ReservedConcurrentExecutions: {
@@ -1182,22 +852,6 @@ describe("Backend application infrastructure", () => {
     });
 
     test("AsyncToken lambda reserved concurrency is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: 0,
-        build: 160,
-        staging: 15,
-        integration: 15,
-        production: 160,
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "AsyncTokenReservedConcurrentExecutions",
-        },
-      });
-
       template.hasResourceProperties("AWS::Serverless::Function", {
         Handler: "asyncTokenHandler.lambdaHandler",
         ReservedConcurrentExecutions: {
@@ -1221,22 +875,6 @@ describe("Backend application infrastructure", () => {
     });
 
     test("AsyncCredential lambda reserved concurrency is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: 0,
-        build: 160,
-        staging: 15,
-        integration: 15,
-        production: 160,
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "AsyncTokenReservedConcurrentExecutions",
-        },
-      });
-
       template.hasResourceProperties("AWS::Serverless::Function", {
         Handler: "asyncCredentialHandler.lambdaHandler",
         ReservedConcurrentExecutions: {
@@ -1260,22 +898,6 @@ describe("Backend application infrastructure", () => {
     });
 
     test("JsonWebKeys lambda reserved concurrency is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: 0,
-        build: 160,
-        staging: 15,
-        integration: 15,
-        production: 160,
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "AsyncTokenReservedConcurrentExecutions",
-        },
-      });
-
       template.hasResourceProperties("AWS::Serverless::Function", {
         Handler: "jwksHandler.lambdaHandler",
         ReservedConcurrentExecutions: {
@@ -1303,23 +925,6 @@ describe("Backend application infrastructure", () => {
             { Ref: "Environment" },
           ],
         });
-      });
-    });
-
-    test("Mappings are defined for retention window", () => {
-      const expectedKmsDeletionMapping = {
-        dev: 7,
-        build: 30,
-        staging: 30,
-        integration: 30,
-        production: 30,
-      };
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validateMapping({
-        ...{
-          environmentFlags: expectedKmsDeletionMapping,
-          mappingBottomLevelKey: "KmsPendingDeletionInDays",
-        },
       });
     });
   });
