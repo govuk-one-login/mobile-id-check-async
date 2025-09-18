@@ -20,9 +20,9 @@ Resources:
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
+        - EnvironmentVariables
+        - KmsPendingDeletionInDays
         - !Ref Environment
-        - PendingDeletionInDays
 
   KMSSigningKeyAlias:
     Type: AWS::KMS::Alias
@@ -49,9 +49,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
+        - EnvironmentVariables
+        - KmsPendingDeletionInDays
         - !Ref Environment
-        - PendingDeletionInDays
 
   KMSEncryptionKeyAlias:
     Type: AWS::KMS::Alias
@@ -78,9 +78,9 @@ Resources:
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
+        - EnvironmentVariables
+        - KmsPendingDeletionInDays
         - !Ref Environment
-        - PendingDeletionInDays
 
   VerifiableCredentialSigningKeyAlias:
     Type: AWS::KMS::Alias

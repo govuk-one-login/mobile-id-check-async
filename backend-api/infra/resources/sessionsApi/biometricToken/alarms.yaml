@@ -7,7 +7,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "10% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-biometric-token-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -70,7 +70,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual, value ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-biometric-token-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
@@ -133,7 +133,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-biometric-token-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -196,7 +196,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual, value ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-biometric-token-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
@@ -380,7 +380,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Reserved concurrency usage for Async Biometric Token lambda has exceeded 80%. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       MetricName: ConcurrentExecutions
       Namespace: AWS/Lambda
       Dimensions:
@@ -402,7 +402,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-biometric-token-lambda-throttle"
       AlarmDescription: !Sub
         - "Trigger an alarm if the Async Biometric Token Lambda throttles. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
+        - SupportManualUrl: !FindInMap [StaticVariables, SupportManual, value]
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:

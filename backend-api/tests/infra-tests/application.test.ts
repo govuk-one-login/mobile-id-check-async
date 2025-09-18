@@ -27,9 +27,11 @@ describe("Backend application infrastructure", () => {
       };
 
       const mappingHelper = new Mappings(template);
-      mappingHelper.validateEnvironmentVariablesMapping({
-        environmentFlags: expectedEnvironmentVariablesValues,
-        mappingBottomLevelKey: "STSBASEURL",
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "StsBaseUrl",
+        },
       });
     });
 
@@ -42,11 +44,9 @@ describe("Backend application infrastructure", () => {
       template.hasMapping(
         "EnvironmentVariables",
         Match.objectLike({
-          dev: {
-            TestResourcesBaseUrl: expectedEnvironmentVariables.dev,
-          },
-          build: {
-            TestResourcesBaseUrl: expectedEnvironmentVariables.build,
+          TestResourcesBaseUrl: {
+            dev: expectedEnvironmentVariables.dev,
+            build: expectedEnvironmentVariables.build,
           },
         }),
       );
@@ -63,9 +63,11 @@ describe("Backend application infrastructure", () => {
       };
 
       const mappingHelper = new Mappings(template);
-      mappingHelper.validateEnvironmentVariablesMapping({
-        environmentFlags: expectedEnvironmentVariablesValues,
-        mappingBottomLevelKey: "ReadIdBaseUrl",
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "ReadIdBaseUrl",
+        },
       });
     });
 
@@ -79,9 +81,11 @@ describe("Backend application infrastructure", () => {
       };
 
       const mappingHelper = new Mappings(template);
-      mappingHelper.validateEnvironmentVariablesMapping({
-        environmentFlags: expectedEnvironmentVariablesValues,
-        mappingBottomLevelKey: "SessionDurationInSeconds",
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "SessionDurationInSeconds",
+        },
       });
     });
 
@@ -96,9 +100,11 @@ describe("Backend application infrastructure", () => {
         };
 
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateEnvironmentVariablesMapping({
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableBiometricResidenceCard",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "EnableBiometricResidenceCard",
+          },
         });
       });
 
@@ -112,9 +118,11 @@ describe("Backend application infrastructure", () => {
         };
 
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateEnvironmentVariablesMapping({
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableBiometricResidencePermit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "EnableBiometricResidencePermit",
+          },
         });
       });
 
@@ -128,9 +136,11 @@ describe("Backend application infrastructure", () => {
         };
 
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateEnvironmentVariablesMapping({
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableDrivingLicence",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "EnableDrivingLicence",
+          },
         });
       });
 
@@ -144,9 +154,11 @@ describe("Backend application infrastructure", () => {
         };
 
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateEnvironmentVariablesMapping({
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableNfcPassport",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "EnableNfcPassport",
+          },
         });
       });
 
@@ -160,9 +172,11 @@ describe("Backend application infrastructure", () => {
         };
 
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateEnvironmentVariablesMapping({
-          environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableUtopiaTestDocument",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "EnableUtopiaTestDocument",
+          },
         });
       });
     });
@@ -181,9 +195,9 @@ describe("Backend application infrastructure", () => {
 
                 {
                   "Fn::FindInMap": [
-                    "PrivateApigw",
-                    { Ref: "Environment" },
+                    "EnvironmentVariables",
                     "IpvCoreVpceId",
+                    { Ref: "Environment" },
                   ],
                 },
 
@@ -195,9 +209,9 @@ describe("Backend application infrastructure", () => {
                 "IntegratePerformanceTesting",
                 {
                   "Fn::FindInMap": [
-                    "PrivateApigw",
-                    { Ref: "Environment" },
+                    "EnvironmentVariables",
                     "PerformanceTestingVpceId",
+                    { Ref: "Environment" },
                   ],
                 },
                 { Ref: "AWS::NoValue" },
@@ -239,9 +253,11 @@ describe("Backend application infrastructure", () => {
           production: "vpce-0e40247a557c2169e",
         };
         const mappingHelper = new Mappings(template);
-        mappingHelper.validatePrivateAPIMapping({
-          environmentFlags: expectedIpvCoreVpceIdMapping,
-          mappingBottomLevelKey: "IpvCoreVpceId",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedIpvCoreVpceIdMapping,
+            mappingBottomLevelKey: "IpvCoreVpceId",
+          },
         });
       });
 
@@ -254,9 +270,11 @@ describe("Backend application infrastructure", () => {
           production: "",
         };
         const mappingHelper = new Mappings(template);
-        mappingHelper.validatePrivateAPIMapping({
-          environmentFlags: expectedPerformanceTestMapping,
-          mappingBottomLevelKey: "PerformanceTestingVpceId",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedPerformanceTestMapping,
+            mappingBottomLevelKey: "PerformanceTestingVpceId",
+          },
         });
       });
 
@@ -276,13 +294,17 @@ describe("Backend application infrastructure", () => {
           production: 200,
         };
         const mappingHelper = new Mappings(template);
-        mappingHelper.validatePrivateAPIMapping({
-          environmentFlags: expectedBurstLimits,
-          mappingBottomLevelKey: "ApiBurstLimit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedBurstLimits,
+            mappingBottomLevelKey: "PrivateApiBurstLimit",
+          },
         });
-        mappingHelper.validatePrivateAPIMapping({
-          environmentFlags: expectedRateLimits,
-          mappingBottomLevelKey: "ApiRateLimit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedRateLimits,
+            mappingBottomLevelKey: "PrivateApiRateLimit",
+          },
         });
       });
 
@@ -294,16 +316,16 @@ describe("Backend application infrastructure", () => {
         });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "PrivateApigw",
+            "EnvironmentVariables",
+            "PrivateApiBurstLimit",
             { Ref: "Environment" },
-            "ApiBurstLimit",
           ],
         });
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "PrivateApigw",
+            "EnvironmentVariables",
+            "PrivateApiRateLimit",
             { Ref: "Environment" },
-            "ApiRateLimit",
           ],
         });
       });
@@ -598,7 +620,7 @@ describe("Backend application infrastructure", () => {
           expect(description).toContain("SupportManualUrl");
           expect(substitutions).toEqual({
             SupportManualUrl: {
-              "Fn::FindInMap": ["StaticVariables", "urls", "SupportManual"],
+              "Fn::FindInMap": ["StaticVariables", "SupportManual", "value"],
             },
           });
         });
@@ -681,13 +703,17 @@ describe("Backend application infrastructure", () => {
           production: 200,
         };
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateSessionsApiMapping({
-          environmentFlags: expectedBurstLimits,
-          mappingBottomLevelKey: "ApiBurstLimit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedBurstLimits,
+            mappingBottomLevelKey: "SessionsApiBurstLimit",
+          },
         });
-        mappingHelper.validateSessionsApiMapping({
-          environmentFlags: expectedRateLimits,
-          mappingBottomLevelKey: "ApiRateLimit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedRateLimits,
+            mappingBottomLevelKey: "SessionsApiRateLimit",
+          },
         });
       });
 
@@ -703,17 +729,17 @@ describe("Backend application infrastructure", () => {
         );
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "SessionsApigw",
+            "EnvironmentVariables",
+            "SessionsApiBurstLimit",
             { Ref: "Environment" },
-            "ApiBurstLimit",
           ],
         });
 
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "SessionsApigw",
+            "EnvironmentVariables",
+            "SessionsApiRateLimit",
             { Ref: "Environment" },
-            "ApiRateLimit",
           ],
         });
       });
@@ -790,13 +816,17 @@ describe("Backend application infrastructure", () => {
           production: 0,
         };
         const mappingHelper = new Mappings(template);
-        mappingHelper.validateProxyAPIMapping({
-          environmentFlags: expectedBurstLimits,
-          mappingBottomLevelKey: "ApiBurstLimit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedBurstLimits,
+            mappingBottomLevelKey: "ProxyApiBurstLimit",
+          },
         });
-        mappingHelper.validateProxyAPIMapping({
-          environmentFlags: expectedRateLimits,
-          mappingBottomLevelKey: "ApiRateLimit",
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedRateLimits,
+            mappingBottomLevelKey: "ProxyApiRateLimit",
+          },
         });
       });
 
@@ -808,16 +838,16 @@ describe("Backend application infrastructure", () => {
         });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "ProxyApigw",
+            "EnvironmentVariables",
+            "ProxyApiBurstLimit",
             { Ref: "Environment" },
-            "ApiBurstLimit",
           ],
         });
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "ProxyApigw",
+            "EnvironmentVariables",
+            "ProxyApiRateLimit",
             { Ref: "Environment" },
-            "ApiRateLimit",
           ],
         });
       });
@@ -872,46 +902,19 @@ describe("Backend application infrastructure", () => {
       });
 
       test("Global reserved concurrency is set", () => {
-        const reservedConcurrentExecutionMapping =
-          template.findMappings("Lambda");
+        const expectedEnvironmentVariablesValues = {
+          dev: 0,
+          build: 80,
+          staging: 15,
+          integration: 15,
+          production: 80,
+        };
 
-        expect(reservedConcurrentExecutionMapping).toStrictEqual({
-          Lambda: {
-            dev: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
-              IssueBiometricCredentialReservedConcurrentExecutions: 0,
-              AsyncTokenReservedConcurrentExecutions: 0,
-              AsyncCredentialReservedConcurrentExecutions: 0,
-              JsonWebKeysReservedConcurrentExecutions: 1,
-            }),
-            build: expect.objectContaining({
-              ReservedConcurrentExecutions: 80,
-              IssueBiometricCredentialReservedConcurrentExecutions: 34,
-              AsyncTokenReservedConcurrentExecutions: 160,
-              AsyncCredentialReservedConcurrentExecutions: 160,
-              JsonWebKeysReservedConcurrentExecutions: 1,
-            }),
-            staging: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
-              IssueBiometricCredentialReservedConcurrentExecutions: 34,
-              AsyncTokenReservedConcurrentExecutions: 15,
-              AsyncCredentialReservedConcurrentExecutions: 15,
-              JsonWebKeysReservedConcurrentExecutions: 1,
-            }),
-            integration: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
-              IssueBiometricCredentialReservedConcurrentExecutions: 34,
-              AsyncTokenReservedConcurrentExecutions: 15,
-              AsyncCredentialReservedConcurrentExecutions: 15,
-              JsonWebKeysReservedConcurrentExecutions: 1,
-            }),
-            production: expect.objectContaining({
-              ReservedConcurrentExecutions: 80,
-              IssueBiometricCredentialReservedConcurrentExecutions: 34,
-              AsyncTokenReservedConcurrentExecutions: 160,
-              AsyncCredentialReservedConcurrentExecutions: 160,
-              JsonWebKeysReservedConcurrentExecutions: 1,
-            }),
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "DefaultReservedConcurrentExecutions",
           },
         });
 
@@ -926,11 +929,11 @@ describe("Backend application infrastructure", () => {
             },
             {
               "Fn::FindInMap": [
-                "Lambda",
+                "EnvironmentVariables",
+                "DefaultReservedConcurrentExecutions",
                 {
                   Ref: "Environment",
                 },
-                "ReservedConcurrentExecutions",
               ],
             },
           ],
@@ -955,37 +958,31 @@ describe("Backend application infrastructure", () => {
       });
 
       test("Global application and system log level is set", () => {
-        const lambdaMapping = template.findMappings("Lambda");
-        const loggingConfig = template.toJSON().Globals.Function.LoggingConfig;
+        const expectedEnvironmentVariablesValues = {
+          dev: "DEBUG",
+          build: "INFO",
+          staging: "INFO",
+          integration: "INFO",
+          production: "INFO",
+        };
 
-        expect(lambdaMapping).toStrictEqual({
-          Lambda: {
-            dev: expect.objectContaining({
-              LogLevel: "DEBUG",
-            }),
-            build: expect.objectContaining({
-              LogLevel: "INFO",
-            }),
-            staging: expect.objectContaining({
-              LogLevel: "INFO",
-            }),
-            integration: expect.objectContaining({
-              LogLevel: "INFO",
-            }),
-            production: expect.objectContaining({
-              LogLevel: "INFO",
-            }),
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateMapping({
+          ...{
+            environmentFlags: expectedEnvironmentVariablesValues,
+            mappingBottomLevelKey: "LambdaLogLevel",
           },
         });
 
+        const loggingConfig = template.toJSON().Globals.Function.LoggingConfig;
         expect(loggingConfig).toStrictEqual({
           ApplicationLogLevel: {
             "Fn::FindInMap": [
-              "Lambda",
+              "EnvironmentVariables",
+              "LambdaLogLevel",
               {
                 Ref: "Environment",
               },
-              "LogLevel",
             ],
           },
           LogFormat: "JSON",
@@ -1024,9 +1021,9 @@ describe("Backend application infrastructure", () => {
           LogGroupName: Match.objectLike({ Ref: log_name }),
           DestinationArn: Match.objectLike({
             "Fn::FindInMap": [
-              "CslsConfiguration",
+              "EnvironmentVariables",
+              "CslsEgress",
               { Ref: "Environment" },
-              "CSLSEGRESS",
             ],
           }),
         });
@@ -1054,8 +1051,8 @@ describe("Backend application infrastructure", () => {
               CLIENT_REGISTRY_SECRET_NAME: {
                 "Fn::FindInMap": [
                   "EnvironmentVariables",
-                  { Ref: "Environment" },
                   "ClientRegistrySecretPath",
+                  { Ref: "Environment" },
                 ],
               },
             },
@@ -1072,8 +1069,8 @@ describe("Backend application infrastructure", () => {
             SESSION_DURATION_IN_SECONDS: {
               "Fn::FindInMap": [
                 "EnvironmentVariables",
-                { Ref: "Environment" },
                 "SessionDurationInSeconds",
+                { Ref: "Environment" },
               ],
             },
           },
@@ -1145,25 +1142,20 @@ describe("Backend application infrastructure", () => {
     });
 
     test("IssueBiometricCredential lambda reserved concurrency is set", () => {
-      const lambdaMappings = template.findMappings("Lambda");
+      const expectedEnvironmentVariablesValues = {
+        dev: 0,
+        build: 34,
+        staging: 34,
+        integration: 34,
+        production: 34,
+      };
 
-      expect(lambdaMappings).toStrictEqual({
-        Lambda: {
-          dev: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
-          }),
-          build: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 34,
-          }),
-          staging: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 34,
-          }),
-          integration: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 34,
-          }),
-          production: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 34,
-          }),
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey:
+            "IssueBiometricCredentialReservedConcurrentExecutions",
         },
       });
 
@@ -1177,11 +1169,11 @@ describe("Backend application infrastructure", () => {
             },
             {
               "Fn::FindInMap": [
-                "Lambda",
+                "EnvironmentVariables",
+                "IssueBiometricCredentialReservedConcurrentExecutions",
                 {
                   Ref: "Environment",
                 },
-                "IssueBiometricCredentialReservedConcurrentExecutions",
               ],
             },
           ],
@@ -1190,25 +1182,19 @@ describe("Backend application infrastructure", () => {
     });
 
     test("AsyncToken lambda reserved concurrency is set", () => {
-      const lambdaMappings = template.findMappings("Lambda");
+      const expectedEnvironmentVariablesValues = {
+        dev: 0,
+        build: 160,
+        staging: 15,
+        integration: 15,
+        production: 160,
+      };
 
-      expect(lambdaMappings).toStrictEqual({
-        Lambda: {
-          dev: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 0,
-          }),
-          build: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 160,
-          }),
-          staging: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 15,
-          }),
-          integration: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 15,
-          }),
-          production: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 160,
-          }),
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "AsyncTokenReservedConcurrentExecutions",
         },
       });
 
@@ -1222,11 +1208,11 @@ describe("Backend application infrastructure", () => {
             },
             {
               "Fn::FindInMap": [
-                "Lambda",
+                "EnvironmentVariables",
+                "AsyncTokenReservedConcurrentExecutions",
                 {
                   Ref: "Environment",
                 },
-                "AsyncTokenReservedConcurrentExecutions",
               ],
             },
           ],
@@ -1235,25 +1221,19 @@ describe("Backend application infrastructure", () => {
     });
 
     test("AsyncCredential lambda reserved concurrency is set", () => {
-      const lambdaMappings = template.findMappings("Lambda");
+      const expectedEnvironmentVariablesValues = {
+        dev: 0,
+        build: 160,
+        staging: 15,
+        integration: 15,
+        production: 160,
+      };
 
-      expect(lambdaMappings).toStrictEqual({
-        Lambda: {
-          dev: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 0,
-          }),
-          build: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 160,
-          }),
-          staging: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 15,
-          }),
-          integration: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 15,
-          }),
-          production: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 160,
-          }),
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "AsyncTokenReservedConcurrentExecutions",
         },
       });
 
@@ -1267,11 +1247,11 @@ describe("Backend application infrastructure", () => {
             },
             {
               "Fn::FindInMap": [
-                "Lambda",
+                "EnvironmentVariables",
+                "AsyncCredentialReservedConcurrentExecutions",
                 {
                   Ref: "Environment",
                 },
-                "AsyncCredentialReservedConcurrentExecutions",
               ],
             },
           ],
@@ -1280,25 +1260,19 @@ describe("Backend application infrastructure", () => {
     });
 
     test("JsonWebKeys lambda reserved concurrency is set", () => {
-      const lambdaMappings = template.findMappings("Lambda");
+      const expectedEnvironmentVariablesValues = {
+        dev: 0,
+        build: 160,
+        staging: 15,
+        integration: 15,
+        production: 160,
+      };
 
-      expect(lambdaMappings).toStrictEqual({
-        Lambda: {
-          dev: expect.objectContaining({
-            JsonWebKeysReservedConcurrentExecutions: 1,
-          }),
-          build: expect.objectContaining({
-            JsonWebKeysReservedConcurrentExecutions: 1,
-          }),
-          staging: expect.objectContaining({
-            JsonWebKeysReservedConcurrentExecutions: 1,
-          }),
-          integration: expect.objectContaining({
-            JsonWebKeysReservedConcurrentExecutions: 1,
-          }),
-          production: expect.objectContaining({
-            JsonWebKeysReservedConcurrentExecutions: 1,
-          }),
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "AsyncTokenReservedConcurrentExecutions",
         },
       });
 
@@ -1306,11 +1280,11 @@ describe("Backend application infrastructure", () => {
         Handler: "jwksHandler.lambdaHandler",
         ReservedConcurrentExecutions: {
           "Fn::FindInMap": [
-            "Lambda",
+            "EnvironmentVariables",
+            "JsonWebKeysReservedConcurrentExecutions",
             {
               Ref: "Environment",
             },
-            "JsonWebKeysReservedConcurrentExecutions",
           ],
         },
       });
@@ -1324,9 +1298,9 @@ describe("Backend application infrastructure", () => {
       kmsKeyList.forEach((kmsKey) => {
         expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
           "Fn::FindInMap": [
-            "KMS",
+            "EnvironmentVariables",
+            "KmsPendingDeletionInDays",
             { Ref: "Environment" },
-            "PendingDeletionInDays",
           ],
         });
       });
@@ -1341,9 +1315,11 @@ describe("Backend application infrastructure", () => {
         production: 30,
       };
       const mappingHelper = new Mappings(template);
-      mappingHelper.validateKMSMapping({
-        environmentFlags: expectedKmsDeletionMapping,
-        mappingBottomLevelKey: "PendingDeletionInDays",
+      mappingHelper.validateMapping({
+        ...{
+          environmentFlags: expectedKmsDeletionMapping,
+          mappingBottomLevelKey: "KmsPendingDeletionInDays",
+        },
       });
     });
   });

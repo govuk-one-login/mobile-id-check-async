@@ -12,16 +12,16 @@ Resources:
           - !If
             - IntegrateIpvCore
             - !FindInMap
-              - PrivateApigw
-              - !Ref Environment
+              - EnvironmentVariables
               - IpvCoreVpceId
+              - !Ref Environment
             - Ref: "AWS::NoValue"
           - !If
             - IntegratePerformanceTesting
             - !FindInMap
-              - PrivateApigw
-              - !Ref Environment
+              - EnvironmentVariables
               - PerformanceTestingVpceId
+              - !Ref Environment
             - Ref: "AWS::NoValue"
       Auth:
         ResourcePolicy:
@@ -30,16 +30,16 @@ Resources:
             - !If
               - IntegrateIpvCore
               - !FindInMap
-                - PrivateApigw
-                - !Ref Environment
+                - EnvironmentVariables
                 - IpvCoreVpceId
+                - !Ref Environment
               - Ref: "AWS::NoValue"
             - !If
               - IntegratePerformanceTesting
               - !FindInMap
-                - PrivateApigw
-                - !Ref Environment
+                - EnvironmentVariables
                 - PerformanceTestingVpceId
+                - !Ref Environment
               - Ref: "AWS::NoValue"
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
@@ -53,13 +53,13 @@ Resources:
           DataTraceEnabled: false
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
-            - PrivateApigw
+            - EnvironmentVariables
+            - PrivateApiBurstLimit
             - !Ref Environment
-            - ApiBurstLimit
           ThrottlingRateLimit: !FindInMap
-            - PrivateApigw
+            - EnvironmentVariables
+            - PrivateApiRateLimit
             - !Ref Environment
-            - ApiRateLimit
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -76,7 +76,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: 
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncPrivateApiAccessLogs
     Condition: isNotDev

@@ -31,14 +31,14 @@ Resources:
         Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
-          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
-          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
-          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
-          BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretCacheDurationInSeconds ]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretPathPassport, !Ref Environment]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretPathBrp, !Ref Environment]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretPathDl, !Ref Environment]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretCacheDurationInSeconds, !Ref Environment]
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
             - !Ref DevOverrideReadIdBaseUrl
-            - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+            - !FindInMap [EnvironmentVariables, ReadIdBaseUrl, !Ref Environment]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:
@@ -67,7 +67,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: 
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
     Condition: isNotDev
@@ -114,13 +114,13 @@ Resources:
                 Resource:
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathPassport}
-                    - submitterKeyPathPassport: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
+                    - submitterKeyPathPassport: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretPathPassport, !Ref Environment]
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathBrp}
-                    - submitterKeyPathBrp: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp ]
+                    - submitterKeyPathBrp: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretPathBrp, !Ref Environment]
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathDl}
-                    - submitterKeyPathDl: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl ]
+                    - submitterKeyPathDl: !FindInMap [EnvironmentVariables, BiometricSubmitterKeySecretPathDl, !Ref Environment]
         - PolicyName: AsyncBiometricTokenFunctionDynamodbPolicy
           PolicyDocument:
             Statement:

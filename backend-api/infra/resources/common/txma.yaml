@@ -30,9 +30,9 @@ Resources:
             Principal:
               AWS:
                 - !FindInMap
-                  - TxMA
+                  - EnvironmentVariables
+                  - TxmaAccountId
                   - !Ref Environment
-                  - TxmaAccount
     Condition: isNotDevOrBuild
 
   TxMASqsDlq:
@@ -60,9 +60,9 @@ Resources:
           - Effect: Allow
             Principal:
               AWS: !FindInMap
-                - TxMA
+                - EnvironmentVariables
+                - TxmaAccountId
                 - !Ref Environment
-                - TxmaAccount
             Action:
               - kms:Decrypt
             Resource:
@@ -71,9 +71,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-        - KMS
+        - EnvironmentVariables
+        - KmsPendingDeletionInDays
         - !Ref Environment
-        - PendingDeletionInDays
 
   TxMAKeyAlias:
     Type: AWS::KMS::Alias

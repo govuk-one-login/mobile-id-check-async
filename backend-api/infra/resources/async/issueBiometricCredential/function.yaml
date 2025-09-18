@@ -24,18 +24,18 @@ Resources:
         Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
-          ENABLE_BIOMETRIC_RESIDENCE_CARD: !FindInMap [EnvironmentVariables, !Ref Environment, EnableBiometricResidenceCard]
-          ENABLE_BIOMETRIC_RESIDENCE_PERMIT: !FindInMap [EnvironmentVariables, !Ref Environment, EnableBiometricResidencePermit]
-          ENABLE_DRIVING_LICENCE: !FindInMap [EnvironmentVariables, !Ref Environment, EnableDrivingLicence]
-          ENABLE_NFC_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, EnableNfcPassport]
-          ENABLE_UTOPIA_TEST_DOCUMENT: !FindInMap [EnvironmentVariables, !Ref Environment, EnableUtopiaTestDocument]
-          BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricViewerAccessKey]
-          BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricViewerAccessKeySecretCacheDurationInSeconds]
+          ENABLE_BIOMETRIC_RESIDENCE_CARD: !FindInMap [EnvironmentVariables, EnableBiometricResidenceCard, !Ref Environment]
+          ENABLE_BIOMETRIC_RESIDENCE_PERMIT: !FindInMap [EnvironmentVariables, EnableBiometricResidencePermit, !Ref Environment]
+          ENABLE_DRIVING_LICENCE: !FindInMap [EnvironmentVariables, EnableDrivingLicence, !Ref Environment]
+          ENABLE_NFC_PASSPORT: !FindInMap [EnvironmentVariables, EnableNfcPassport, !Ref Environment]
+          ENABLE_UTOPIA_TEST_DOCUMENT: !FindInMap [EnvironmentVariables, EnableUtopiaTestDocument, !Ref Environment]
+          BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap [EnvironmentVariables, BiometricViewerAccessKey, !Ref Environment]
+          BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [EnvironmentVariables, BiometricViewerAccessKeySecretCacheDurationInSeconds, !Ref Environment]
           VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
             - !Ref DevOverrideReadIdBaseUrl
-            - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+            - !FindInMap [EnvironmentVariables, ReadIdBaseUrl, !Ref Environment]
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       VpcConfig:
         SubnetIds:
@@ -48,9 +48,9 @@ Resources:
       - isDev
       - !Ref AWS::NoValue
       - !FindInMap
-        - Lambda
-        - !Ref Environment
+        - EnvironmentVariables
         - IssueBiometricCredentialReservedConcurrentExecutions
+        - !Ref Environment
 
   AsyncIssueBiometricCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -62,7 +62,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn:
-        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
     Condition: isNotDev
@@ -163,7 +163,7 @@ Resources:
                 Resource:
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${biometricViewerAccessKey}
-                    - biometricViewerAccessKey: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricViewerAccessKey]
+                    - biometricViewerAccessKey: !FindInMap [EnvironmentVariables, BiometricViewerAccessKey, !Ref Environment]
         - PolicyName: DynamoDBPolicy
           PolicyDocument:
             Statement:

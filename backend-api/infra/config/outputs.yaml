@@ -18,7 +18,7 @@ Outputs:
     Value: !If
       - UseDevOverrideStsBaseUrl
       - !Ref DevOverrideStsBaseUrl
-      - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+      - !FindInMap [EnvironmentVariables, StsBaseUrl, !Ref Environment]
 
   TestResourcesApiUrl:
     Condition: IsDevOrBuild
@@ -26,7 +26,7 @@ Outputs:
     Value: !If
       - UseDevOverrideTestResourcesBaseUrl
       - !Ref DevOverrideTestResourcesBaseUrl
-      - !FindInMap [EnvironmentVariables, !Ref Environment, TestResourcesBaseUrl]
+      - !FindInMap [EnvironmentVariables, TestResourcesBaseUrl, !Ref Environment]
 
   ReadIdMockApiUrl:
     Condition: IsDevOrBuild
@@ -34,7 +34,7 @@ Outputs:
     Value: !If
       - UseDevOverrideReadIdMockBaseUrl
       - !Ref DevOverrideReadIdMockBaseUrl
-      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdMockBaseUrl]
+      - !FindInMap [EnvironmentVariables, ReadIdMockBaseUrl, !Ref Environment]
 
   TxmaSqsArn:
     Condition: IsDevOrBuild

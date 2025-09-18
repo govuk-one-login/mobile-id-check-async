@@ -9,9 +9,9 @@ Globals:
       - isDev
       - !Ref AWS::NoValue
       - !FindInMap
-        - Lambda
+        - EnvironmentVariables
+        - DefaultReservedConcurrentExecutions
         - !Ref Environment
-        - ReservedConcurrentExecutions
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -22,7 +22,7 @@ Globals:
       - !Ref AWS::NoValue
     LoggingConfig:
       ApplicationLogLevel:
-        !FindInMap [ Lambda, !Ref Environment, LogLevel ]
+        !FindInMap [EnvironmentVariables, LambdaLogLevel , !Ref Environment]
       SystemLogLevel: INFO
       LogFormat: JSON
     Architectures:
@@ -38,28 +38,28 @@ Globals:
         ISSUER: !Sub
           - https://${BaseDns}
           - BaseDns: !FindInMap
-              - DNS
-              - !Ref Environment
+              - EnvironmentVariables
               - BaseDns
+              - !Ref Environment
         IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSqs.QueueUrl
         SESSION_TABLE_NAME: !Ref SessionsTable
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'
-          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+          - SecretArn: !FindInMap [EnvironmentVariables, DynatraceSecretArn, !Ref Environment]
         DT_CONNECTION_BASE_URL: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'
-          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+          - SecretArn: !FindInMap [EnvironmentVariables, DynatraceSecretArn, !Ref Environment]
         DT_CLUSTER_ID: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'
-          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+          - SecretArn: !FindInMap [EnvironmentVariables, DynatraceSecretArn, !Ref Environment]
         DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'
-          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+          - SecretArn: !FindInMap [EnvironmentVariables, DynatraceSecretArn, !Ref Environment]
         DT_TENANT: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'
-          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+          - SecretArn: !FindInMap [EnvironmentVariables, DynatraceSecretArn, !Ref Environment]
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_2_20250307-045250_with_collector_nodejs:1
