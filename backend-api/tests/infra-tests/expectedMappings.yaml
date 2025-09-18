@@ -1,0 +1,242 @@
+StaticVariables:
+  WarningAlarmsRunbook:
+    value: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
+  SupportManual:
+    value: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
+
+EnvironmentVariables:
+  # URLs
+  BaseDns:
+    dev: review-b-async.dev.account.gov.uk
+    build: review-b-async.build.account.gov.uk
+    staging: review-b-async.staging.account.gov.uk
+    integration: review-b-async.integration.account.gov.uk
+    production: review-b-async.account.gov.uk
+  StsBaseUrl:
+    dev: https://sts-mock.review-b-async.dev.account.gov.uk
+    build: https://sts-mock.review-b-async.build.account.gov.uk
+    staging: https://token.staging.account.gov.uk
+    integration: https://token.integration.account.gov.uk
+    production: https://token.account.gov.uk
+  ReadIdBaseUrl:
+    dev: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
+    build: https://readid-proxy.review-b-async.build.account.gov.uk/v2
+    staging: https://readid-proxy.review-b-async.staging.account.gov.uk
+    integration: https://readid-proxy.review-b-async.integration.account.gov.uk
+    production: https://readid-proxy.review-b-async.account.gov.uk
+  ReadIdMockBaseUrl:
+    dev: https://readid-mock.review-b-async.dev.account.gov.uk/v2
+    build: https://readid-mock.review-b-async.build.account.gov.uk/v2
+  TestResourcesBaseUrl:
+    dev: https://test-resources.review-b-async.dev.account.gov.uk
+    build: https://test-resources.review-b-async.build.account.gov.uk
+
+  # AWS Account Integrations
+  TxmaAccountId:
+    dev: arn:aws:iam::248098332657:root
+    build: arn:aws:iam::750703655225:root
+    staging: arn:aws:iam::178023842775:root
+    integration: arn:aws:iam::729485541398:root
+    production: arn:aws:iam::451773080033:root
+  IPVCoreAccountId:
+    dev: not-used
+    build: not-used
+    staging: arn:aws:iam::335257547869:root
+    integration: arn:aws:iam::991138514218:root
+    production: arn:aws:iam::075701497069:root
+  IpvCoreVpceId:
+    dev: ""
+    build: ""
+    staging: vpce-0cc0de10742b83b8a
+    integration: vpce-0f47068fdf9ad0c3d
+    production: vpce-0e40247a557c2169e
+  PerformanceTestingVpceId:
+    dev: vpce-0a5d1c69016ab3b56
+    build: vpce-0a5d1c69016ab3b56
+    staging: ""
+    integration: ""
+    production: ""
+  PerfTesterRoleArn:
+    dev: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+    build: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+    staging: ""
+    integration: ""
+    production: ""
+  CslsEgress:
+    build: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    staging: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    integration: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    production: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+
+  # Secrets
+  DynatraceSecretArn:
+    dev: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    staging: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    integration: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    production: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables
+  ClientRegistrySecretPath:
+    dev: dev/clientRegistry
+    build: build/clientRegistry
+    staging: staging/clientRegistry
+    integration: integration/clientRegistry
+    production: production/clientRegistry
+  BiometricSubmitterKeySecretPathPassport:
+    dev: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+    build: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+    staging: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+    integration: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+    production: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+  BiometricSubmitterKeySecretPathBrp:
+    dev: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+    build: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+    staging: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+    integration: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+    production: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+  BiometricSubmitterKeySecretPathDl:
+    dev: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+    build: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+    staging: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+    integration: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+    production: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
+  BiometricSubmitterKeySecretCacheDurationInSeconds:
+    dev: 900
+    build: 900
+    staging: 900
+    integration: 900
+    production: 900
+  BiometricViewerAccessKey:
+    dev: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
+    build: /build/BIOMETRIC_VIEWER_ACCESS_KEY
+    staging: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
+    integration: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
+    production: /production/BIOMETRIC_VIEWER_ACCESS_KEY
+  BiometricViewerAccessKeySecretCacheDurationInSeconds:
+    dev: 900
+    build: 900
+    staging: 900
+    integration: 900
+    production: 900
+
+  # Feature Flags
+  EnableBiometricResidenceCard:
+    dev: "true"
+    build: "true"
+    staging: "true"
+    integration: "true"
+    production: "true"
+  EnableBiometricResidencePermit:
+    dev: "true"
+    build: "true"
+    staging: "true"
+    integration: "true"
+    production: "true"
+  EnableDrivingLicence:
+    dev: "true"
+    build: "true"
+    staging: "true"
+    integration: "true"
+    production: "true"
+  EnableNfcPassport:
+    dev: "true"
+    build: "true"
+    staging: "true"
+    integration: "true"
+    production: "true"
+  EnableUtopiaTestDocument:
+    dev: "true"
+    build: "true"
+    staging: "true"
+    integration: "true"
+    production: "false"
+
+  # API Configuration
+  PrivateApiBurstLimit:
+    dev: 20
+    build: 400
+    staging: 400
+    integration: 400
+    production: 400
+  PrivateApiRateLimit:
+    dev: 10
+    build: 200
+    staging: 200
+    integration: 200
+    production: 200
+  ProxyApiBurstLimit:
+    dev: 20
+    build: 400
+    staging: 400
+    integration: 400
+    production: 0
+  ProxyApiRateLimit:
+    dev: 10
+    build: 200
+    staging: 200
+    integration: 200
+    production: 0
+  SessionsApiBurstLimit:
+    dev: 20
+    build: 400
+    staging: 400
+    integration: 400
+    production: 400
+  SessionsApiRateLimit:
+    dev: 10
+    build: 200
+    staging: 200
+    integration: 200
+    production: 200
+
+  # Lambda Reserved Concurrency
+  # If any reserved concurrency value is updated, make sure to update the corresponding concurrency alarms
+  DefaultReservedConcurrentExecutions:
+    dev: 0
+    build: 80
+    staging: 15
+    integration: 15
+    production: 80
+  IssueBiometricCredentialReservedConcurrentExecutions:
+    dev: 0
+    build: 34
+    staging: 34
+    integration: 34
+    production: 34
+  AsyncTokenReservedConcurrentExecutions:
+    dev: 0
+    build: 160
+    staging: 15
+    integration: 15
+    production: 160
+  AsyncCredentialReservedConcurrentExecutions:
+    dev: 0
+    build: 160
+    staging: 15
+    integration: 15
+    production: 160
+  JsonWebKeysReservedConcurrentExecutions:
+    dev: 1
+    build: 1
+    staging: 1
+    integration: 1
+    production: 1
+
+  # General Configuration
+  LambdaLogLevel:
+    dev: DEBUG
+    build: INFO
+    staging: INFO
+    integration: INFO
+    production: INFO
+  KmsPendingDeletionInDays:
+    dev: 7
+    build: 30
+    staging: 30
+    integration: 30
+    production: 30
+  SessionDurationInSeconds:
+    dev: 86400
+    build: 86400
+    staging: 86400
+    integration: 86400
+    production: 86400
