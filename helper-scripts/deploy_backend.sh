@@ -210,6 +210,8 @@ fi
 if [[ $deploy_backend_api_stack == true ]]; then
   parameter_overrides="${DEV_OVERRIDE_STS_BASE_URL}=${STS_MOCK_URL}"
   parameter_overrides+=" ${DEV_OVERRIDE_TEST_RESOURCES_BASE_URL}=${TEST_RESOURCES_URL}"
+  parameter_overrides+=" SlackWorkspaceId=mockWorkspaceId"
+  parameter_overrides+=" SlackChannelId=mockChannelId"
 
   if [[ $enable_alarms == true ]]; then
       parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"

@@ -61,3 +61,17 @@ Parameters:
     Description: Do not update or override. This allows the definition of a resource that is never deployed.
     Type: String
     Default: unused
+
+  SlackWorkspaceId:
+    Description: |
+      The ID of the Slack workspace where notification messages are posted.
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be an AWS Chatbot Slack workspace ID
+
+  SlackChannelId:
+    Description: |
+      The ID of the Slack channel where Warning notifications are posted
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be a Slack Channel ID

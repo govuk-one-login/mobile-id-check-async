@@ -66,6 +66,20 @@ Parameters:
     Type: String
     Default: unused
 
+  SlackChannelId:
+    Description: |
+      The ID of the Slack channel where Warning notifications are posted
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be a Slack Channel ID
+
+  SlackWorkspaceId:
+    Description: |
+      The ID of the Slack workspace where notification messages are posted.
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be an AWS Chatbot Slack workspace ID
+
 Mappings:
   EnvironmentVariables:
     AsyncCredentialReservedConcurrentExecutions:
@@ -505,6 +519,49 @@ Globals:
     Timeout: 5
 
 Resources:
+  AlarmReportingSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${AWS::StackName}-alarm-reporting
+      FifoTopic: false
+      KmsMasterKeyId: !Ref AlarmReportingSNSTopicKey
+      TopicName: !Sub ${AWS::StackName}-alarm-reporting
+
+  AlarmReportingSNSTopicKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Resource: '*'
+            Sid: Allow Cloudwatch to enqueue encrypted messages
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource: '*'
+            Sid: Allow the account to manage the key
+        Version: "2012-10-17"
+
+  AlarmReportingSNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sns:Publish
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Resource: !Ref AlarmReportingSNSTopic
+      Topics:
+        - !Ref AlarmReportingSNSTopic
+
   AsyncAbortSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -4152,6 +4209,114 @@ Resources:
       LogGroupName: !Ref AsyncPrivateApiAccessLogs
     Condition: isNotDev
 
+  AsyncReportOnAlarmsFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncReportOnAlarmsLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncReportOnAlarms/asyncReportOnAlarmsHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Events:
+        Schedule:
+          Properties:
+            Description: Every minute
+            Name: !Sub ${AWS::StackName}-trigger-report-on-alarms
+            PermissionsBoundary: !If
+              - UsePermissionsBoundary
+              - !Ref PermissionsBoundary
+              - !Ref AWS::NoValue
+            RetryPolicy:
+              MaximumEventAgeInSeconds: 3600
+              MaximumRetryAttempts: 10
+            ScheduleExpression: rate(1 minute)
+            ScheduleExpressionTimezone: Europe/London
+            State: DISABLED
+          Type: ScheduleV2
+      FunctionName: !Sub ${AWS::StackName}-report-on-alarms
+      Handler: asyncReportOnAlarmsHandler.lambdaHandler
+      Role: !GetAtt AsyncReportOnAlarmsLambdaRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  AsyncReportOnAlarmsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncReportOnAlarmsFunctionLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - cloudwatch:DescribeAlarmHistory
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: AsyncReportOnAlarmsFunctionCloudwatchPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sns:Publish
+                Effect: Allow
+                Resource: !Ref AlarmReportingSNSTopic
+            Version: "2012-10-17"
+          PolicyName: AsyncReportOnAlarmsFunctionSnsPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:GenerateDataKey
+                  - kms:Decrypt
+                Effect: Allow
+                Resource: !GetAtt AlarmReportingSNSTopicKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncReportOnAlarmsFunctionKmsPolicy
+      RoleName: !Sub ${AWS::StackName}-report-on-alarms-lambda
+
+  AsyncReportOnAlarmsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-report-on-alarms
+      RetentionInDays: 30
+
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -5244,6 +5409,29 @@ Resources:
       Threshold: 75
       TreatMissingData: notBreaching
     Condition: DeployAlarms
+
+  ChatbotChannelConfiguration:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: !Sub ${AWS::StackName}-alarm-reporting
+      IamRoleArn: !GetAtt ChatbotRole.Arn
+      LoggingLevel: INFO
+      SlackChannelId: !Ref SlackChannelId
+      SlackWorkspaceId: !Ref SlackWorkspaceId
+      SnsTopicArns:
+        - !Ref AlarmReportingSNSTopic
+
+  ChatbotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+        Version: "2012-10-17"
 
   CodeDeployServiceRole:
     Type: AWS::IAM::Role

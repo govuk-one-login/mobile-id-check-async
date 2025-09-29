@@ -55,10 +55,12 @@
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.26.1",
     "@aws-lambda-powertools/parameters": "^2.26.1",
+    "@aws-sdk/client-cloudwatch": "3.894.0",
     "@aws-sdk/client-dynamodb": "^3.888.0",
     "@aws-sdk/client-kms": "3.888.0",
     "@aws-sdk/client-s3": "^3.888.0",
     "@aws-sdk/client-secrets-manager": "3.888.0",
+    "@aws-sdk/client-sns": "^3.888.0",
     "@aws-sdk/client-sqs": "^3.888.0",
     "@aws-sdk/client-ssm": "^3.888.0",
     "@aws-sdk/node-http-handler": "3.374.0",
