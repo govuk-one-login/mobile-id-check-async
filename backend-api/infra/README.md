@@ -1,6 +1,7 @@
 ## Cloudformation template structure
 
-The `template.yaml` contains the Cloudformation resources that are deployed into AWS. This is made up of smaller `*.yaml` files that live in the `backend-api/infra` directory. 
+The `template.yaml` contains the Cloudformation resources that are deployed into AWS.
+This is generated from smaller `*.yaml` files that live in the `backend-api/infra` directory.  Modify these, not `template.yaml`.
 
 The `*.yaml` files in the `backend-api/infra` folder are organised into:
 - a `parent.yaml` which serves as an empty shell for the template, including the template format version, description and serverless transform.
