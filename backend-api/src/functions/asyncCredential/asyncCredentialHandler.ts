@@ -21,7 +21,8 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context);
+  const userAgentHeader = event.headers["User-Agent"] || event.headers["user-agent"] || "";
+  setupLogger(context, userAgentHeader);
   logger.info(LogMessage.CREDENTIAL_STARTED);
 
   // Get environment variables

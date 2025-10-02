@@ -55,7 +55,7 @@ export async function lambdaHandlerConstructor(
   event: SQSEvent,
   context: Context,
 ): Promise<void> {
-  setupLogger(context);
+  setupLogger(context, "");
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_STARTED);
 
   const configResult = getIssueBiometricCredentialConfig(dependencies.env);

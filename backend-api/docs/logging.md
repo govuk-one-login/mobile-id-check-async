@@ -1,8 +1,7 @@
 # Logging
 
 Our logs are written using the Logger provided by
-[Powertools for AWS Lambda](https://docs.powertools.aws.dev/lambda/typescript/latest/core/logger/).
-
+[Powertools for AWS Lambda](https://docs.aws.amazon.com/powertools/typescript/latest/features/logger/).
 This library is used to write logs in a structured JSON format, so that they can be more easily parsed and queried.
 
 ## Log Messages
