@@ -51,7 +51,8 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const userAgentHeader = event.headers["User-Agent"] || event.headers["user-agent"] || "";
+  const userAgentHeader =
+    event.headers["User-Agent"] || event.headers["user-agent"] || "";
   setupLogger(context, userAgentHeader);
   logger.info(LogMessage.BIOMETRIC_TOKEN_STARTED);
 

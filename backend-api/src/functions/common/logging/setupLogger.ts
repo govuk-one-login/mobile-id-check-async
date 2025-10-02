@@ -11,21 +11,25 @@ export const setupLogger = (context: Context, userAgent: string) => {
   logger.appendKeys({ userAgent: userAgentKey(userAgent) });
 };
 
-export const userAgentKey = (userAgent: string) : Object  => {
-  const anyPartHasPrefix = (userAgent : string, prefix : string) : boolean => {
-    const parts : string[] = userAgent.split(" ");
-    return parts.some(function(part) { return part.startsWith(prefix); });
-  }
+export const userAgentKey = (userAgent: string): object => {
+  const anyPartHasPrefix = (userAgent: string, prefix: string): boolean => {
+    const parts: string[] = userAgent.split(" ");
+    return parts.some(function (part) {
+      return part.startsWith(prefix);
+    });
+  };
 
-  const deviceType : string =
-      (anyPartHasPrefix(userAgent, "Android/") || anyPartHasPrefix(userAgent, "Dalvik/"))
-          ? "Android"
-          : (anyPartHasPrefix(userAgent, "iOS/") || anyPartHasPrefix(userAgent, "Darwin/"))
-              ? "iPhone"
-              : "unknown";
+  const deviceType: string =
+    anyPartHasPrefix(userAgent, "Android/") ||
+    anyPartHasPrefix(userAgent, "Dalvik/")
+      ? "Android"
+      : anyPartHasPrefix(userAgent, "iOS/") ||
+          anyPartHasPrefix(userAgent, "Darwin/")
+        ? "iPhone"
+        : "unknown";
 
   return {
     userAgentHeader: userAgent,
     deviceType: deviceType,
-  }
-}
+  };
+};

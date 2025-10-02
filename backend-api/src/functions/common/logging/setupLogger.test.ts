@@ -22,7 +22,8 @@ describe("userAgentKey", () => {
 
   describe("User-Agent is Androidy", () => {
     it("identifies as Android a UA containing Android/", () => {
-      const androidUA = "One Login/0.25.8 samsung/SM-G996B Android/35 Ktor/3.0.3";
+      const androidUA =
+        "One Login/0.25.8 samsung/SM-G996B Android/35 Ktor/3.0.3";
       expect(userAgentKey(androidUA)).toStrictEqual({
         userAgentHeader: androidUA,
         deviceType: "Android",
@@ -30,7 +31,8 @@ describe("userAgentKey", () => {
     });
 
     it("identifies as Android a UA containing Dalvik/", () => {
-      const androidDalvikUA = "Dalvik/2.1.0 (Linux; U; Android 15; SM-S928B Build/AP3A.240905.015.A2)";
+      const androidDalvikUA =
+        "Dalvik/2.1.0 (Linux; U; Android 15; SM-S928B Build/AP3A.240905.015.A2)";
       expect(userAgentKey(androidDalvikUA)).toStrictEqual({
         userAgentHeader: androidDalvikUA,
         deviceType: "Android",
@@ -40,7 +42,8 @@ describe("userAgentKey", () => {
 
   describe("User-Agent is iPhoney", () => {
     it("identifies as iPhone a UA containing iOS/", () => {
-      const iPhoneiOsUa = "OneLogin/1.9.0 iPhone15,2 iOS/18.6.2 CFNetwork/1.0 Darwin/24.6.0";
+      const iPhoneiOsUa =
+        "OneLogin/1.9.0 iPhone15,2 iOS/18.6.2 CFNetwork/1.0 Darwin/24.6.0";
       expect(userAgentKey(iPhoneiOsUa)).toStrictEqual({
         userAgentHeader: iPhoneiOsUa,
         deviceType: "iPhone",
