@@ -60,6 +60,8 @@ describe("Async Biometric Token", () => {
     .fn()
     .mockResolvedValue(successResult("mockBiometricToken"));
 
+  const iPhoneUserAgent = "OneLogin/1.9.0 iPhone14,3 iOS/16.4 CFNetwork/1.2.3 Darwin/4.5.6";
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -87,15 +89,16 @@ describe("Async Biometric Token", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        validRequest,
+        {...validRequest, ...{ headers: {"User-Agent": iPhoneUserAgent }}},
         context,
       );
     });
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and user agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345", // example field to verify that context has been added
+        userAgent: { userAgentHeader: iPhoneUserAgent, deviceType: "iPhone"},
       });
     });
     it("Clears pre-existing log attributes", async () => {
