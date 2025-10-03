@@ -40,7 +40,8 @@ const env = {
   ISSUER: "https://mockIssuer.com/",
 };
 
-const androidUserAgent = "One Login/1.8.0 Google/Pixel 6a Android/34 uk.gov.onelogin/1.8";
+const androidUserAgent =
+  "One Login/1.8.0 Google/Pixel 6a Android/34 uk.gov.onelogin/1.8";
 
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
@@ -71,7 +72,7 @@ describe("Async Active Session", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        {...validRequest, ...{ headers: {"User-Agent": androidUserAgent }}},
+        { ...validRequest, ...{ headers: { "User-Agent": androidUserAgent } } },
         context,
       );
     });
@@ -81,7 +82,7 @@ describe("Async Active Session", () => {
         messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
-        userAgent: { userAgentHeader: androidUserAgent, deviceType: "Android"},
+        userAgent: { userAgentHeader: androidUserAgent, deviceType: "Android" },
       });
     });
 
