@@ -3,20 +3,20 @@ import { logger } from "./logger";
 
 export const setupLogger = (
   context: Context,
-  userAgent: string | undefined,
+  userAgentHeader: string | undefined,
 ) => {
   logger.resetKeys();
   logger.addContext(context);
   logger.appendKeys({
     functionVersion: context.functionVersion,
-    userAgent: buildUserAgent(userAgent),
+    userAgent: buildUserAgent(userAgentHeader),
   });
 };
 
 export const buildUserAgent = (
-  userAgent: string | undefined,
+  userAgentHeader: string | undefined,
 ): object | undefined => {
-  if (userAgent === undefined || userAgent === "") {
+  if (!userAgentHeader) {
     return { userAgentHeader: "", deviceType: "unknown" };
   }
 
@@ -26,7 +26,7 @@ export const buildUserAgent = (
     });
   };
 
-  const userAgentParts: string[] = userAgent.split(" ");
+  const userAgentParts: string[] = userAgentHeader.split(" ");
 
   const isAndroid =
     anyPartHasPrefix(userAgentParts, "Android/") ||
@@ -37,7 +37,7 @@ export const buildUserAgent = (
 
   const deviceTypes: string[] = ["unknown", "Android", "iPhone", "lol"];
   return {
-    userAgentHeader: userAgent,
+    userAgentHeader,
     deviceType: deviceTypes[(isAndroid ? 1 : 0) + (isIphone ? 2 : 0)],
   };
 };
