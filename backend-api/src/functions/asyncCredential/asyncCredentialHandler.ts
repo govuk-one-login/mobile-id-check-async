@@ -12,8 +12,9 @@ import { RequestService } from "./requestService/requestService";
 import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
-import { getCredentialConfig } from "./credentialConfig";
 import { setupLogger } from "../common/logging/setupLogger";
+import { getHeader } from "../common/request/getHeader/getHeader";
+import { getCredentialConfig } from "./credentialConfig";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
@@ -21,9 +22,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const userAgentHeader =
-    event.headers["User-Agent"] || event.headers["user-agent"] || "";
-  setupLogger(context, userAgentHeader);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.CREDENTIAL_STARTED);
 
   // Get environment variables

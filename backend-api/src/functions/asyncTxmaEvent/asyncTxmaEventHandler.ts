@@ -14,6 +14,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { getHeader } from "../common/request/getHeader/getHeader";
 import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/GetSessionBiometricTokenIssued/GetSessionBiometricTokenIssued";
 import { SessionAttributes } from "../common/session/session";
 import {
@@ -37,9 +38,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const userAgentHeader =
-    event.headers["User-Agent"] || event.headers["user-agent"] || "";
-  setupLogger(context, userAgentHeader);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.TXMA_EVENT_STARTED);
 
   const configResult = getTxmaEventConfig(dependencies.env);
