@@ -27,17 +27,17 @@ export const buildUserAgent = (
   };
 
   const userAgentParts: string[] = userAgent.split(" ");
-  const deviceType: string =
-    anyPartHasPrefix(userAgentParts, "Android/") ||
-    anyPartHasPrefix(userAgentParts, "Dalvik/")
-      ? "Android"
-      : anyPartHasPrefix(userAgentParts, "iOS/") ||
-          anyPartHasPrefix(userAgentParts, "Darwin/")
-        ? "iPhone"
-        : "unknown";
 
+  const isAndroid =
+    anyPartHasPrefix(userAgentParts, "Android/") ||
+    anyPartHasPrefix(userAgentParts, "Dalvik/");
+  const isIphone =
+    anyPartHasPrefix(userAgentParts, "iOS/") ||
+    anyPartHasPrefix(userAgentParts, "Darwin/");
+
+  const deviceTypes: string[] = ["unknown", "Android", "iPhone", "lol"];
   return {
     userAgentHeader: userAgent,
-    deviceType: deviceType,
+    deviceType: deviceTypes[(isAndroid ? 1 : 0) + (isIphone ? 2 : 0)],
   };
 };
