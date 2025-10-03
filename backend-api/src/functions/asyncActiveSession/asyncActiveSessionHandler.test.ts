@@ -40,9 +40,6 @@ const env = {
   ISSUER: "https://mockIssuer.com/",
 };
 
-const androidUserAgent =
-  "One Login/1.8.0 Google/Pixel 6a Android/34 uk.gov.onelogin/1.8";
-
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
   let context: Context;
@@ -69,6 +66,9 @@ describe("Async Active Session", () => {
   });
 
   describe("On every invocation", () => {
+    const androidUserAgent =
+      "One Login/1.8.0 Google/Pixel 6a Android/34 uk.gov.onelogin/1.8";
+
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,

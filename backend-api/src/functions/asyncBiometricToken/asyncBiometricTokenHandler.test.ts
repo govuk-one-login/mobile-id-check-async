@@ -60,9 +60,6 @@ describe("Async Biometric Token", () => {
     .fn()
     .mockResolvedValue(successResult("mockBiometricToken"));
 
-  const iPhoneUserAgent =
-    "OneLogin/1.9.0 iPhone14,3 iOS/16.4 CFNetwork/1.2.3 Darwin/4.5.6";
-
   beforeEach(() => {
     dependencies = {
       env: {
@@ -87,6 +84,9 @@ describe("Async Biometric Token", () => {
   });
 
   describe("On every invocation", () => {
+    const iPhoneUserAgent =
+      "OneLogin/1.9.0 iPhone14,3 iOS/16.4 CFNetwork/1.2.3 Darwin/4.5.6";
+
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
