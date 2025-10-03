@@ -187,11 +187,12 @@ describe("Async Issue Biometric Credential", () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and empty user agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
+        userAgent: { userAgentHeader: "", deviceType: "unknown" },
       });
     });
 

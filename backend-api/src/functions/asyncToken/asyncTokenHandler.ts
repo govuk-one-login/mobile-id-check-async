@@ -7,18 +7,19 @@ import {
   dependencies,
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
-import { ErrorCategory } from "../utils/result";
+import { getTokenConfig } from "./tokenConfig";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
-import { getTokenConfig } from "./tokenConfig";
 import { setupLogger } from "../common/logging/setupLogger";
+import { getHeader } from "../common/request/getHeader/getHeader";
+import { ErrorCategory } from "../utils/result";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.TOKEN_STARTED);
 
   const configResult = getTokenConfig(dependencies.env);

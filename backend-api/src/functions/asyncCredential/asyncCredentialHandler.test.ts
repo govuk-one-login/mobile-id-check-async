@@ -67,17 +67,25 @@ describe("Async Credential", () => {
   });
 
   describe("On every invocation", () => {
+    const androidUserAgent =
+      "Dalvik/2.1.0 (Linux; U; Android 15; SM-S928B Build/AP3A.240905.015.A2)";
+
     beforeEach(async () => {
       logger.appendKeys({ testKey: "testValue" });
       const event = buildRequest();
-      await lambdaHandlerConstructor(dependencies, event, context);
+      await lambdaHandlerConstructor(
+        dependencies,
+        { ...event, ...{ headers: { "User-Agent": androidUserAgent } } },
+        context,
+      );
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and user agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_CREDENTIAL_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345", // example field to verify that context has been added
+        userAgent: { userAgentHeader: androidUserAgent, deviceType: "Android" },
       });
     });
 

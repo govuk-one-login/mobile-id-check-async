@@ -16,6 +16,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { getHeader } from "../common/request/getHeader/getHeader";
 import { GetSessionAuthSessionCreated } from "../common/session/getOperations/GetSessionAuthSessionCreated/GetSessionAuthSessionCreated";
 import {
   BaseSessionAttributes,
@@ -51,7 +52,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.BIOMETRIC_TOKEN_STARTED);
 
   const configResult = getBiometricTokenConfig(dependencies.env);

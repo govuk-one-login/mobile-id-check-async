@@ -52,19 +52,29 @@ describe("Async TxMA Event", () => {
   });
 
   describe("On every invocation", () => {
+    const windowsEdgeUserAgent =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/141.0.3537.57";
+
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        validRequest,
+        {
+          ...validRequest,
+          ...{ headers: { "User-Agent": windowsEdgeUserAgent } },
+        },
         context,
       );
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and user-agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_TXMA_EVENT_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345", // example field to verify that context has been added
+        userAgent: {
+          userAgentHeader: windowsEdgeUserAgent,
+          deviceType: "unknown",
+        },
       });
     });
 

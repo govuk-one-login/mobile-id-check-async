@@ -16,6 +16,7 @@ import {
 } from "./handlerDependencies";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { getHeader } from "../common/request/getHeader/getHeader";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 import {
   SessionUpdateFailed,
@@ -38,7 +39,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_STARTED);
 
   const configResult = getFinishBiometricSessionConfig(dependencies.env);
