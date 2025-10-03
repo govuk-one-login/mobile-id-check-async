@@ -26,7 +26,7 @@ export const buildUserAgent = (
     });
   };
 
-  const userAgentParts: string[] = userAgentHeader.split(" ");
+  const userAgentParts = userAgentHeader.split(" ");
 
   const isAndroid =
     anyPartHasPrefix(userAgentParts, "Android/") ||
@@ -35,9 +35,19 @@ export const buildUserAgent = (
     anyPartHasPrefix(userAgentParts, "iOS/") ||
     anyPartHasPrefix(userAgentParts, "Darwin/");
 
-  const deviceTypes: string[] = ["unknown", "Android", "iPhone", "lol"];
+  if (isAndroid) {
+    return {
+      userAgentHeader,
+      deviceType: "Android",
+    };
+  } else if (isIphone) {
+    return {
+      userAgentHeader,
+      deviceType: "iPhone",
+    };
+  }
   return {
     userAgentHeader,
-    deviceType: deviceTypes[(isAndroid ? 1 : 0) + (isIphone ? 2 : 0)],
+    deviceType: "unknown",
   };
 };
