@@ -1,10 +1,19 @@
 import { expect } from "@jest/globals";
-import { userAgentKey } from "./setupLogger";
+import { buildUserAgent } from "./setupLogger";
 
-describe("userAgentKey", () => {
-  describe("User-Agent is empty", () => {
-    it("marks empty UA and unknown deviceType", () => {
-      expect(userAgentKey("")).toStrictEqual({
+describe("buildUserAgent", () => {
+  describe("User-Agent is empty string", () => {
+    it("identifies as unknown deviceType", () => {
+      expect(buildUserAgent("")).toStrictEqual({
+        userAgentHeader: "",
+        deviceType: "unknown",
+      });
+    });
+  });
+
+  describe("User-Agent is absent", () => {
+    it("identifies as unknown deviceType", () => {
+      expect(buildUserAgent(undefined)).toStrictEqual({
         userAgentHeader: "",
         deviceType: "unknown",
       });
@@ -13,7 +22,7 @@ describe("userAgentKey", () => {
 
   describe("User-Agent is non-mobile", () => {
     it("identifies as unknown deviceType a non-mobile-phone kind of non-empty UA", () => {
-      expect(userAgentKey("axios/1.12.2")).toStrictEqual({
+      expect(buildUserAgent("axios/1.12.2")).toStrictEqual({
         userAgentHeader: "axios/1.12.2",
         deviceType: "unknown",
       });
@@ -24,7 +33,7 @@ describe("userAgentKey", () => {
     it("identifies as Android a UA containing Android/", () => {
       const androidUA =
         "One Login/0.25.8 samsung/SM-G996B Android/35 Ktor/3.0.3";
-      expect(userAgentKey(androidUA)).toStrictEqual({
+      expect(buildUserAgent(androidUA)).toStrictEqual({
         userAgentHeader: androidUA,
         deviceType: "Android",
       });
@@ -33,7 +42,7 @@ describe("userAgentKey", () => {
     it("identifies as Android a UA containing Dalvik/", () => {
       const androidDalvikUA =
         "Dalvik/2.1.0 (Linux; U; Android 15; SM-S928B Build/AP3A.240905.015.A2)";
-      expect(userAgentKey(androidDalvikUA)).toStrictEqual({
+      expect(buildUserAgent(androidDalvikUA)).toStrictEqual({
         userAgentHeader: androidDalvikUA,
         deviceType: "Android",
       });
@@ -44,7 +53,7 @@ describe("userAgentKey", () => {
     it("identifies as iPhone a UA containing iOS/", () => {
       const iPhoneiOsUa =
         "OneLogin/1.9.0 iPhone15,2 iOS/18.6.2 CFNetwork/1.0 Darwin/24.6.0";
-      expect(userAgentKey(iPhoneiOsUa)).toStrictEqual({
+      expect(buildUserAgent(iPhoneiOsUa)).toStrictEqual({
         userAgentHeader: iPhoneiOsUa,
         deviceType: "iPhone",
       });
@@ -52,7 +61,7 @@ describe("userAgentKey", () => {
 
     it("identifies as iPhone a UA containing Darwin/", () => {
       const iPhoneDarwinUa = "OneLogin/2 Darwin/24.6.0 CFNetwork/1.0";
-      expect(userAgentKey(iPhoneDarwinUa)).toStrictEqual({
+      expect(buildUserAgent(iPhoneDarwinUa)).toStrictEqual({
         userAgentHeader: iPhoneDarwinUa,
         deviceType: "iPhone",
       });
