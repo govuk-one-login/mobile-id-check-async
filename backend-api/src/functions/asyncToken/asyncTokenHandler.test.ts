@@ -59,18 +59,25 @@ describe("Async Token", () => {
     };
   });
 
-  describe("Adds context and version to log attributes and logs STARTED message", () => {
+  describe("On every invocation", () => {
+    const gptBotUserAgent = "GPTBot/1.0 (+https://openai.com/gptbot)";
+
     beforeEach(async () => {
       logger.appendKeys({ testKey: "testValue" });
       const event = buildRequest();
-      await lambdaHandlerConstructor(dependencies, event, context);
+      await lambdaHandlerConstructor(
+        dependencies,
+        { ...event, ...{ headers: { "User-Agent": gptBotUserAgent } } },
+        context,
+      );
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_TOKEN_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345", // example field to verify that context has been added
+        userAgent: { userAgentHeader: gptBotUserAgent, deviceType: "unknown" },
       });
     });
 
