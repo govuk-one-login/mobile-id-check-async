@@ -35,19 +35,15 @@ export const buildUserAgent = (
     anyPartHasPrefix(userAgentParts, "iOS/") ||
     anyPartHasPrefix(userAgentParts, "Darwin/");
 
+  let deviceType = "unknown";
   if (isAndroid) {
-    return {
-      userAgentHeader,
-      deviceType: "Android",
-    };
-  } else if (isIphone) {
-    return {
-      userAgentHeader,
-      deviceType: "iPhone",
-    };
+    deviceType = "Android";
+  }
+  if (isIphone) {
+    deviceType = "iPhone";
   }
   return {
     userAgentHeader,
-    deviceType: "unknown",
+    deviceType,
   };
 };
