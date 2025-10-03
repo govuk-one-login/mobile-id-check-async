@@ -96,6 +96,7 @@ npm run test:infra
 
     ```bash
     # From /backend-api
+    npm run generate-proxy-open-api
     npm run deploy:dev <your-stack-name>
     ```
 
