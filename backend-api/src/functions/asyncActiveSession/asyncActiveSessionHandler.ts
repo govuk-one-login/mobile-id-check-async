@@ -9,9 +9,10 @@ import {
   IAsyncActiveSessionDependencies,
 } from "./handlerDependencies";
 import { ErrorCategory } from "../utils/result";
-import { setupLogger } from "../common/logging/setupLogger";
-import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { logger } from "../common/logging/logger";
+import { setupLogger } from "../common/logging/setupLogger";
+import { getHeader } from "../common/request/getHeader/getHeader";
 import { getActiveSessionConfig } from "./getActiveSessionConfig";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 import {
@@ -26,7 +27,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.ACTIVE_SESSION_STARTED);
 
   const configResult = getActiveSessionConfig(dependencies.env);

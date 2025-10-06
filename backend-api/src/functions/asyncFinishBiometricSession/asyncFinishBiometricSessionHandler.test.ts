@@ -107,19 +107,22 @@ describe("Async Finish Biometric Session", () => {
   });
 
   describe("On every invocation", () => {
+    const nokiaUserAgent = "Nokia7110/1.0";
+
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        validRequest,
+        { ...validRequest, ...{ headers: { "User-Agent": nokiaUserAgent } } },
         context,
       );
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and user agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
+        userAgent: { userAgentHeader: nokiaUserAgent, deviceType: "unknown" },
       });
     });
 

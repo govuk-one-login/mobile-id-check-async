@@ -66,19 +66,23 @@ describe("Async Active Session", () => {
   });
 
   describe("On every invocation", () => {
+    const androidUserAgent =
+      "One Login/1.8.0 Google/Pixel 6a Android/34 uk.gov.onelogin/1.8";
+
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        validRequest,
+        { ...validRequest, ...{ headers: { "User-Agent": androidUserAgent } } },
         context,
       );
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and user agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
+        userAgent: { userAgentHeader: androidUserAgent, deviceType: "Android" },
       });
     });
 

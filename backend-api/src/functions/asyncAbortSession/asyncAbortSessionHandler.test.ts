@@ -77,15 +77,22 @@ describe("Async Abort Session", () => {
   });
 
   describe("On every invocation", () => {
+    const iPhoneUserAgent = "OneLogin/1.9.0 Darwin/24.1.8 CFNetwork/1.2.3";
+
     beforeEach(async () => {
-      await lambdaHandlerConstructor(dependencies, validRequest, context);
+      await lambdaHandlerConstructor(
+        dependencies,
+        { ...validRequest, ...{ headers: { "User-Agent": iPhoneUserAgent } } },
+        context,
+      );
     });
 
-    it("Adds context and version to log attributes and logs STARTED message", () => {
+    it("Adds context, version and user agent to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ABORT_SESSION_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
+        userAgent: { userAgentHeader: iPhoneUserAgent, deviceType: "iPhone" },
       });
     });
 

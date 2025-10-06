@@ -19,6 +19,7 @@ import { AbortSession } from "../common/session/updateOperations/AbortSession/Ab
 import { getAbortSessionConfig } from "./abortSessionConfig";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { getHeader } from "../common/request/getHeader/getHeader";
 import { handleUpdateSessionError } from "../common/errors/errorHandlers";
 import { AuthSessionAbortedAttributes } from "../common/session/session";
 import { IEventService } from "../services/events/types";
@@ -29,7 +30,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context);
+  setupLogger(context, getHeader(event.headers, "User-Agent"));
   logger.info(LogMessage.ABORT_SESSION_STARTED);
 
   const configResult = getAbortSessionConfig(dependencies.env);
