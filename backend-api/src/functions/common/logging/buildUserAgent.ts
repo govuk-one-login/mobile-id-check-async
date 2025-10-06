@@ -1,6 +1,4 @@
-export const buildUserAgent = (
-  userAgentHeader?: string,
-): object => {
+export const buildUserAgent = (userAgentHeader?: string): object => {
   if (!userAgentHeader) {
     return { userAgentHeader: "", deviceType: "unknown" };
   }
