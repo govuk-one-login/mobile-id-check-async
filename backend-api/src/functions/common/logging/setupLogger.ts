@@ -4,7 +4,7 @@ import { buildUserAgent } from "./buildUserAgent";
 
 export const setupLogger = (
   context: Context,
-  userAgentHeader: string | undefined,
+  userAgentHeader?: string,
 ) => {
   logger.resetKeys();
   logger.addContext(context);
