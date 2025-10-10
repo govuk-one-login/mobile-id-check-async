@@ -5366,32 +5366,56 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  IPVCoreDlqMessageVisibleHighThresholdAlarm:
+  IPVCoreDlqMessageInflowVsStartedAlarm:
     Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialCompletionMetricFilter
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
-        - 'Trigger a warning alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
+        - 'Critical when DLQ inflow is >= 20% of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED for 2 of the last 5 minutes. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
             - SupportManual
             - value
-      AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-message-visible
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-inflow-vs-started
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      Dimensions:
-        - Name: QueueName
-          Value: !GetAtt IPVCoreOutboundDlq.QueueName
-      EvaluationPeriods: 1
-      MetricName: ApproximateNumberOfMessagesVisible
-      Namespace: AWS/SQS
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Id: lambdaLogStarted
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: dlqMessageInflow
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: QueueName
+                  Value: !GetAtt IPVCoreOutboundDlq.QueueName
+              MetricName: NumberOfMessagesSent
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: IF(FILL(lambdaLogStarted,0) >= 10, 100 * dlqMessageInflow / FILL(lambdaLogStarted,0), 0)
+          Id: dlqMessageInflowPercentage
+          Label: DLQ inflow as % of STARTED log
+          ReturnData: true
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Period: 60
-      Statistic: Maximum
-      Threshold: 25
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Threshold: 20
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
