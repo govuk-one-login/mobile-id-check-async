@@ -142,7 +142,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-passport-biometric-sessions-not-ready"
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
-      Threshold: 90
+      Threshold: 85
       ComparisonOperator: LessThanThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -198,7 +198,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-driving-licence-biometric-sessions-not-ready"
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
-      Threshold: 90
+      Threshold: 85
       ComparisonOperator: LessThanThreshold
       TreatMissingData: notBreaching
       Metrics:
