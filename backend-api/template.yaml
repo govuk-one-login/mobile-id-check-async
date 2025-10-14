@@ -5375,7 +5375,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
-        - 'Critical when DLQ inflow is >= 20% of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED for 2 of the last 5 minutes. See support manual: ${SupportManualUrl}'
+        - 'Critical when DLQ inflow is >= 25% of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED for 2 of the last 5 minutes. Will only evaluate when there is at least 40 MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED logs per minute. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
             - SupportManual
@@ -5409,13 +5409,13 @@ Resources:
             Period: 60
             Stat: Sum
           ReturnData: false
-        - Expression: IF(FILL(lambdaLogStarted,0) >= 10, 100 * dlqMessageInflow / FILL(lambdaLogStarted,0), 0)
+        - Expression: IF(FILL(lambdaLogStarted,0) >= 40, 100 * dlqMessageInflow / FILL(lambdaLogStarted,0), 0)
           Id: dlqMessageInflowPercentage
           Label: DLQ inflow as % of STARTED log
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
-      Threshold: 20
+      Threshold: 25
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 

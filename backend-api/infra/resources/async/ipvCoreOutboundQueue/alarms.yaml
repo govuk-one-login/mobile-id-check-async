@@ -60,7 +60,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Critical when DLQ inflow is >= 20% of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED for 2 of the last 5 minutes. See support manual: ${SupportManualUrl}"
+        - "Critical when DLQ inflow is >= 25% of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED for 2 of the last 5 minutes. Will only evaluate when there is at least 40 MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED logs per minute. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, SupportManual, value]
       AlarmName: !Sub "${AWS::StackName}-ipv-core-dlq-message-inflow-vs-started"
       AlarmActions:
@@ -68,7 +68,7 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      Threshold: 20
+      Threshold: 25
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
       TreatMissingData: notBreaching
@@ -100,7 +100,7 @@ Resources:
         - Id: dlqMessageInflowPercentage
           Label: "DLQ inflow as % of STARTED log"
           ReturnData: true
-          Expression: "IF(FILL(lambdaLogStarted,0) >= 10, 100 * dlqMessageInflow / FILL(lambdaLogStarted,0), 0)"
+          Expression: "IF(FILL(lambdaLogStarted,0) >= 40, 100 * dlqMessageInflow / FILL(lambdaLogStarted,0), 0)"
 
   IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
