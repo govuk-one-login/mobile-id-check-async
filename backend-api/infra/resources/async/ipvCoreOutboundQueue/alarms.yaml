@@ -64,9 +64,9 @@ Resources:
         - SupportManualUrl: !FindInMap [StaticVariables, SupportManual, value]
       AlarmName: !Sub "${AWS::StackName}-ipv-core-dlq-message-inflow-vs-started"
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       Threshold: 25
       EvaluationPeriods: 5

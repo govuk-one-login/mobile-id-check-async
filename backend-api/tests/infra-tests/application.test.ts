@@ -185,6 +185,7 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
         ["low-threshold-ipv-core-dlq-message-visible"],
+        ["ipv-core-dlq-message-inflow-vs-started"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [
@@ -341,10 +342,6 @@ describe("Backend application infrastructure", () => {
         {
           name: "low-journey-completion",
           hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "ipv-core-dlq-message-inflow-vs-started",
-          hasRunbookBeenSignedOff: false, // Intentionally failing. Will update to true when Runbook is signed off
         },
       ];
 
