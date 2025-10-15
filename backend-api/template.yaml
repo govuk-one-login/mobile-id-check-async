@@ -5391,8 +5391,6 @@ Resources:
               Dimensions:
                 - Name: MessageCode
                   Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED
-                - Name: Version
-                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
               MetricName: AsyncIssueBiometricCredentialMessageCode
               Namespace: !Sub ${AWS::StackName}/LogMessages
             Period: 60
