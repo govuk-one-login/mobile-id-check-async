@@ -6762,7 +6762,7 @@ Resources:
   VendorProcessingSqs:
     Type: AWS::SQS::Queue
     Properties:
-      DelaySeconds: 7
+      DelaySeconds: 8
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
       QueueName: !Sub ${AWS::StackName}-vendor-processing
