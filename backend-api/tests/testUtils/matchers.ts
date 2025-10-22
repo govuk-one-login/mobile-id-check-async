@@ -26,10 +26,15 @@ const toHaveBeenCalledWithLogFields = (
 function isSubsetOf(
   object: Record<string, unknown>,
   targetObject: Record<string, unknown>,
-) {
-  return Object.keys(object).every((key) =>
-    deepEquals(object[key], targetObject[key]),
-  );
+): boolean {
+  return Object.keys(object).every((key) => {
+    if (object[key] instanceof Object && targetObject[key] instanceof Object) {
+      const objVal = object[key] as Record<string, unknown>;
+      const targetObjVal = targetObject[key] as Record<string, unknown>;
+      return isSubsetOf(objVal, targetObjVal);
+    }
+    return deepEquals(object[key], targetObject[key]);
+  });
 }
 
 function deepEquals(subject: unknown, target: unknown): boolean {
