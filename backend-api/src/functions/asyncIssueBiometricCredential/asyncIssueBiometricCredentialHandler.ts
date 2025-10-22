@@ -213,7 +213,7 @@ export async function lambdaHandlerConstructor(
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE,
       { error },
     );
-    return; 
+    return;
   }
 
   if (getCredentialFromBiometricSessionResult.isError) {

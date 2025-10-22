@@ -732,8 +732,8 @@ describe("Async Issue Biometric Credential", () => {
           messageCode:
             "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
           error: {
-            message: "UNEXPECTED_FAILURE"
-          }
+            message: "UNEXPECTED_FAILURE",
+          },
         });
       });
 
