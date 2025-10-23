@@ -718,28 +718,117 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Get credential from biometric session - throws error", () => {
-      beforeEach(async () => {
-        dependencies.getCredentialFromBiometricSession = jest
-          .fn()
-          .mockImplementation(() => {
-            throw Error("UNEXPECTED_FAILURE");
-          });
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      });
+      describe("Given writing to txma fails", () => {
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession = jest
+            .fn()
+            .mockImplementation(() => {
+              throw Error("UNEXPECTED_FAILURE");
+            });
 
-      it("Logs", async () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
-          error: {
-            message: "UNEXPECTED_FAILURE",
-          },
+          dependencies.getEventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
+
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+            data: {
+              message: "UNEXPECTED_FAILURE",
+            },
+          });
+        });
+
+        it("Sends server_error to IPV Core", () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            {
+              sub: mockSubjectIdentifier,
+              state: mockClientState,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
+              error: "server_error",
+              error_description: "Internal server error",
+            },
+          );
+        });
+
+        it(`Logs DCMAW_ASYNC_CRI_ERROR audit event error`, () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: expectedErrorTxmaEventName },
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
         });
       });
 
-      it("Does not log COMPLETED", async () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+      describe("Given writing to txma is successful", () => {
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession = jest
+            .fn()
+            .mockImplementation(() => {
+              throw Error("UNEXPECTED_FAILURE");
+            });
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+            data: {
+              message: "UNEXPECTED_FAILURE",
+            },
+          });
+        });
+
+        it("Sends server_error to IPV Core", () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            {
+              sub: mockSubjectIdentifier,
+              state: mockClientState,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
+              error: "server_error",
+              error_description: "Internal server error",
+            },
+          );
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
+          expect(
+            mockSuccessfulEventService.writeGenericEvent,
+          ).toHaveBeenCalledWith({
+            componentId: mockIssuer,
+            eventName: expectedErrorTxmaEventName,
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+            ipAddress: undefined,
+            redirect_uri: undefined,
+            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sub: "mockSubjectIdentifier",
+            transactionId: mockBiometricSessionId,
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it("Does not log COMPLETED", async () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
         });
       });
     });

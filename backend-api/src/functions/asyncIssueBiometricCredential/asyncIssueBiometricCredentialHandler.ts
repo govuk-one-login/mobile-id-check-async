@@ -209,11 +209,13 @@ export async function lambdaHandlerConstructor(
         getCredentialFromBiometricSessionOptions,
       );
   } catch (error: unknown) {
-    logger.error(
-      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE,
-      { error },
+    return await handleGetCredentialFailure(
+      error,
+      eventService,
+      sessionAttributes,
+      config.IPVCORE_OUTBOUND_SQS,
+      dependencies.sendMessageToSqs,
     );
-    return;
   }
 
   if (getCredentialFromBiometricSessionResult.isError) {
@@ -409,8 +411,17 @@ interface HandleGetSessionErrorParameters {
   sessionId: string;
 }
 
+const isGetCredentialError = (error: unknown): error is GetCredentialError => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "errorCode" in error &&
+    "errorReason" in error
+  );
+};
+
 const handleGetCredentialFailure = async (
-  error: GetCredentialError,
+  error: GetCredentialError | unknown,
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
@@ -419,7 +430,6 @@ const handleGetCredentialFailure = async (
     messageBody: OutboundQueueErrorMessage,
   ) => Promise<Result<void, void>>,
 ): Promise<void> => {
-  const { errorCode, errorReason, data } = error;
   const {
     clientState,
     subjectIdentifier,
@@ -441,47 +451,60 @@ const handleGetCredentialFailure = async (
     error: "server_error",
   };
 
-  switch (errorCode) {
-    case GetCredentialErrorCode.SUSPECTED_FRAUD:
-      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
-      sqsMessage = {
-        sub: subjectIdentifier,
-        state: clientState,
-        govuk_signin_journey_id: govukSigninJourneyId,
-        error_description: "Suspected fraud detected",
-        error: "access_denied",
-      };
-      suspectedFraudSignal = errorReason;
-      break;
+  if (isGetCredentialError(error)) {
+    const { errorCode, errorReason, data } = error;
 
-    case GetCredentialErrorCode.PARSE_FAILURE:
-      logMessage =
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
-      sqsMessage = ipvOutboundMessageServerError;
-      suspectedFraudSignal = undefined;
-      break;
+    switch (errorCode) {
+      case GetCredentialErrorCode.SUSPECTED_FRAUD:
+        logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
+        sqsMessage = {
+          sub: subjectIdentifier,
+          state: clientState,
+          govuk_signin_journey_id: govukSigninJourneyId,
+          error_description: "Suspected fraud detected",
+          error: "access_denied",
+        };
+        suspectedFraudSignal = errorReason;
+        break;
 
-    case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
-      logMessage =
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
-      sqsMessage = ipvOutboundMessageServerError;
-      suspectedFraudSignal = undefined;
-      break;
+      case GetCredentialErrorCode.PARSE_FAILURE:
+        logMessage =
+          LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
+        sqsMessage = ipvOutboundMessageServerError;
+        suspectedFraudSignal = undefined;
+        break;
 
-    case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
-      logMessage =
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
-      sqsMessage = ipvOutboundMessageServerError;
-      suspectedFraudSignal = undefined;
-      break;
+      case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
+        logMessage =
+          LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
+        sqsMessage = ipvOutboundMessageServerError;
+        suspectedFraudSignal = undefined;
+        break;
+
+      case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
+        logMessage =
+          LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
+        sqsMessage = ipvOutboundMessageServerError;
+        suspectedFraudSignal = undefined;
+        break;
+    }
+
+    logger.error(logMessage, {
+      data: {
+        errorReason,
+        ...data,
+      },
+    });
+  } else {
+    logMessage =
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE;
+    sqsMessage = ipvOutboundMessageServerError;
+    suspectedFraudSignal = undefined;
+
+    logger.error(logMessage, {
+      data: error,
+    });
   }
-
-  logger.error(logMessage, {
-    data: {
-      errorReason,
-      ...data,
-    },
-  });
 
   await sendMessageToSqs(outboundQueue, sqsMessage);
 
