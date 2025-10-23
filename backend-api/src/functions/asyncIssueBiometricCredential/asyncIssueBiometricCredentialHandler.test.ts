@@ -755,7 +755,7 @@ describe("Async Issue Biometric Credential", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
                 "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
-              data: {
+              error: {
                 message: "UNEXPECTED_FAILURE",
               },
             });
@@ -768,7 +768,7 @@ describe("Async Issue Biometric Credential", () => {
             );
           });
 
-          it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+          it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: { auditEventName: expectedErrorTxmaEventName },
@@ -800,7 +800,7 @@ describe("Async Issue Biometric Credential", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
                 "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
-              data: {
+              error: {
                 message: "UNEXPECTED_FAILURE",
               },
             });
@@ -928,7 +928,7 @@ describe("Async Issue Biometric Credential", () => {
                 );
               });
 
-              it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+              it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
                 expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                   messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                   data: { auditEventName: expectedErrorTxmaEventName },

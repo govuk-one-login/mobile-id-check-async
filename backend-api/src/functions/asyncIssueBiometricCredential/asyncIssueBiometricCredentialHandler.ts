@@ -502,7 +502,7 @@ const handleGetCredentialFailure = async (
     suspectedFraudSignal = undefined;
 
     logger.error(logMessage, {
-      data: error,
+      error,
     });
   }
 
