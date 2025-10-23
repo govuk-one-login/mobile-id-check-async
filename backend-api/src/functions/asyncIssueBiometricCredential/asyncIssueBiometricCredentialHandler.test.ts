@@ -717,7 +717,34 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Get credential from biometric session errors", () => {
+    describe("Get credential from biometric session - throws error", () => {
+      beforeEach(async () => {
+        dependencies.getCredentialFromBiometricSession = jest
+          .fn()
+          .mockImplementation(() => {
+            throw Error("UNEXPECTED_FAILURE");
+          });
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Logs", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+          error: {
+            message: "UNEXPECTED_FAILURE",
+          },
+        });
+      });
+
+      it("Does not log COMPLETED", async () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
+    });
+
+    describe("Get credential from biometric session - known error scenarios", () => {
       const serverErrorMessage = {
         sub: mockSubjectIdentifier,
         state: mockClientState,

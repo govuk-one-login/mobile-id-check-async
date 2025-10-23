@@ -200,12 +200,21 @@ export async function lambdaHandlerConstructor(
     enableUtopiaTestDocument: config.ENABLE_UTOPIA_TEST_DOCUMENT === "true",
   };
 
-  const getCredentialFromBiometricSessionResult =
-    dependencies.getCredentialFromBiometricSession(
-      biometricSession,
-      fraudCheckData,
-      getCredentialFromBiometricSessionOptions,
+  let getCredentialFromBiometricSessionResult;
+  try {
+    getCredentialFromBiometricSessionResult =
+      dependencies.getCredentialFromBiometricSession(
+        biometricSession,
+        fraudCheckData,
+        getCredentialFromBiometricSessionOptions,
+      );
+  } catch (error: unknown) {
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE,
+      { error },
     );
+    return;
+  }
 
   if (getCredentialFromBiometricSessionResult.isError) {
     return await handleGetCredentialFailure(
