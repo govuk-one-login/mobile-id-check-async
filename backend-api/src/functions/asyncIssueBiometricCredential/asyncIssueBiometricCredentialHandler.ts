@@ -421,7 +421,7 @@ const isGetCredentialError = (error: unknown): error is GetCredentialError => {
 };
 
 const handleGetCredentialFailure = async (
-  error: GetCredentialError | unknown,
+  error: unknown,
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
