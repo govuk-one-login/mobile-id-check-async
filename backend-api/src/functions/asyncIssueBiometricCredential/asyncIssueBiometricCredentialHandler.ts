@@ -210,7 +210,7 @@ export async function lambdaHandlerConstructor(
       );
   } catch (error: unknown) {
     return await handleGetCredentialFailure(
-      error,
+      { unhandledError: error },
       eventService,
       sessionAttributes,
       config.IPVCORE_OUTBOUND_SQS,
@@ -411,17 +411,18 @@ interface HandleGetSessionErrorParameters {
   sessionId: string;
 }
 
-const isGetCredentialError = (error: unknown): error is GetCredentialError => {
+type UnhandledGetCredentialError = { unhandledError: unknown };
+
+const isUnhandledGetCredentialError = (
+  error: unknown,
+): error is UnhandledGetCredentialError => {
   return (
-    typeof error === "object" &&
-    error !== null &&
-    "errorCode" in error &&
-    "errorReason" in error
+    typeof error === "object" && error !== null && "unhandledError" in error
   );
 };
 
 const handleGetCredentialFailure = async (
-  error: unknown,
+  error: GetCredentialError | UnhandledGetCredentialError,
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
@@ -451,7 +452,16 @@ const handleGetCredentialFailure = async (
     error: "server_error",
   };
 
-  if (isGetCredentialError(error)) {
+  if (isUnhandledGetCredentialError(error)) {
+    logMessage =
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE;
+    sqsMessage = ipvOutboundMessageServerError;
+    suspectedFraudSignal = undefined;
+
+    logger.error(logMessage, {
+      error: error.unhandledError,
+    });
+  } else {
     const { errorCode, errorReason, data } = error;
 
     switch (errorCode) {
@@ -494,15 +504,6 @@ const handleGetCredentialFailure = async (
         errorReason,
         ...data,
       },
-    });
-  } else {
-    logMessage =
-      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE;
-    sqsMessage = ipvOutboundMessageServerError;
-    suspectedFraudSignal = undefined;
-
-    logger.error(logMessage, {
-      error,
     });
   }
 
