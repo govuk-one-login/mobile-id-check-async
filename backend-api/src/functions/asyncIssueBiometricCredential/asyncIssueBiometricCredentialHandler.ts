@@ -411,10 +411,8 @@ interface HandleGetSessionErrorParameters {
   sessionId: string;
 }
 
-type UnhandledGetCredentialError = { unhandledError: unknown };
-
 const handleGetCredentialFailure = async (
-  error: GetCredentialError | UnhandledGetCredentialError,
+  error: GetCredentialError | { unhandledError: unknown },
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
