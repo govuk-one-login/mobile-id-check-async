@@ -412,64 +412,6 @@ interface HandleGetSessionErrorParameters {
   sessionId: string;
 }
 
-const getKnownGetCredentialErrorData = (
-  error: GetCredentialError,
-  ipvOutboundMessageServerError: OutboundQueueErrorMessage,
-  sessionAttributes: BiometricSessionFinishedAttributes,
-): {
-  logMessage: LogMessage;
-  sqsMessage: OutboundQueueErrorMessage;
-  suspectedFraudSignal: GetCredentialErrorReason | undefined;
-} => {
-  let logMessage: LogMessage;
-  let sqsMessage: OutboundQueueErrorMessage;
-  let suspectedFraudSignal: GetCredentialErrorReason | undefined;
-  const { errorCode, errorReason } = error;
-  const { clientState, subjectIdentifier, govukSigninJourneyId } =
-    sessionAttributes;
-
-  switch (errorCode) {
-    case GetCredentialErrorCode.SUSPECTED_FRAUD:
-      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
-      sqsMessage = {
-        sub: subjectIdentifier,
-        state: clientState,
-        govuk_signin_journey_id: govukSigninJourneyId,
-        error_description: "Suspected fraud detected",
-        error: "access_denied",
-      };
-      suspectedFraudSignal = errorReason;
-      break;
-
-    case GetCredentialErrorCode.PARSE_FAILURE:
-      logMessage =
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
-      sqsMessage = ipvOutboundMessageServerError;
-      suspectedFraudSignal = undefined;
-      break;
-
-    case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
-      logMessage =
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
-      sqsMessage = ipvOutboundMessageServerError;
-      suspectedFraudSignal = undefined;
-      break;
-
-    case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
-      logMessage =
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
-      sqsMessage = ipvOutboundMessageServerError;
-      suspectedFraudSignal = undefined;
-      break;
-  }
-
-  return {
-    logMessage,
-    sqsMessage,
-    suspectedFraudSignal,
-  };
-};
-
 const handleGetCredentialFailure = async (
   error: GetCredentialError | { unhandledError: unknown },
   eventService: IEventService,
@@ -547,6 +489,64 @@ const handleGetCredentialFailure = async (
     suspected_fraud_signal: suspectedFraudSignal,
   });
   if (writeEventResult.isError) logErrorWritingErrorEvent();
+};
+
+const getKnownGetCredentialErrorData = (
+  error: GetCredentialError,
+  ipvOutboundMessageServerError: OutboundQueueErrorMessage,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+): {
+  logMessage: LogMessage;
+  sqsMessage: OutboundQueueErrorMessage;
+  suspectedFraudSignal: GetCredentialErrorReason | undefined;
+} => {
+  let logMessage: LogMessage;
+  let sqsMessage: OutboundQueueErrorMessage;
+  let suspectedFraudSignal: GetCredentialErrorReason | undefined;
+  const { errorCode, errorReason } = error;
+  const { clientState, subjectIdentifier, govukSigninJourneyId } =
+    sessionAttributes;
+
+  switch (errorCode) {
+    case GetCredentialErrorCode.SUSPECTED_FRAUD:
+      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
+      sqsMessage = {
+        sub: subjectIdentifier,
+        state: clientState,
+        govuk_signin_journey_id: govukSigninJourneyId,
+        error_description: "Suspected fraud detected",
+        error: "access_denied",
+      };
+      suspectedFraudSignal = errorReason;
+      break;
+
+    case GetCredentialErrorCode.PARSE_FAILURE:
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
+      break;
+
+    case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
+      break;
+
+    case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
+      break;
+  }
+
+  return {
+    logMessage,
+    sqsMessage,
+    suspectedFraudSignal,
+  };
 };
 
 const sendVerifiableCredentialMessageToSqs = async (
