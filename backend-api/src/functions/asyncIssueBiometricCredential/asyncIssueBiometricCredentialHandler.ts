@@ -414,8 +414,8 @@ interface HandleGetSessionErrorParameters {
 
 const getKnownGetCredentialErrorData = (
   error: GetCredentialError,
-  sessionAttributes: BiometricSessionFinishedAttributes,
   ipvOutboundMessageServerError: OutboundQueueErrorMessage,
+  sessionAttributes: BiometricSessionFinishedAttributes,
 ): {
   logMessage: LogMessage;
   sqsMessage: OutboundQueueErrorMessage;
@@ -519,8 +519,8 @@ const handleGetCredentialFailure = async (
     ({ logMessage, sqsMessage, suspectedFraudSignal } =
       getKnownGetCredentialErrorData(
         error,
-        sessionAttributes,
         ipvOutboundMessageServerError,
+        sessionAttributes,
       ));
 
     logger.error(logMessage, {
