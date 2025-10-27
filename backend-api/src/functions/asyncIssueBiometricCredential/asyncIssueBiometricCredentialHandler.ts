@@ -413,14 +413,6 @@ interface HandleGetSessionErrorParameters {
 
 type UnhandledGetCredentialError = { unhandledError: unknown };
 
-const isUnhandledGetCredentialError = (
-  error: unknown,
-): error is UnhandledGetCredentialError => {
-  return (
-    typeof error === "object" && error !== null && "unhandledError" in error
-  );
-};
-
 const handleGetCredentialFailure = async (
   error: GetCredentialError | UnhandledGetCredentialError,
   eventService: IEventService,
@@ -452,7 +444,11 @@ const handleGetCredentialFailure = async (
     error: "server_error",
   };
 
-  if (isUnhandledGetCredentialError(error)) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "unhandledError" in error
+  ) {
     logMessage =
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE;
     sqsMessage = ipvOutboundMessageServerError;
