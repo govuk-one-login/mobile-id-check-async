@@ -35,6 +35,7 @@ import {
   FraudCheckData,
   GetCredentialError,
   GetCredentialErrorCode,
+  GetCredentialErrorReason,
   GetCredentialOptions,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { randomUUID } from "crypto";
@@ -209,11 +210,13 @@ export async function lambdaHandlerConstructor(
         getCredentialFromBiometricSessionOptions,
       );
   } catch (error: unknown) {
-    logger.error(
-      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE,
-      { error },
+    return await handleGetCredentialFailure(
+      { unhandledError: error },
+      eventService,
+      sessionAttributes,
+      config.IPVCORE_OUTBOUND_SQS,
+      dependencies.sendMessageToSqs,
     );
-    return;
   }
 
   if (getCredentialFromBiometricSessionResult.isError) {
@@ -410,7 +413,7 @@ interface HandleGetSessionErrorParameters {
 }
 
 const handleGetCredentialFailure = async (
-  error: GetCredentialError,
+  error: GetCredentialError | { unhandledError: unknown },
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
@@ -419,7 +422,6 @@ const handleGetCredentialFailure = async (
     messageBody: OutboundQueueErrorMessage,
   ) => Promise<Result<void, void>>,
 ): Promise<void> => {
-  const { errorCode, errorReason, data } = error;
   const {
     clientState,
     subjectIdentifier,
@@ -440,6 +442,70 @@ const handleGetCredentialFailure = async (
     error_description: "Internal server error",
     error: "server_error",
   };
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "unhandledError" in error
+  ) {
+    logMessage =
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE;
+    sqsMessage = ipvOutboundMessageServerError;
+    suspectedFraudSignal = undefined;
+
+    logger.error(logMessage, {
+      error: error.unhandledError,
+    });
+  } else {
+    const { errorReason, data } = error;
+    ({ logMessage, sqsMessage, suspectedFraudSignal } =
+      getKnownGetCredentialErrorData(
+        error,
+        ipvOutboundMessageServerError,
+        sessionAttributes,
+      ));
+
+    logger.error(logMessage, {
+      data: {
+        errorReason,
+        ...data,
+      },
+    });
+  }
+
+  await sendMessageToSqs(outboundQueue, sqsMessage);
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: getErrorEventName(),
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    transactionId: biometricSessionId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: suspectedFraudSignal,
+  });
+  if (writeEventResult.isError) logErrorWritingErrorEvent();
+};
+
+const getKnownGetCredentialErrorData = (
+  error: GetCredentialError,
+  ipvOutboundMessageServerError: OutboundQueueErrorMessage,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+): {
+  logMessage: LogMessage;
+  sqsMessage: OutboundQueueErrorMessage;
+  suspectedFraudSignal: GetCredentialErrorReason | undefined;
+} => {
+  let logMessage: LogMessage;
+  let sqsMessage: OutboundQueueErrorMessage;
+  let suspectedFraudSignal: GetCredentialErrorReason | undefined;
+  const { errorCode, errorReason } = error;
+  const { clientState, subjectIdentifier, govukSigninJourneyId } =
+    sessionAttributes;
 
   switch (errorCode) {
     case GetCredentialErrorCode.SUSPECTED_FRAUD:
@@ -476,29 +542,11 @@ const handleGetCredentialFailure = async (
       break;
   }
 
-  logger.error(logMessage, {
-    data: {
-      errorReason,
-      ...data,
-    },
-  });
-
-  await sendMessageToSqs(outboundQueue, sqsMessage);
-
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: getErrorEventName(),
-    sub: subjectIdentifier,
-    sessionId,
-    govukSigninJourneyId,
-    transactionId: biometricSessionId,
-    getNowInMilliseconds: Date.now,
-    componentId: issuer,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-    redirect_uri: redirectUri,
-    suspected_fraud_signal: suspectedFraudSignal,
-  });
-  if (writeEventResult.isError) logErrorWritingErrorEvent();
+  return {
+    logMessage,
+    sqsMessage,
+    suspectedFraudSignal,
+  };
 };
 
 const sendVerifiableCredentialMessageToSqs = async (
