@@ -31,6 +31,7 @@ import {
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
+  validCreatedAt,
 } from "../../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
@@ -185,6 +186,7 @@ describe("DynamoDbAdapter", () => {
                   actual: "ASYNC_AUTH_SESSION_CREATED",
                   valid: ["ASYNC_AUTH_SESSION_CREATED"],
                 },
+                sessionCreatedAt: validCreatedAt,
               },
             });
           });
@@ -227,6 +229,7 @@ describe("DynamoDbAdapter", () => {
                   actual: "ASYNC_AUTH_SESSION_ABORTED",
                   valid: ["ASYNC_AUTH_SESSION_CREATED"],
                 },
+                sessionCreatedAt: validCreatedAt,
               },
             });
           });
