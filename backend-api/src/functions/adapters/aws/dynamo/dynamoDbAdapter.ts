@@ -384,7 +384,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       data: {
         ...updateOperationDataToLog,
         sessionStates,
-        sessionCreatedAt:  sessionAttributes.createdAt,
+        sessionCreatedAt: sessionAttributes.createdAt,
         sessionAgeSeconds: Date.now() - sessionAttributes.createdAt,
       },
     });
