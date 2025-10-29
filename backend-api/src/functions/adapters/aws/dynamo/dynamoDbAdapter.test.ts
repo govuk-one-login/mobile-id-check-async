@@ -187,6 +187,7 @@ describe("DynamoDbAdapter", () => {
                   valid: ["ASYNC_AUTH_SESSION_CREATED"],
                 },
                 sessionCreatedAt: validCreatedAt,
+                sessionAgeSeconds: NOW_IN_MILLISECONDS - validCreatedAt,
               },
             });
           });
@@ -230,6 +231,7 @@ describe("DynamoDbAdapter", () => {
                   valid: ["ASYNC_AUTH_SESSION_CREATED"],
                 },
                 sessionCreatedAt: validCreatedAt,
+                sessionAgeSeconds: NOW_IN_MILLISECONDS - validCreatedAt,
               },
             });
           });
