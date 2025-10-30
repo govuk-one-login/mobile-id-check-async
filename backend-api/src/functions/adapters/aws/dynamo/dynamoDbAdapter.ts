@@ -386,6 +386,7 @@ export class DynamoDbAdapter implements SessionRegistry {
         sessionStates,
         sessionCreatedAtMillis: sessionAttributes.createdAt,
         sessionAgeMillis: Date.now() - sessionAttributes.createdAt,
+        hasRedirectUri: (sessionAttributes.redirectUri ?? '').length > 0,
       },
     });
 

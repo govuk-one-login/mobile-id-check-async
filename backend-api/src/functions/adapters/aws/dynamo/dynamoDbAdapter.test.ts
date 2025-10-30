@@ -25,6 +25,7 @@ import { BiometricTokenIssued } from "../../../common/session/updateOperations/B
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
   invalidBaseSessionAttributeSessionState,
+  invalidBaseSessionAttributeSessionStateMobileApp,
   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
   invalidBiometricTokenIssuedSessionAttributeTypes,
   mockSessionId,
@@ -188,6 +189,7 @@ describe("DynamoDbAdapter", () => {
                 },
                 sessionCreatedAtMillis: validCreatedAt,
                 sessionAgeMillis: NOW_IN_MILLISECONDS - validCreatedAt,
+                hasRedirectUri: false,
               },
             });
           });
@@ -208,7 +210,7 @@ describe("DynamoDbAdapter", () => {
               new ConditionalCheckFailedException({
                 $metadata: {},
                 message: "Conditional check failed",
-                Item: marshall(invalidBaseSessionAttributeSessionState),
+                Item: marshall(invalidBaseSessionAttributeSessionStateMobileApp),
               }),
             );
             result = await sessionRegistry.updateSession(
@@ -232,6 +234,7 @@ describe("DynamoDbAdapter", () => {
                 },
                 sessionCreatedAtMillis: validCreatedAt,
                 sessionAgeMillis: NOW_IN_MILLISECONDS - validCreatedAt,
+                hasRedirectUri: true,
               },
             });
           });
@@ -240,7 +243,7 @@ describe("DynamoDbAdapter", () => {
             expect(result).toEqual(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-                attributes: invalidBaseSessionAttributeSessionState,
+                attributes: invalidBaseSessionAttributeSessionStateMobileApp,
               }),
             );
           });

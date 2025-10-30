@@ -179,6 +179,11 @@ export const invalidBaseSessionAttributeSessionState = {
   timeToLive: 12345,
 };
 
+export const invalidBaseSessionAttributeSessionStateMobileApp = {
+  ...invalidBaseSessionAttributeSessionState,
+  redirectUri: mockRedirectUri,
+};
+
 export const validBiometricTokenIssuedSessionAttributes = {
   ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
