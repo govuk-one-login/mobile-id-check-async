@@ -24,7 +24,6 @@ import {
 import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
-  invalidBaseSessionAttributeSessionState,
   invalidBaseSessionAttributeSessionStateMobileApp,
   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
   invalidBiometricTokenIssuedSessionAttributeTypes,
