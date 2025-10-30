@@ -186,8 +186,8 @@ describe("DynamoDbAdapter", () => {
                   actual: "ASYNC_AUTH_SESSION_CREATED",
                   valid: ["ASYNC_AUTH_SESSION_CREATED"],
                 },
-                sessionCreatedAt: validCreatedAt,
-                sessionAgeSeconds: NOW_IN_MILLISECONDS - validCreatedAt,
+                sessionCreatedAtMillis: validCreatedAt,
+                sessionAgeMillis: NOW_IN_MILLISECONDS - validCreatedAt,
               },
             });
           });
@@ -230,8 +230,8 @@ describe("DynamoDbAdapter", () => {
                   actual: "ASYNC_AUTH_SESSION_ABORTED",
                   valid: ["ASYNC_AUTH_SESSION_CREATED"],
                 },
-                sessionCreatedAt: validCreatedAt,
-                sessionAgeSeconds: NOW_IN_MILLISECONDS - validCreatedAt,
+                sessionCreatedAtMillis: validCreatedAt,
+                sessionAgeMillis: NOW_IN_MILLISECONDS - validCreatedAt,
               },
             });
           });
