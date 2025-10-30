@@ -34,11 +34,13 @@ This script provides the ability to deploy a full backend application. This incl
 
 ### How to use it
 
-#### Execute `deploy-backend-to-dev` script
+#### Execute `deploy:dev` script
 
 ```bash
 # From /backend-api
-npm run deploy-backend-to-dev <your-stack-name>
+nvm use
+npm install
+npm run deploy:dev <your-stack-name>
 ```
 
 The deployed stacks will be named as follows:
