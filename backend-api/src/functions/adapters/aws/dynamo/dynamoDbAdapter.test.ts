@@ -210,7 +210,9 @@ describe("DynamoDbAdapter", () => {
               new ConditionalCheckFailedException({
                 $metadata: {},
                 message: "Conditional check failed",
-                Item: marshall(invalidBaseSessionAttributeSessionStateMobileApp),
+                Item: marshall(
+                  invalidBaseSessionAttributeSessionStateMobileApp,
+                ),
               }),
             );
             result = await sessionRegistry.updateSession(
