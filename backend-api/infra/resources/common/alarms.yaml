@@ -16,15 +16,25 @@ Resources:
         - "Alarms when no journeys have been started successfully in the past 25 minutes. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [ StaticVariables, SupportManual, value ]
       AlarmName: !Sub "${AWS::StackName}-zero-journeys-started"
-      Namespace: !Sub "${AWS::StackName}/LogMessages"
-      MetricName: JourneysStarted
-      Statistic: Sum
-      Period: 1500
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 0
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: breaching
+      Metrics:
+        - Id: journeysStarted
+          Label: journeysStarted
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: JourneysStarted
+            Period: 1500
+            Stat: Sum
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: FILL(journeysStarted, 0)
 
   ZeroVcsIssuedAlarm:
     Type: AWS::CloudWatch::Alarm
