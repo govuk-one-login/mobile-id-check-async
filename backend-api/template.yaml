@@ -6978,8 +6978,8 @@ Resources:
             - value
       AlarmName: !Sub ${AWS::StackName}-zero-journeys-started
       ComparisonOperator: LessThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      EvaluationPeriods: 1
+      DatapointsToAlarm: 25
+      EvaluationPeriods: 25
       InsufficientDataActions: []
       Metrics:
         - Id: journeysStarted
@@ -6988,7 +6988,7 @@ Resources:
             Metric:
               MetricName: JourneysStarted
               Namespace: !Sub ${AWS::StackName}/LogMessages
-            Period: 1500
+            Period: 60
             Stat: Sum
           ReturnData: false
         - Expression: FILL(journeysStarted, 0)
