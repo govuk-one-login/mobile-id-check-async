@@ -499,6 +499,9 @@ describe("Async Biometric Token", () => {
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
           },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -863,6 +866,9 @@ describe("Async Biometric Token", () => {
           data: {
             auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED", // example field to verify that context has been added
           },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -900,7 +906,6 @@ describe("Async Biometric Token", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
           persistentIdentifiers: {
-            sessionId: mockSessionId,
             govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
@@ -930,7 +935,7 @@ const mockBiometricTokenSessionRegistrySuccess: SessionRegistry = {
   getSession: jest
     .fn()
     .mockResolvedValue(
-      successResult({ attributes: validBiometricTokenIssuedSessionAttributes }),
+      successResult(validBiometricTokenIssuedSessionAttributes),
     ),
 };
 
