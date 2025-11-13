@@ -71,10 +71,8 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const sessionId = validateSqsEventResult.value;
   const sqsMessage = event.Records[0];
 
-  appendPersistentIdentifiersToLogger({ sessionId });
   appendSqsMessagePropertiesToLogger(sqsMessage);
 
   const sessionRegistry = dependencies.getSessionRegistry(
@@ -82,6 +80,7 @@ export async function lambdaHandlerConstructor(
   );
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const sessionId = validateSqsEventResult.value;
 
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
