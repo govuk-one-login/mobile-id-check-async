@@ -49,7 +49,7 @@ jobs:
           submodules: true
 
       - name: Setup nodeJS
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           cache: npm
           cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
@@ -105,7 +105,7 @@ jobs:
 
       - name: Run Checkov
         if: inputs.RUN_CHECKOV == 'true'
-        uses: bridgecrewio/checkov-action@cba89e33f08479973cadc681333ffe84f7c8e824 # v12
+        uses: bridgecrewio/checkov-action@5abded944c5e3fb597c3fcb4f2a5aa83d9c73f8b # v12
         with:
           directory: ${{ inputs.WORKING_DIRECTORY }}
           quiet: true
