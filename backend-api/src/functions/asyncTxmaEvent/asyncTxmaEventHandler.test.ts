@@ -288,6 +288,9 @@ describe("Async TxMA Event", () => {
             data: {
               auditEventName: eventName,
             },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
 
           expect(testResult).toStrictEqual({
@@ -338,7 +341,6 @@ describe("Async TxMA Event", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
             persistentIdentifiers: {
-              sessionId: mockSessionId,
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
           });

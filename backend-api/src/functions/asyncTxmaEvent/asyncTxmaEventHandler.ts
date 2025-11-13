@@ -58,8 +58,6 @@ export async function lambdaHandlerConstructor(
   const requestBody = validateRequestBodyResult.value;
   const { sessionId } = requestBody;
 
-  appendPersistentIdentifiersToLogger({ sessionId });
-
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
