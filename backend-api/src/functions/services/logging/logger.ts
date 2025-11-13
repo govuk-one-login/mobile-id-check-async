@@ -5,7 +5,6 @@ import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Logge
 export interface ILogger<T extends string> {
   log(message: T, data: LogAttributes): void;
   addContext(lambdaContext: Context): void;
-  setSessionId: (keys: { sessionId: string }) => void;
 }
 
 export interface ILoggerAdapter<T extends string> {
@@ -31,9 +30,5 @@ export class Logger<T extends string> implements ILogger<T> {
 
   addContext = (context: Context): void => {
     this.logger.addContext(context);
-  };
-
-  setSessionId = (keys: { sessionId: string }) => {
-    this.logger.appendKeys(keys);
   };
 }
