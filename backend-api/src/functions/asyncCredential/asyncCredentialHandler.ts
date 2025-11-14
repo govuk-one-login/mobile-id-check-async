@@ -172,8 +172,6 @@ export async function lambdaHandlerConstructor(
   }
   const sessionId = createSessionResult.value;
 
-  appendPersistentIdentifiersToLogger({ sessionId });
-
   // Write audit event
   const eventService = dependencies.eventService(config.TXMA_SQS);
   const writeEventResult = await eventService.writeGenericEvent({
