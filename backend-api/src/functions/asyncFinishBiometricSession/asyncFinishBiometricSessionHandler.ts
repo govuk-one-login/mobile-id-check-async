@@ -60,7 +60,7 @@ export async function lambdaHandlerConstructor(
   }
   const { biometricSessionId, sessionId } = validateResult.value;
 
-  appendPersistentIdentifiersToLogger({ biometricSessionId, sessionId });
+  appendPersistentIdentifiersToLogger({ biometricSessionId });
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionRegistry = dependencies.getSessionRegistry(

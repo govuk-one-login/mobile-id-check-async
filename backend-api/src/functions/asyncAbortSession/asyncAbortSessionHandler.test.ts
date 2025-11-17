@@ -463,6 +463,9 @@ describe("Async Abort Session", () => {
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
             },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
         });
 
@@ -549,6 +552,9 @@ describe("Async Abort Session", () => {
           data: {
             auditEventName: "DCMAW_ASYNC_ABORT_APP",
           },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -583,7 +589,6 @@ describe("Async Abort Session", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ABORT_SESSION_COMPLETED",
         persistentIdentifiers: {
-          sessionId: mockSessionId,
           govukSigninJourneyId: mockGovukSigninJourneyId,
         },
         outboundSqsMessageResponseProperties: {

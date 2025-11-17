@@ -12,6 +12,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
+  mockGovukSigninJourneyId,
   mockInertEventService,
   mockSessionId,
   mockSuccessfulEventService,
@@ -512,6 +513,9 @@ describe("Async Active Session", () => {
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_APP_START",
             },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
         });
 
@@ -532,7 +536,7 @@ describe("Async Active Session", () => {
           eventName: "DCMAW_ASYNC_CRI_APP_START",
           sub: "mockSub",
           sessionId: mockSessionId,
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          govukSigninJourneyId: mockGovukSigninJourneyId,
           getNowInMilliseconds: Date.now,
           componentId: "https://mockIssuer.com/",
           ipAddress: "1.1.1.1",
@@ -547,7 +551,7 @@ describe("Async Active Session", () => {
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
           activeSessionFound: true,
           persistentIdentifiers: {
-            sessionId: mockSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });
