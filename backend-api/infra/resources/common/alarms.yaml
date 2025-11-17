@@ -245,7 +245,7 @@ Resources:
           ReturnData: true
           Expression: IF(FILL(drivingLicenceVCsIssuedOnAnyAttempt, 0) >= 5, percentageOfDrivingLicenceVCsIssuedOnFirstAttempt, 100)
 
-  DrivingLicenceIssueBiometricCredentialUnexpectedFailureAlarm:
+  IssueBiometricCredentialUnexpectedFailureAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
     DependsOn:
@@ -259,7 +259,7 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: "Triggers when an unexpected error is thrown when
         retrieving the credential from the biometric session."
-      AlarmName: !Sub "${AWS::StackName}-driving-licence-issue-biometric-credential-unexpected-failure"
+      AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-unexpected-failure"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 1
