@@ -22,3 +22,16 @@ Resources:
           Dimensions:
             - Key: DocumentType
               Value: $.documentType
+
+  IssueBiometricCredentialUnexpectedFailureMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      FilterPattern: "{ $.messageCode = MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE }"
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "IssueBiometricCredentialUnexpectedFailure"
+          Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode

@@ -214,6 +214,7 @@ describe("Backend application infrastructure", () => {
         ["passport-biometric-sessions-not-ready"],
         ["driving-licence-biometric-sessions-not-ready"],
         ["brp-biometric-sessions-not-ready"],
+        ["driving-licence-issue-biometric-credential-unexpected-failure"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
