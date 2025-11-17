@@ -5585,7 +5585,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: Triggers when an unexpected error is thrown when retrieving the credential from the biometric session.
+      AlarmDescription: Triggers when the biometric-credential package throws an error.
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-unexpected-failure
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
