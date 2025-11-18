@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.1.0/schemas/schema.json",
+  "services": [
+    {
+      "quality-gates": [
+        {
+          "check-types": [
+            "code style and linting"
+          ],
+          "config": {
+            "file": ".github/workflows/job_ci-checks.yml",
+            "name": "Run CI checks",
+            "path": "jobs.ci-checks",
+            "notes": "(Remove before merge) We can't address individual jobs steps. So this covers: Check formatting; Check linting; Verify template format using rain; Verify SAM template; Run Checkov"
+          },
+          "phase": "pre-merge",
+          "provider": "GitHub"
+        },
+        {
+          "check-types": [
+            "code style and linting",
+            "contract",
+            "stack",
+            "unit"
+          ],
+          "config": {
+            "file": ".github/workflows/job_test-suite.yml",
+            "name": "Run test suite",
+            "path": "jobs.run-test-suite",
+            "notes": "(Remove before merge) We can't address individual jobs steps. So this covers: Run Unit Tests ('unit'), Run SonarQube scan ('code style and linting'), Run SonarQube Quality Gate check ('stack'?), Run Pact Tests ('contract')"
+          },
+          "phase": "pre-merge",
+          "provider": "GitHub"
+        }
+      ],
+      "service-tag": "mobile-id-check-async"
+    }
+  ]
+}
