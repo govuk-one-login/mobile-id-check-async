@@ -4088,22 +4088,17 @@ Resources:
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-unexpected-failure
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE
       EvaluationPeriods: 1
       InsufficientDataActions: []
-      Metrics:
-        - Id: error
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: MessageCode
-                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE
-              MetricName: AsyncIssueBiometricCredentialMessageCode
-              Namespace: !Sub ${AWS::StackName}/LogMessages
-            Period: 60
-            Stat: Sum
-          ReturnData: true
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
     Condition: DeployAlarms
