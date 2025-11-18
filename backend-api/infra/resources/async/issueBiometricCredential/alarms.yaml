@@ -1,19 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  AsyncIssueBiometricCredentialMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Condition: DeployAlarms
-    Properties:
-      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      FilterPattern: '{ $.messageCode = * }'
-      MetricTransformations:
-        - MetricValue: "1"
-          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
-          MetricName: "AsyncIssueBiometricCredentialMessageCode"
-          Dimensions:
-            - Key: MessageCode
-              Value: $.messageCode
-
   AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
@@ -477,3 +463,35 @@ Resources:
       Threshold: 27
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+
+  AsyncIssueBiometricCredentialUnexpectedFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: [ ]
+      AlarmDescription: "Triggers when the biometric-credential package throws an error."
+      AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-unexpected-failure"
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: error
+          ReturnData: true
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE
+            Period: 60
+            Stat: Sum
