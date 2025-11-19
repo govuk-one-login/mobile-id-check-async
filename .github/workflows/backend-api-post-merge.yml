@@ -10,6 +10,7 @@ on:
       - ".github/workflows/backend-api-post-merge.yml"
       - "!backend-api/**/*.md"
       - "!backend-api/**/*.png"
+      - "!quality-gate.manifest.json"
   workflow_dispatch:
 
 permissions:
