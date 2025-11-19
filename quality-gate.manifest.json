@@ -30,7 +30,7 @@
           "provider": "GitHub"
         }
       ],
-      "service-tag": "mobile-id-check-async"
+      "service-tag": "backend-api"
     },
     {
       "quality-gates": [
@@ -61,7 +61,7 @@
           "provider": "GitHub"
         }
       ],
-      "service-tag": "mobile-id-check-async"
+      "service-tag": "test-resources"
     }
   ]
 }
