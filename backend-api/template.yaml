@@ -4076,6 +4076,33 @@ Resources:
           Unit: Milliseconds
     Condition: DeployAlarms
 
+  AsyncIssueBiometricCredentialUnexpectedFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: Triggers when the biometric-credential package throws an error.
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-unexpected-failure
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncIssueBiometricCredentialVendorLikenessDisabledAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:

@@ -757,7 +757,7 @@ describe("Async Issue Biometric Credential", () => {
           it("Logs BIOMETRIC_SESSION_UNEXPECTED_FAILURE", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
-                "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
               error: {
                 message: "UNEXPECTED_FAILURE",
               },
@@ -808,7 +808,7 @@ describe("Async Issue Biometric Credential", () => {
           it("Logs BIOMETRIC_SESSION_UNEXPECTED_FAILURE", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
-                "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
               error: {
                 message: "UNEXPECTED_FAILURE",
               },
