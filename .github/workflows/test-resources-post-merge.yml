@@ -10,7 +10,6 @@ on:
       - ".github/workflows/test-resources-post-merge.yml"
       - "!test-resources/**/*.md"
       - "!test-resources/**/*.png"
-      - "!quality-gate.manifest.json"
   workflow_dispatch:
 
 permissions:
