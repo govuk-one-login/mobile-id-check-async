@@ -28,12 +28,7 @@
           },
           "phase": "pre-merge",
           "provider": "GitHub"
-        }
-      ],
-      "service-tag": "backend-api"
-    },
-    {
-      "quality-gates": [
+        },
         {
           "check-types": [
             "code style and linting"
@@ -61,7 +56,7 @@
           "provider": "GitHub"
         }
       ],
-      "service-tag": "test-resources"
+      "service-tag": "mobile-id-check"
     }
   ]
 }
