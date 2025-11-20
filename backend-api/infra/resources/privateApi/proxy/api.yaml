@@ -60,14 +60,14 @@ Resources:
     Condition: ProxyApiDeployment
 
   ProxyApiSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter    
+    Type: AWS::Logs::SubscriptionFilter
+    Condition: DeployProxyCsls
     Properties:
-      DestinationArn: 
+      DestinationArn:
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
-    Condition: DeployProxyCsls
-    
+
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:

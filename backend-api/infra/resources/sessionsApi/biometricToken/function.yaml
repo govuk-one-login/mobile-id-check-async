@@ -63,14 +63,14 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
 
-  AsyncBiometricTokenSubscriptionFilter:    
+  AsyncBiometricTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
     Properties:
-      DestinationArn: 
+      DestinationArn:
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
-    Condition: isNotDev
 
   AsyncBiometricTokenLambdaRole:
     Type: AWS::IAM::Role

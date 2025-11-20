@@ -53,14 +53,14 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
 
-  AsyncFinishBiometricSessionSubscriptionFilter:    
+  AsyncFinishBiometricSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
     Properties:
-      DestinationArn: 
+      DestinationArn:
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
-    Condition: isNotDev
 
   AsyncFinishBiometricSessionLambdaRole:
     Type: AWS::IAM::Role
