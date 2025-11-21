@@ -312,7 +312,7 @@ Conditions:
 
   DeployProxyCsls: !And
     - !Condition ProxyApiDeployment
-    - !Condition isNotDev
+    - !Condition EgressLogsToSplunkUsingCsls
 
   DevelopmentStack: !And
     - !Equals
@@ -322,6 +322,17 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-async-backend
+
+  EgressLogsToSplunkUsingCsls: !Or
+    - !Equals
+      - !Ref Environment
+      - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
 
   IntegrateIpvCore: !Or
     - !Equals
@@ -402,11 +413,6 @@ Conditions:
   isDev: !Equals
     - !Ref Environment
     - dev
-
-  isNotDev: !Not
-    - !Equals
-      - !Ref Environment
-      - dev
 
   isNotDevOrBuild: !Or
     - !Equals
@@ -1005,7 +1011,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncAbortSessionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncAbortSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1484,7 +1490,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncActiveSessionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncActiveSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2112,7 +2118,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncBiometricTokenThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2721,7 +2727,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncCredentialLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncCredentialThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3310,7 +3316,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncFinishBiometricSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4059,7 +4065,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncIssueBiometricCredentialTimeToIssueVcMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -4177,7 +4183,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncPrivateApiAccessLogs
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4744,7 +4750,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncTokenLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncTokenThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5181,7 +5187,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncTxmaEventThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5842,7 +5848,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref JsonWebKeysFunctionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   KMSEncryptionKey:
     Type: AWS::KMS::Key
@@ -6550,7 +6556,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref SessionsApiAccessLogs
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
