@@ -18,7 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-cloudformation": "3.902.0",
     "inquirer": "12.9.6",
-    "zx": "8.8.4"
+    "zx": "8.8.5"
   },
   "devDependencies": {
     "@types/node": "22.18.8",
