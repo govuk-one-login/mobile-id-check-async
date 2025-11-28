@@ -69,6 +69,7 @@ jobs:
 
       - name: Build Image
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker build -t ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }} .
