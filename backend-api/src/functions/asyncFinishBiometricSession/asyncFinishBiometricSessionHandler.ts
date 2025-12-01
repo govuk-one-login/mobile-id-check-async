@@ -48,6 +48,11 @@ export async function lambdaHandlerConstructor(
   }
   const config = configResult.value;
 
+  const persistentIdentifiers: {
+    biometricSessionId?: string;
+    govukSigninJourneyId?: string;
+  } = {};
+
   const validateResult = validateRequestBody(event.body);
   if (validateResult.isError) {
     logger.error(LogMessage.FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID, {
@@ -60,6 +65,7 @@ export async function lambdaHandlerConstructor(
   }
   const { biometricSessionId, sessionId } = validateResult.value;
 
+  persistentIdentifiers.biometricSessionId = biometricSessionId;
   appendPersistentIdentifiersToLogger({ biometricSessionId });
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
@@ -86,9 +92,9 @@ export async function lambdaHandlerConstructor(
   const sessionAttributes = updateResult.value
     .attributes as BiometricSessionFinishedAttributes;
 
-  appendPersistentIdentifiersToLogger({
-    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-  });
+  persistentIdentifiers.govukSigninJourneyId =
+    sessionAttributes.govukSigninJourneyId;
+  appendPersistentIdentifiersToLogger(persistentIdentifiers);
 
   const sendMessageToSqs = dependencies.getSendMessageToSqs();
   const vendorProcessingMessage = {
