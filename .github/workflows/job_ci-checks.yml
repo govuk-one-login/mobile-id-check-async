@@ -57,7 +57,7 @@ jobs:
           if [[ $TITLE =~ $REGEX_PATTERN ]]; then
             echo 'PR title is valid'
           else
-            echo 'PR title includes apostrophe. This is cause SAM upload to fail. Remove apostrophe from PR title and retry.'
+            echo 'PR title includes apostrophe. This causes SAM upload to fail. Remove apostrophe from PR title and retry.'
             exit 1
           fi
 
