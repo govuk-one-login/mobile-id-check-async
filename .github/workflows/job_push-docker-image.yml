@@ -74,10 +74,10 @@ jobs:
         run: |
           docker build -t ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }} .
 
-      - name: Push Image
-        run: |
-          docker push ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }}
+      # - name: Push Image
+      #   run: |
+      #     docker push ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }}
 
-      - name: Sign Image
-        run: |
-          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }}
+      # - name: Sign Image
+      #   run: |
+      #     cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }}
