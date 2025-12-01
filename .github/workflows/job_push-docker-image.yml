@@ -53,7 +53,6 @@ jobs:
       - name: Configure Authentication for Private Packages in .npmrc
         if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
         run: |
-          mv .npmrc .npmrc.old
           echo 'engine-strict=true' > .npmrc
           echo 'ignore-scripts=true' >> .npmrc
           echo '@govuk-one-login:registry=https://npm.pkg.github.com/' >> .npmrc
@@ -73,10 +72,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker build --secret id=NPM_TOKEN,env=GITHUB_TOKEN -t ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }} .
-
-      - name: Restore npmrc
-        run: |
-          mv .npmrc.old .npmrc
 
       - name: Push Image
         run: |
