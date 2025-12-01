@@ -56,7 +56,7 @@ jobs:
           echo 'engine-strict=true' > .npmrc
           echo 'ignore-scripts=true' >> .npmrc
           echo '@govuk-one-login:registry=https://npm.pkg.github.com/' >> .npmrc
-          echo '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}' >> .npmrc
+          echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' >> .npmrc
 
       - name: Authenticate with AWS
         uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8 #v5.1.0
@@ -71,7 +71,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker build -t ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }} .
+          docker build \
+            --secret id=NPM_TOKEN,env=GITHUB_TOKEN \
+            -t ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }} .
 
       - name: Push Image
         run: |
