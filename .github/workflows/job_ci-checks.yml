@@ -48,24 +48,25 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup nodeJS
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          cache: npm
-          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
-          node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
-
       - name : Check If PR Title Includes Apostrophe
         env:
           TITLE: ${{ github.event.pull_request.title }}
           REGEX_PATTERN: ^[^']*$
         run: |
+          echo $TITLE
           if [[ $TITLE =~ $REGEX_PATTERN ]]; then
             echo 'PR title is valid'
           else
             echo 'PR title includes apostrophe. This is cause SAM upload to fail. Remove apostrophe from PR title and retry.'
             exit 1
           fi
+
+      - name: Setup nodeJS
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          cache: npm
+          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
+          node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
 
       - name: Configure authentication for private packages in .npmrc
         if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
