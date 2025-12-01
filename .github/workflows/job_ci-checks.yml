@@ -55,6 +55,18 @@ jobs:
           cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
           node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
 
+      - name : Check If PR Title Includes Apostrophe
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          REGEX_PATTERN: ^[^']*$
+        run: |
+          if [[ $TITLE =~ $REGEX_PATTERN ]]; then
+            echo 'PR title is valid'
+          else
+            echo 'PR title includes apostrophe. This is cause SAM upload to fail. Remove apostrophe from PR title and retry.'
+            exit 1
+          fi
+
       - name: Configure authentication for private packages in .npmrc
         if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
         run: |
