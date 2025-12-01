@@ -58,14 +58,14 @@ jobs:
       - name: Configure authentication for private packages in .npmrc
         if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
         run: |
-          echo 'engine-strict=true' > .npmrc
-          echo 'ignore-scripts=true' >> .npmrc
-          echo '@govuk-one-login:registry=https://npm.pkg.github.com/' >> .npmrc
-          echo '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}' >> .npmrc
-
-      - name: Install dependencies
+          echo "engine-strict=true" > .npmrc
+          echo "ignore-scripts=true" >> .npmrc
+          echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
         run: npm clean-install
 
       - name: Check formatting

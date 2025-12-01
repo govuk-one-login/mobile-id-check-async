@@ -66,15 +66,15 @@ jobs:
 
       - name: Configure Authentication for Private Packages in .npmrc
         if: inputs.GENERATE_OPEN_PROXY_API_SPEC == 'true'
-        run: |
-          echo 'engine-strict=true' > .npmrc
-          echo 'ignore-scripts=true' >> .npmrc
-          echo '@govuk-one-login:registry=https://npm.pkg.github.com/' >> .npmrc
-          echo '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}' >> .npmrc
-
-      - name: Install Dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "engine-strict=true" > .npmrc
+          echo "ignore-scripts=true" >> .npmrc
+          echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+
+      - name: Install Dependencies
         run: npm clean-install
 
       - name: Run Unit Tests
