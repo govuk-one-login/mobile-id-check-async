@@ -53,7 +53,7 @@
     "yaml-cfn": "0.3.2"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "2.29.0",
+    "@aws-lambda-powertools/logger": "2.27.0",
     "@aws-lambda-powertools/parameters": "2.27.0",
     "@aws-sdk/client-dynamodb": "3.902.0",
     "@aws-sdk/client-kms": "3.901.0",
