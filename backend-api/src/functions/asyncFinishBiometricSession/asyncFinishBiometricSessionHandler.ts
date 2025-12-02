@@ -32,7 +32,10 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
+import {
+  appendPersistentIdentifiersToLogger,
+  PersistentIdentifiers,
+} from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -48,11 +51,6 @@ export async function lambdaHandlerConstructor(
   }
   const config = configResult.value;
 
-  const persistentIdentifiers: {
-    biometricSessionId?: string;
-    govukSigninJourneyId?: string;
-  } = {};
-
   const validateResult = validateRequestBody(event.body);
   if (validateResult.isError) {
     logger.error(LogMessage.FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID, {
@@ -64,6 +62,8 @@ export async function lambdaHandlerConstructor(
     );
   }
   const { biometricSessionId, sessionId } = validateResult.value;
+
+  const persistentIdentifiers: PersistentIdentifiers = {};
 
   persistentIdentifiers.biometricSessionId = biometricSessionId;
   appendPersistentIdentifiersToLogger({ biometricSessionId });
