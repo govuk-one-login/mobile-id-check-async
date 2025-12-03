@@ -20,7 +20,7 @@
 
 Before installing any modules, you must add an `.npmrc` file - to the root
 directory i.e. the same level as the `package.json` - with the contents
-`ignore-scripts=true`.
+`ignore-scripts=true`. See guidance [here](https://team-manual.account.gov.uk/development-standards-processes/coding-practices-and-processes/configure-node-package-managers/#for-npm).
 
 1. On GitHub, generate a Personal Access Token (classic) with the following scopes:
 

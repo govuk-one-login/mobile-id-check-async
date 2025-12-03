@@ -22,7 +22,7 @@ This provides functionality to retrieve events sent to the TxMA SQS (for more, s
 
 Before installing any modules, you must add an `.npmrc` file - in the root
 directory i.e. the same level as the `package.json` - with the contents
-`ignore-scripts=true`.
+`ignore-scripts=true`. See guidance [here](https://team-manual.account.gov.uk/development-standards-processes/coding-practices-and-processes/configure-node-package-managers/#for-npm).
 
 ```bash
 npm install
