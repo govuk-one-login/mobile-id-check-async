@@ -10,9 +10,7 @@ import {
 } from "../clientRegistryService";
 
 // Used by credential handler
-export class MockClientRegistryServiceeGetPartialClientInternalServerResult
-  implements IGetPartialRegisteredClientByClientId
-{
+export class MockClientRegistryServiceeGetPartialClientInternalServerResult implements IGetPartialRegisteredClientByClientId {
   getPartialRegisteredClientByClientId = async () => {
     return errorResult({
       errorMessage: "Unexpected error retrieving registered client",
@@ -21,9 +19,7 @@ export class MockClientRegistryServiceeGetPartialClientInternalServerResult
   };
 }
 
-export class MockClientRegistryServiceGetPartialClientBadRequestResponse
-  implements IGetPartialRegisteredClientByClientId
-{
+export class MockClientRegistryServiceGetPartialClientBadRequestResponse implements IGetPartialRegisteredClientByClientId {
   getPartialRegisteredClientByClientId = async () => {
     return errorResult({
       errorMessage: "Client Id is not registered",
@@ -32,9 +28,7 @@ export class MockClientRegistryServiceGetPartialClientBadRequestResponse
   };
 }
 
-export class MockClientRegistryServiceGetPartialClientSuccessResult
-  implements IGetPartialRegisteredClientByClientId
-{
+export class MockClientRegistryServiceGetPartialClientSuccessResult implements IGetPartialRegisteredClientByClientId {
   getPartialRegisteredClientByClientId = async () => {
     return successResult({
       issuer: "mockIssuer",
@@ -42,9 +36,7 @@ export class MockClientRegistryServiceGetPartialClientSuccessResult
     });
   };
 }
-export class MockClientRegistryServiceGetPartialClientSuccessResultIPV
-  implements IGetPartialRegisteredClientByClientId
-{
+export class MockClientRegistryServiceGetPartialClientSuccessResultIPV implements IGetPartialRegisteredClientByClientId {
   getPartialRegisteredClientByClientId = async () => {
     return successResult({
       issuer: "mockIssuer",
@@ -55,17 +47,13 @@ export class MockClientRegistryServiceGetPartialClientSuccessResultIPV
 }
 
 // Used by token handler
-export class MockClientRegistryServiceSuccessResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
+export class MockClientRegistryServiceSuccessResult implements IGetRegisteredIssuerUsingClientSecrets {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
     return Promise.resolve(successResult("mockIssuer"));
   };
 }
 
-export class MockClientRegistryServiceInternalServerErrorResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
+export class MockClientRegistryServiceInternalServerErrorResult implements IGetRegisteredIssuerUsingClientSecrets {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
     return Promise.resolve(
       errorResult({
@@ -76,9 +64,7 @@ export class MockClientRegistryServiceInternalServerErrorResult
   };
 }
 
-export class MockClientRegistryServiceBadRequestResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
+export class MockClientRegistryServiceBadRequestResult implements IGetRegisteredIssuerUsingClientSecrets {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
     return Promise.resolve(
       errorResult({
