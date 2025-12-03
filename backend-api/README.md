@@ -18,6 +18,10 @@
 
 ### Enable the installation of modules from GitHub Packages
 
+Before installing any modules, you must add an `.npmrc` file - to the root
+directory i.e. the same level as the `package.json` - with the contents
+`ignore-scripts=true`. See guidance [here](https://team-manual.account.gov.uk/development-standards-processes/coding-practices-and-processes/configure-node-package-managers/#for-npm).
+
 1. On GitHub, generate a Personal Access Token (classic) with the following scopes:
 
     - `read:packages`
@@ -28,6 +32,9 @@
     - store this PAT _securely_ for re-use in the OS keychain to avoid needing to generate a new PAT for each install
 
 1. Set your token as an environment variable
+
+    Ensure you do **not** use your token directly in the `.npmrc` file. Instead,
+    use an environment variable, which will be referenced in the `.npmrc`.
 
     ```zsh
     export NPM_TOKEN=<your-classic-pat>
