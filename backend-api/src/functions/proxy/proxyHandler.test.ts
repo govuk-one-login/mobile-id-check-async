@@ -304,9 +304,7 @@ class ProxyRequestServiceSuccessResult implements IMakeProxyRequest {
     );
   };
 }
-class ProxyRequestServiceSuccessResultWithoutHeaders
-  implements IMakeProxyRequest
-{
+class ProxyRequestServiceSuccessResultWithoutHeaders implements IMakeProxyRequest {
   makeProxyRequest = async (): Promise<
     Result<{
       statusCode: number;
