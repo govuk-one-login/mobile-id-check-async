@@ -27,15 +27,13 @@ export interface BaseSessionAttributes {
   redirectUri?: string;
 }
 
-export interface BiometricTokenIssuedSessionAttributes
-  extends BaseSessionAttributes {
+export interface BiometricTokenIssuedSessionAttributes extends BaseSessionAttributes {
   documentType: DocumentType;
   opaqueId: string;
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED;
 }
 
-export interface BiometricSessionFinishedAttributes
-  extends BaseSessionAttributes {
+export interface BiometricSessionFinishedAttributes extends BaseSessionAttributes {
   documentType: DocumentType;
   opaqueId: string;
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED;
