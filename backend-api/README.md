@@ -18,7 +18,8 @@
 
 ### Enable the installation of modules from GitHub Packages
 
-Before installing any modules, you must add an `.npmrc` file with the contents
+Before installing any modules, you must add an `.npmrc` file - to the root
+directory i.e. the same level as the `package.json` - with the contents
 `ignore-scripts=true`.
 
 1. On GitHub, generate a Personal Access Token (classic) with the following scopes:

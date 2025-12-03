@@ -21,7 +21,7 @@ This provides functionality to retrieve events sent to the TxMA SQS (for more, s
 ### Installing dependencies
 
 Before installing any modules, you must add an `.npmrc` file - in the root
-directory or on the same level as the `package.json` - with the contents
+directory i.e. the same level as the `package.json` - with the contents
 `ignore-scripts=true`.
 
 ```bash
