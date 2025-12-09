@@ -18,7 +18,15 @@ export interface VerifiableCredentialMessage {
   govuk_signin_journey_id: string;
 }
 
+export interface BackoffRetryDemoMessage {
+  sessionId: string;
+  retryState:
+    | { delaySec: number; factor: number; triesLeft: number }
+    | undefined;
+}
+
 export type SQSMessageBody =
   | VendorProcessingMessage
   | OutboundQueueErrorMessage
-  | VerifiableCredentialMessage;
+  | VerifiableCredentialMessage
+  | BackoffRetryDemoMessage;
