@@ -20,6 +20,7 @@ export interface VerifiableCredentialMessage {
 
 export interface BackoffRetryDemoMessage {
   sessionId: string;
+  pctFailure: number;
   retryState:
     | { delaySec: number; factor: number; triesLeft: number }
     | undefined;
