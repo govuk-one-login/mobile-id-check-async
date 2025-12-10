@@ -59,7 +59,7 @@ export async function lambdaHandlerConstructor(
   ({ retryState } = parsedBody);
 
   // 2. Mimic making the possibly-unreliable external call to ReadID
-  const failed: boolean = Math.random() < 0.2;
+  const failed: boolean = Math.random() < 0.8;
 
   // 3. Handle OK-Ready response.
   if (!failed) {
