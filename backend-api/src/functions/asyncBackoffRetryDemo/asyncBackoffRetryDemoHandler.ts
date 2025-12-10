@@ -15,8 +15,6 @@ export async function lambdaHandlerConstructor(
   context: Context,
 ): Promise<void> {
   setupLogger(context);
-  logger.info(LogMessage.BACKOFF_RETRY_DEMO_STARTED);
-
   // 0. Get environment variables
   const configResult = getBackoffRetryDemoConfig(dependencies.env);
   if (configResult.isError) {
@@ -56,6 +54,11 @@ export async function lambdaHandlerConstructor(
     | { delaySec: number; factor: number; triesLeft: number }
     | undefined;
   ({ retryState } = parsedBody);
+
+  logger.info(LogMessage.BACKOFF_RETRY_DEMO_STARTED, {
+    sessionId,
+    retryState,
+  });
 
   // 2. Mimic making the possibly-unreliable external call to ReadID
   const failed: boolean = 100*Math.random() < (pctFailure || 0);
