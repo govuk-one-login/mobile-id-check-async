@@ -301,6 +301,10 @@ describe("Backend application infrastructure", () => {
           hasRunbookBeenSignedOff: true,
         },
         {
+          name: "backoff-retry-demo-lambda-invalid-sqs-event",
+          hasRunbookBeenSignedOff: true,
+        },
+        {
           name: "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
           hasRunbookBeenSignedOff: true,
         },

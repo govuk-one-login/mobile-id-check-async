@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  AsyncBackoffRetryDemoFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncBackoffRetryDemoLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncBackoffRetryDemo/asyncBackoffRetryDemoHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-backoff-retry-demo
+      Handler: asyncBackoffRetryDemoHandler.lambdaHandler
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AsyncBackoffRetryDemoErrorRateAlarm
+            - !Ref AsyncBackoffRetryDemoLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
+      Environment:
+        Variables:
+          DEMO_SQS: !GetAtt BackoffRetryDemoSqs.QueueUrl
+          MAX_RETRY_DELAY_IN_SECONDS: 60
+      Role: !GetAtt AsyncBackoffRetryDemoLambdaRole.Arn
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+      ReservedConcurrentExecutions: !Ref AWS::NoValue
+
+  AsyncBackoffRetryDemoLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-backoff-retry-demo
+
+  AsyncBackoffRetryDemoSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
+    Properties:
+      DestinationArn:
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncBackoffRetryDemoLogGroup
+
+  AsyncBackoffRetryDemoLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-backoff-retry-demo
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncBackoffRetryDemoLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+        - PolicyName: SQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                Resource: 
+                  - !GetAtt BackoffRetryDemoSqs.Arn
+        - PolicyName: AsyncBackoffRetryDemoFunctionSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt BackoffRetryDemoSqs.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt BackoffRetryDemoKMSEncryptionKey.Arn
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  BackoffRetryDemoEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      ScalingConfig:
+        MaximumConcurrency: 34
+      Enabled: true
+      EventSourceArn: !GetAtt BackoffRetryDemoSqs.Arn
+      FunctionName: !Ref AsyncBackoffRetryDemoFunction.Alias
