@@ -8,7 +8,6 @@ import {
   runtimeDependencies,
 } from "./handlerDependencies";
 import { RetainMessageOnQueue } from "./retainMessageOnQueue";
-import { sendMessageToSqsWithDelay } from '../adapters/aws/sqs/sendMessageToSqs';
 
 export async function lambdaHandlerConstructor(
   dependencies: BackoffRetryDemoDependencies,
@@ -52,14 +51,14 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const { sessionId } = parsedBody;
+  const { sessionId, pctFailure } = parsedBody;
   let retryState:
     | { delaySec: number; factor: number; triesLeft: number }
     | undefined;
   ({ retryState } = parsedBody);
 
   // 2. Mimic making the possibly-unreliable external call to ReadID
-  const failed: boolean = Math.random() < 0.8;
+  const failed: boolean = 100*Math.random() < (pctFailure || 0);
 
   // 3. Handle OK-Ready response.
   if (!failed) {
@@ -105,6 +104,7 @@ export async function lambdaHandlerConstructor(
     config.DEMO_SQS,
     {
       sessionId,
+      pctFailure,
       retryState,
     },
     delaySec,
@@ -120,6 +120,7 @@ const isParsedBody = (
   parsedBody: unknown,
 ): parsedBody is {
   sessionId: string;
+  pctFailure: number;
   retryState?: { delaySec: number; factor: number; triesLeft: number };
 } => {
   if (
@@ -156,8 +157,13 @@ const isParsedBody = (
       return false;
     }
   }
-
-  return "sessionId" in parsedBody && typeof parsedBody.sessionId === "string";
+  if ("pctFailure" in parsedBody && (typeof parsedBody.pctFailure !== "number")) {
+    return false;
+  }
+  if (!("sessionId" in parsedBody) || (typeof parsedBody.sessionId !== "string")) {
+    return false;
+  }
+  return true;
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
