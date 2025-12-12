@@ -1,26 +1,28 @@
-AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  VendorProcessingSqs:
+  BackoffRetryDemoSqs:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub ${AWS::StackName}-vendor-processing
+      QueueName: !Sub ${AWS::StackName}-backoff-retry-demo
       MessageRetentionPeriod: 1209600
-      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
+      VisibilityTimeout: 5
+      DelaySeconds: 2
+      ReceiveMessageWaitTimeSeconds: 5
+      KmsMasterKeyId: !Ref BackoffRetryDemoKeyAlias
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt VendorProcessingDlq.Arn
+        deadLetterTargetArn: !GetAtt BackoffRetryDemoDlq.Arn
         maxReceiveCount: 360
 
-  VendorProcessingDlq:
+  BackoffRetryDemoDlq:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub ${AWS::StackName}-vendor-processing-dlq
+      QueueName: !Sub ${AWS::StackName}-backoff-retry-demo-dlq
       MessageRetentionPeriod: 1209600
-      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
+      KmsMasterKeyId: !Ref BackoffRetryDemoKeyAlias
 
-  VendorProcessingKMSEncryptionKey:
+  BackoffRetryDemoKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for encrypting the Vendor Processing SQS
+      Description: A KMS Key for encrypting the Backoff Retry Demo SQS
       Enabled: true
       EnableKeyRotation: true
       KeyPolicy:
@@ -41,8 +43,8 @@ Resources:
         - KmsPendingDeletionInDays
         - !Ref Environment
 
-  VendorProcessingKeyAlias:
+  BackoffRetryDemoKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub alias/${AWS::StackName}-VendorProcessingKMSEncryptionKey
-      TargetKeyId: !Ref VendorProcessingKMSEncryptionKey
+      AliasName: !Sub alias/${AWS::StackName}-BackoffRetryDemoKMSEncryptionKey
+      TargetKeyId: !Ref BackoffRetryDemoKMSEncryptionKey
