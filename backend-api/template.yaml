@@ -7235,15 +7235,12 @@ Resources:
   VendorProcessingSqs:
     Type: AWS::SQS::Queue
     Properties:
-      DelaySeconds: 8
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
       QueueName: !Sub ${AWS::StackName}-vendor-processing
-      ReceiveMessageWaitTimeSeconds: 5
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt VendorProcessingDlq.Arn
         maxReceiveCount: 360
-      VisibilityTimeout: 6
 
   VendorProcessingSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm

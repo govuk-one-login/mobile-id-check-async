@@ -5,9 +5,6 @@ Resources:
     Properties:
       QueueName: !Sub ${AWS::StackName}-vendor-processing
       MessageRetentionPeriod: 1209600
-      VisibilityTimeout: 6
-      DelaySeconds: 8
-      ReceiveMessageWaitTimeSeconds: 5
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt VendorProcessingDlq.Arn
