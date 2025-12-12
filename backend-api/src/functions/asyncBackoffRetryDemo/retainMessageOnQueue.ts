@@ -1,4 +1,6 @@
-type RetainMessageOnQueueMessages = "Invalid config";
+type RetainMessageOnQueueMessages =
+  | "Invalid config"
+  | "Retry later";
 
 export class RetainMessageOnQueue extends Error {
   constructor(message: RetainMessageOnQueueMessages) {

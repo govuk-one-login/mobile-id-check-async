@@ -50,14 +50,22 @@ export async function lambdaHandlerConstructor(
   }
 
   const { sessionId, pctFailure } = parsedBody;
-  let retryState:
-    | { delaySec: number; factor: number; triesLeft: number }
-    | undefined;
-  ({ retryState } = parsedBody);
+  
+  const tryIndex = parseInt(record.attributes.ApproximateReceiveCount);
+  const firstSentTimeEpochMillis = parseInt(record.attributes.ApproximateFirstReceiveTimestamp);
+  const timeNowEpochMillis = Date.now();
+  const timeElapsedSecs = (timeNowEpochMillis - firstSentTimeEpochMillis) / 1000;
+  const debug = {
+    pctFailure,
+    tryIndex,
+    firstSentTimeEpochMillis,
+    timeNowEpochMillis,
+    timeElapsedSecs,
+  };
 
   logger.info(LogMessage.BACKOFF_RETRY_DEMO_STARTED, {
     sessionId,
-    retryState,
+    debug,
   });
 
   // 2. Mimic making the possibly-unreliable external call to ReadID
@@ -67,57 +75,55 @@ export async function lambdaHandlerConstructor(
   if (!failed) {
     logger.info(LogMessage.BACKOFF_RETRY_DEMO_COMPLETED, {
       sessionId,
-      retryState,
+      debug,
     });
     return;
   }
 
-  // 4. Handle OK-Not Ready response.  On first attempt we won't have any retry state, so choose a default.
-  // The default can be based on document type in a real implementation.
-  if (!retryState) {
-    retryState = {
-      delaySec: 5,
-      factor: 2,
-      triesLeft: 3,
-    };
-  }
+  // 4. Handle OK-Not Ready response.
+  const maxTries = 10;
+  const initialDelaySec = 5;
+  const backoffFactor = 2;
 
   // 5. Handle situation where no more tries will be made.
-  retryState.triesLeft--;
-  if (retryState.triesLeft == 0) {
+  if (tryIndex == maxTries) {
     // No tries left. In a real implementation, need to decide how to handle this.
     // e.g. could drop it entirely.  Or could post the message to a DLQ.
     logger.error(LogMessage.BACKOFF_RETRY_DEMO_RETRIES_EXHAUSTED, {
       sessionId,
-      retryState,
+      debug,
     });
     return;
   }
 
-  // 6. Computes the _next_ try's delay, to push to the queue.  Cap it at a max so it doesn't
-  // exponentially grow unbounded. delaySec is the delay time for _this_ retry.
-  const delaySec = retryState.delaySec;
-  retryState.delaySec = Math.min(
+  // 6. Computes the back-off delay, capped at a max so it doesn't
+  // exponentially grow unbounded.
+  const delaySec = Math.min(
     Number(config.MAX_RETRY_DELAY_IN_SECONDS),
-    retryState.delaySec * retryState.factor,
+    initialDelaySec * (backoffFactor ** tryIndex),
   );
 
-  // 7. Post back to the demo queue, delayed by _this_ time's delay, delaySec.
-  await dependencies.sendMessageToSqsWithDelay(
-    config.DEMO_SQS,
-    {
-      sessionId,
-      pctFailure,
-      retryState,
-    },
+  // 7. Update message visibility.
+  //const revealMessageAtMillis = timeNowEpochMillis + 1000*delaySec;
+  await dependencies.changeMessageVisibility(
+    sqsQueueUrlFromArn(record.eventSourceARN),
+    record.receiptHandle,
     delaySec,
   );
 
   logger.info(LogMessage.BACKOFF_RETRY_DEMO_RETRYING, {
     sessionId,
-    retryState,
+    debug,
   });
+  throw new RetainMessageOnQueue("Retry later");
 }
+
+const sqsQueueUrlFromArn = (
+  _ /*queueArn*/: string,
+) => {
+  // TODO: impl this.
+  return "https://sqs.eu-west-2.amazonaws.com/211125300205/phad-async-backend-backoff-retry-demo";
+};
 
 const isParsedBody = (
   parsedBody: unknown,
@@ -132,33 +138,6 @@ const isParsedBody = (
     Array.isArray(parsedBody)
   ) {
     return false;
-  }
-
-  if ("retryState" in parsedBody) {
-    if (typeof parsedBody.retryState !== "object") {
-      return false;
-    }
-    if (
-      parsedBody.retryState !== null &&
-      "delaySec" in parsedBody.retryState &&
-      typeof parsedBody.retryState.delaySec !== "number"
-    ) {
-      return false;
-    }
-    if (
-      parsedBody.retryState !== null &&
-      "factor" in parsedBody.retryState &&
-      typeof parsedBody.retryState.factor !== "number"
-    ) {
-      return false;
-    }
-    if (
-      parsedBody.retryState !== null &&
-      "triesLeft" in parsedBody.retryState &&
-      typeof parsedBody.retryState.triesLeft !== "number"
-    ) {
-      return false;
-    }
   }
   if ("pctFailure" in parsedBody && (typeof parsedBody.pctFailure !== "number")) {
     return false;

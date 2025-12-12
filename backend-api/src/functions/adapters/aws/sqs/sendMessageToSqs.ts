@@ -1,4 +1,7 @@
 import {
+  ChangeMessageVisibilityCommand,
+  ChangeMessageVisibilityCommandOutput,
+  ChangeMessageVisibilityRequest,
   SendMessageCommand,
   SendMessageResult,
   SQSClient,
@@ -6,7 +9,7 @@ import {
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { logger } from "../../../common/logging/logger";
-import { emptyFailure, Result, successResult } from "../../../utils/result";
+import { emptyFailure, emptySuccess, Result, successResult } from "../../../utils/result";
 import { SQSMessageBody } from "./types";
 
 export const sendMessageToSqs = async (
@@ -44,6 +47,27 @@ export const sendMessageToSqsWithDelay = async (
 
   logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_SUCCESS);
   return successResult(response.MessageId);
+};
+
+export const changeMessageVisibility = async (
+  sqsArn: string,
+  receiptHandle: string,
+  visibilityTimeout: number,
+): Promise<Result<void>> => {
+  const input: ChangeMessageVisibilityRequest = {
+    QueueUrl: sqsArn,
+    ReceiptHandle: receiptHandle,
+    VisibilityTimeout: visibilityTimeout,
+  };
+
+  const response: ChangeMessageVisibilityCommandOutput = await sqsClient.send(
+    new ChangeMessageVisibilityCommand(input),
+  );
+
+  logger.debug(LogMessage. CHANGE_MESSAGE_VISIBILITY_ATTEMPT, {
+    changeResponseMetadata: response.$metadata,
+  });
+  return emptySuccess();
 };
 
 export const sqsClient = new SQSClient({

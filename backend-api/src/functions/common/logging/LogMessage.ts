@@ -111,6 +111,12 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_SUCCESS",
     "Successfully writen message to SQS.",
   );
+
+  static readonly CHANGE_MESSAGE_VISIBILITY_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_CHANGE_MESSAGE_VISIBILITY_ATTEMPT",
+    "Attempting to change message visibility in SQS.",
+  );
+
   static readonly CREATE_SIGNED_JWT_ATTEMPT = new LogMessage(
     "MOBILE_ASYNC_CREATE_SIGNED_JWT_ATTEMPT",
     "Attempting to sign JWT with KMS",
