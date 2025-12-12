@@ -63,6 +63,7 @@
     "@aws-sdk/client-ssm": "3.947.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "@aws-sdk/util-dynamodb": "3.947.0",
+    "@smithy/util-retry": "4.2.5",
     "@govuk-one-login/mobile-id-check-biometric-credential": "1.1.35",
     "axios": "1.13.2",
     "ecdsa-sig-formatter": "1.0.11",
