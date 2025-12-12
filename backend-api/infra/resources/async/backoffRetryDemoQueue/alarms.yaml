@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  BackoffRetryDemoSqsAgeOfOldestMessageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when the age of the oldest message in Backoff Retry Demo SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
+      AlarmName: !Sub "${AWS::StackName}-backoff-retry-demo-sqs-age-of-oldest-message"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 1800
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt BackoffRetryDemoSqs.QueueName
+
+  BackoffRetryDemoDlqMessageVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when new message gets added to Backoff Retry Demo SQS DLQ. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
+      AlarmName: !Sub "${AWS::StackName}-backoff-retry-demo-dlq-message-visible"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt BackoffRetryDemoDlq.QueueName
+
+  BackoffRetryDemoDlqAgeOfOldestMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when the age of the oldest message in Backoff Retry Demo SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-backoff-retry-demo-dlq-age-of-oldest-message"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 259200
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt BackoffRetryDemoDlq.QueueName
