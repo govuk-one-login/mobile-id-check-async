@@ -50,6 +50,7 @@ import { GenericEventNames, IEventService } from "../services/events/types";
 import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
+import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -207,6 +208,7 @@ export async function lambdaHandlerConstructor(
         biometricSession,
         fraudCheckData,
         getCredentialFromBiometricSessionOptions,
+        getCredentialFromBiometricSessionLogger,
       );
   } catch (error: unknown) {
     return await handleGetCredentialFailure(

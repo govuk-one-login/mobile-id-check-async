@@ -43,6 +43,7 @@ import {
 } from "./getBiometricSession/getBiometricSession";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
+import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -1312,6 +1313,7 @@ describe("Async Issue Biometric Credential", () => {
               enableBiometricResidencePermit: true,
               enableBiometricResidenceCard: true,
             },
+            getCredentialFromBiometricSessionLogger,
           );
         });
 
