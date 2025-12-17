@@ -11,6 +11,10 @@ on:
         description: Whether open proxy API spec needs to be generated
         type: string
         default: false
+      PRIVATE_PACKAGES_REQUIRED:
+        description: Whether private packages must be installed
+        type: string
+        default: false
       TEMPLATE_NAME:
         description: The name of the SAM template to upload
         type: string
@@ -55,7 +59,7 @@ jobs:
           node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
 
       - name: Configure Authentication for Private Packages in .npmrc
-        if: inputs.GENERATE_OPEN_PROXY_API_SPEC == 'true'
+        if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
         run: |
           echo 'engine-strict=true' > .npmrc
           echo 'ignore-scripts=true' >> .npmrc
@@ -63,7 +67,6 @@ jobs:
           echo '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}' >> .npmrc
 
       - name: Install Dependencies
-        if: inputs.GENERATE_OPEN_PROXY_API_SPEC == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm clean-install
