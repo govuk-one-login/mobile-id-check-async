@@ -13,6 +13,14 @@ export const sendMessageToSqs = async (
   sqsArn: string,
   messageBody: SQSMessageBody,
 ): Promise<Result<string | undefined, void>> => {
+  return sendMessageToSqsWithDelay(sqsArn, messageBody, undefined);
+};
+
+export const sendMessageToSqsWithDelay = async (
+  sqsArn: string,
+  messageBody: SQSMessageBody,
+  delaySeconds: number | undefined,
+): Promise<Result<string | undefined, void>> => {
   let response: SendMessageResult;
   try {
     logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_ATTEMPT, {
@@ -24,6 +32,7 @@ export const sendMessageToSqs = async (
       new SendMessageCommand({
         QueueUrl: sqsArn,
         MessageBody: JSON.stringify(messageBody),
+        DelaySeconds: delaySeconds,
       }),
     );
   } catch (error: unknown) {
