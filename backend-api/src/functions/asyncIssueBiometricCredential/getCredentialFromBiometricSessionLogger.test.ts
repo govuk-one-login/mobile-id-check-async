@@ -13,7 +13,10 @@ describe("getCredentialFromBiometricSessionLogger", () => {
 
   it("Logs at error", () => {
     logger.appendPersistentKeys({ mockKey: "mockValue" });
-    getCredentialFromBiometricSessionLogger.error("DRIVING_LICENCE_INVALID_ISSUER", {});
+    getCredentialFromBiometricSessionLogger.error(
+      "DRIVING_LICENCE_INVALID_ISSUER",
+      {},
+    );
     expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
       message: "DRIVING_LICENCE_INVALID_ISSUER",
       mockKey: "mockValue",
