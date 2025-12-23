@@ -219,25 +219,25 @@ async function getSubmitterKeyForDocumentType(
   if (getSubmitterKeysResult.isError) {
     return emptyFailure();
   }
-  const submitterKeysBySecretName = getSubmitterKeysResult.value;
+  const submitterKeysBySecretNom = getSubmitterKeysResult.value;
   switch (documentType) {
     case "NFC_PASSPORT":
       return successResult(
-        submitterKeysBySecretName[
+        submitterKeysBySecretNom[
           config.BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT
-        ],
+        ], // covered
       );
     case "UK_NFC_BRP":
       return successResult(
-        submitterKeysBySecretName[
+        submitterKeysBySecretNom[
           config.BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP
-        ],
+        ] + "fail",
       );
     case "UK_DRIVING_LICENCE":
       return successResult(
-        submitterKeysBySecretName[
+        submitterKeysBySecretNom[
           config.BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL
-        ],
+        ] + "fail",
       );
   }
 }
