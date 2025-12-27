@@ -1,0 +1,50 @@
+Resources:
+  BackoffRetryDemoSqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-backoff-retry-demo
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout: 5
+      DelaySeconds: 2
+      ReceiveMessageWaitTimeSeconds: 5
+      KmsMasterKeyId: !Ref BackoffRetryDemoKeyAlias
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt BackoffRetryDemoDlq.Arn
+        maxReceiveCount: 360
+
+  BackoffRetryDemoDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-backoff-retry-demo-dlq
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref BackoffRetryDemoKeyAlias
+
+  BackoffRetryDemoKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the Backoff Retry Demo SQS
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - EnvironmentVariables
+        - KmsPendingDeletionInDays
+        - !Ref Environment
+
+  BackoffRetryDemoKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-BackoffRetryDemoKMSEncryptionKey
+      TargetKeyId: !Ref BackoffRetryDemoKMSEncryptionKey
