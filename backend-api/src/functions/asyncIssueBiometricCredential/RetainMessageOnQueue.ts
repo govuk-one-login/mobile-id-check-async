@@ -5,7 +5,8 @@ type RetainMessageOnQueueMessages =
   | "Retryable error retrieving biometric session"
   | `Biometric session not ready: ${string}`
   | "Unexpected failure signing verified credential jwt"
-  | "Unexpected failure writing the VC to the IPVCore outbound queue";
+  | "Unexpected failure writing the VC to the IPVCore outbound queue"
+  | "MISSING_DOB"; // TODO: Replace with proper error message
 
 export class RetainMessageOnQueue extends Error {
   constructor(message: RetainMessageOnQueueMessages) {

@@ -233,6 +233,10 @@ export async function lambdaHandlerConstructor(
   const { credential, audit, advisories } =
     getCredentialFromBiometricSessionResult.value;
 
+  if (credential.credentialSubject.birthDate.length === 0) {
+    throw new RetainMessageOnQueue("MISSING_DOB");
+  }
+
   logIfExpiredDrivingLicence(credential, advisories);
 
   const credentialJwtPayload = buildCredentialJwtPayload({
