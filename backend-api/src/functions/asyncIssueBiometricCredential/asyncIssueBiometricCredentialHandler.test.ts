@@ -1033,6 +1033,42 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
+    describe("Given the credential does not contain date of birth", () => {
+      const mockCredentialWithoutDob = {
+        ...mockBiometricCredential,
+        credentialSubject: {
+          ...mockBiometricCredential.credentialSubject,
+          birthDate: [],
+        },
+      };
+
+      const mockGetCredentialFromBiometricSessionWithoutDob = jest
+        .fn()
+        .mockReturnValue(
+          successResult({
+            credential: mockCredentialWithoutDob,
+            analytics: mockAnalyticsData,
+            audit: mockAuditData,
+            advisories: "mockAdvisories",
+          }),
+        );
+
+      beforeEach(async () => {
+        dependencies.getCredentialFromBiometricSession =
+          mockGetCredentialFromBiometricSessionWithoutDob;
+
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error;
+        }
+      });
+
+      it("Throws RetainMessageOnQueue", async () => {
+        expect(lambdaError).toEqual(new RetainMessageOnQueue("MISSING_DOB"));
+      });
+    });
+
     describe("Given signing jwt fails", () => {
       beforeEach(async () => {
         dependencies.createKmsSignedJwt = jest
