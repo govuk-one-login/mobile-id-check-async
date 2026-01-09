@@ -234,7 +234,37 @@ export async function lambdaHandlerConstructor(
     getCredentialFromBiometricSessionResult.value;
 
   if (credential.credentialSubject.birthDate.length === 0) {
-    throw new RetainMessageOnQueue("MISSING_DOB");
+    const handleSendErrorMessageToOutboundQueueResponse =
+      await handleSendErrorMessageToOutboundQueue(
+        dependencies,
+        sessionAttributes,
+        config,
+        { error: "server_error", error_description: "Internal server error" },
+      );
+    if (handleSendErrorMessageToOutboundQueueResponse.isError) {
+      logger.error(
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+        { data: { messageType: "ERROR_MESSAGE" } },
+      );
+    }
+
+    const writeEventResult = await eventService.writeGenericEvent({
+      eventName: getErrorEventName(),
+      sub: sessionAttributes?.subjectIdentifier,
+      sessionId,
+      govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
+      transactionId: biometricSessionId,
+      getNowInMilliseconds: Date.now,
+      componentId: config.ISSUER,
+      ipAddress: undefined,
+      txmaAuditEncoded: undefined,
+      redirect_uri: sessionAttributes?.redirectUri,
+      suspected_fraud_signal: undefined,
+    });
+
+    if (writeEventResult.isError) logErrorWritingErrorEvent();
+
+    return;
   }
 
   logIfExpiredDrivingLicence(credential, advisories);
