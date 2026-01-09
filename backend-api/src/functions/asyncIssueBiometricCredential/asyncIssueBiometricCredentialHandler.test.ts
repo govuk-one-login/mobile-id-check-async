@@ -1057,15 +1057,39 @@ describe("Async Issue Biometric Credential", () => {
         dependencies.getCredentialFromBiometricSession =
           mockGetCredentialFromBiometricSessionWithoutDob;
 
-        try {
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        } catch (error: unknown) {
-          lambdaError = error;
-        }
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
-      it("Throws RetainMessageOnQueue", async () => {
-        expect(lambdaError).toEqual(new RetainMessageOnQueue("MISSING_DOB"));
+      it("Sends server_error to IPV Core", () => {
+        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+          "mockIpvcoreOutboundSqs",
+          {
+            sub: mockSubjectIdentifier,
+            state: mockClientState,
+            govuk_signin_journey_id: mockGovukSigninJourneyId,
+            error: "server_error",
+            error_description: "Internal server error",
+          },
+        );
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
+        expect(
+          mockSuccessfulEventService.writeGenericEvent,
+        ).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventName: expectedErrorTxmaEventName,
+            componentId: mockIssuer,
+            sessionId: mockSessionId,
+            transactionId: mockBiometricSessionId,
+          }),
+        );
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
 
