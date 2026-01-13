@@ -6,9 +6,7 @@ import {
   successResult,
 } from "../../../utils/result";
 
-export class MockCustomResourceEventSenderSuccessResult
-  implements ICustomResourceEventSender
-{
+export class MockCustomResourceEventSenderSuccessResult implements ICustomResourceEventSender {
   private result: { result: string }[] = [];
   async sendEvent(result: string): Promise<Result<null>> {
     this.result.push({ result: result });
@@ -19,9 +17,7 @@ export class MockCustomResourceEventSenderSuccessResult
   };
 }
 
-export class MockCustomResourceEventSenderErrorResult
-  implements ICustomResourceEventSender
-{
+export class MockCustomResourceEventSenderErrorResult implements ICustomResourceEventSender {
   async sendEvent(): Promise<Result<null>> {
     return Promise.resolve(
       errorResult({

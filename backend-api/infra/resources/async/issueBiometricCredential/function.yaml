@@ -60,12 +60,12 @@ Resources:
 
   AsyncIssueBiometricCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
     Properties:
       DestinationArn:
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-    Condition: isNotDev
 
   AsyncIssueBiometricCredentialLambdaRole:
     Type: AWS::IAM::Role

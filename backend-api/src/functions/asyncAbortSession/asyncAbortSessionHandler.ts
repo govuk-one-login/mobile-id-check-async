@@ -50,15 +50,12 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const sessionId = validateResult.value;
-
-  appendPersistentIdentifiersToLogger({ sessionId });
-
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
 
+  const sessionId = validateResult.value;
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
 
   const updateSessionResult = await sessionRegistry.updateSession(

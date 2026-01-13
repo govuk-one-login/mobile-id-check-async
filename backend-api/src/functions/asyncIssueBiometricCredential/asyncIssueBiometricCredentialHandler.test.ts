@@ -43,6 +43,7 @@ import {
 } from "./getBiometricSession/getBiometricSession";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
+import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -486,7 +487,6 @@ describe("Async Issue Biometric Credential", () => {
           approximateReceiveCount: "1",
         },
         persistentIdentifiers: {
-          sessionId: mockSessionId,
           biometricSessionId: mockBiometricSessionId,
           govukSigninJourneyId: mockGovukSigninJourneyId,
         },
@@ -582,6 +582,9 @@ describe("Async Issue Biometric Credential", () => {
               messageCode:
                 "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
               data: { messageType: "ERROR_MESSAGE" },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+              },
             });
           });
 
@@ -616,6 +619,9 @@ describe("Async Issue Biometric Credential", () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                 data: { auditEventName: expectedErrorTxmaEventName },
+                persistentIdentifiers: {
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                },
               });
             });
 
@@ -687,7 +693,6 @@ describe("Async Issue Biometric Credential", () => {
             approximateReceiveCount: "1",
           },
           persistentIdentifiers: {
-            sessionId: mockSessionId,
             biometricSessionId: mockBiometricSessionId,
             govukSigninJourneyId: mockGovukSigninJourneyId,
           },
@@ -709,7 +714,6 @@ describe("Async Issue Biometric Credential", () => {
             approximateReceiveCount: "1",
           },
           persistentIdentifiers: {
-            sessionId: mockSessionId,
             biometricSessionId: mockBiometricSessionId,
             govukSigninJourneyId: mockGovukSigninJourneyId,
           },
@@ -754,9 +758,12 @@ describe("Async Issue Biometric Credential", () => {
           it("Logs BIOMETRIC_SESSION_UNEXPECTED_FAILURE", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
-                "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
               error: {
                 message: "UNEXPECTED_FAILURE",
+              },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
               },
             });
           });
@@ -772,6 +779,9 @@ describe("Async Issue Biometric Credential", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: { auditEventName: expectedErrorTxmaEventName },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+              },
             });
           });
 
@@ -799,9 +809,12 @@ describe("Async Issue Biometric Credential", () => {
           it("Logs BIOMETRIC_SESSION_UNEXPECTED_FAILURE", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
-                "ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
+                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
               error: {
                 message: "UNEXPECTED_FAILURE",
+              },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
               },
             });
           });
@@ -918,6 +931,9 @@ describe("Async Issue Biometric Credential", () => {
                     errorReason: "mockErrorReason",
                     mockData: "mockData",
                   },
+                  persistentIdentifiers: {
+                    govukSigninJourneyId: mockGovukSigninJourneyId,
+                  },
                 });
               });
 
@@ -932,6 +948,9 @@ describe("Async Issue Biometric Credential", () => {
                 expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                   messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                   data: { auditEventName: expectedErrorTxmaEventName },
+                  persistentIdentifiers: {
+                    govukSigninJourneyId: mockGovukSigninJourneyId,
+                  },
                 });
               });
 
@@ -970,6 +989,9 @@ describe("Async Issue Biometric Credential", () => {
                   data: {
                     errorReason: "mockErrorReason",
                     mockData: "mockData",
+                  },
+                  persistentIdentifiers: {
+                    govukSigninJourneyId: mockGovukSigninJourneyId,
                   },
                 });
               });
@@ -1053,6 +1075,9 @@ describe("Async Issue Biometric Credential", () => {
             messageCode:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
             data: { messageType: "VERIFIABLE_CREDENTIAL" },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
         });
 
@@ -1117,6 +1142,9 @@ describe("Async Issue Biometric Credential", () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                 data: { auditEventName: expectedErrorTxmaEventName },
+                persistentIdentifiers: {
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                },
               });
             });
 
@@ -1193,6 +1221,9 @@ describe("Async Issue Biometric Credential", () => {
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
           },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -1218,6 +1249,9 @@ describe("Async Issue Biometric Credential", () => {
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_END",
+          },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });
@@ -1279,6 +1313,7 @@ describe("Async Issue Biometric Credential", () => {
               enableBiometricResidencePermit: true,
               enableBiometricResidenceCard: true,
             },
+            getCredentialFromBiometricSessionLogger,
           );
         });
 
@@ -1389,7 +1424,6 @@ describe("Async Issue Biometric Credential", () => {
             },
             documentType: "NFC_PASSPORT",
             persistentIdentifiers: {
-              sessionId: mockSessionId,
               biometricSessionId: mockBiometricSessionId,
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
@@ -1613,7 +1647,6 @@ describe("Async Issue Biometric Credential", () => {
                   approximateReceiveCount: "1",
                 },
                 persistentIdentifiers: {
-                  sessionId: mockSessionId,
                   biometricSessionId: mockBiometricSessionId,
                   govukSigninJourneyId: mockGovukSigninJourneyId,
                 },

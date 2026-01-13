@@ -40,12 +40,12 @@ Resources:
 
   AsyncTxmaEventSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
     Properties:
       DestinationArn:
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
-    Condition: isNotDev
 
   AsyncTxmaEventFunctionPermission:
     Type: AWS::Lambda::Permission

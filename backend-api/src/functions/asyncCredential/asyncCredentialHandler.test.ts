@@ -608,6 +608,9 @@ describe("Async Credential", () => {
           messageCode:
             "MOBILE_ASYNC_CREDENTIAL_FAILED_TO_VALIDATE_TOKEN_SIGNATURE",
           errorMessage: "Some error",
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
 
         expect(result).toStrictEqual({
@@ -648,6 +651,9 @@ describe("Async Credential", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_CLIENT_REGISTRY_FAILURE",
             errorMessage: "Unexpected error retrieving registered client",
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
 
           expect(result).toStrictEqual({
@@ -686,6 +692,9 @@ describe("Async Credential", () => {
             messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
             errorMessage:
               "redirect_uri does not match value from client registry",
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
 
           expect(result).toStrictEqual({
@@ -743,6 +752,9 @@ describe("Async Credential", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
             errorMessage: "issuer does not match value from client registry",
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
 
           expect(result).toStrictEqual({
@@ -782,6 +794,9 @@ describe("Async Credential", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_CLIENT_NOT_FOUND_IN_REGISTRY",
         errorMessage: "Client Id is not registered",
+        persistentIdentifiers: {
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+        },
       });
 
       expect(result).toStrictEqual({
@@ -823,6 +838,9 @@ describe("Async Credential", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_CREATE_SESSION_FAILURE",
             errorMessage: "Mock error when creating session",
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
 
           expect(result).toStrictEqual({
@@ -866,6 +884,9 @@ describe("Async Credential", () => {
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: {
                 auditEventName: "DCMAW_ASYNC_CRI_START",
+              },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
               },
             });
 
@@ -929,7 +950,6 @@ describe("Async Credential", () => {
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
               persistentIdentifiers: {
                 govukSigninJourneyId: mockGovukSigninJourneyId,
-                sessionId: mockSessionId,
               },
             });
 

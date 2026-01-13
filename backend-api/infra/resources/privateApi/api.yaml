@@ -72,11 +72,11 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
-  AsyncPrivateApiSubscriptionFilter:    
+  AsyncPrivateApiSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
     Properties:
       DestinationArn: 
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncPrivateApiAccessLogs
-    Condition: isNotDev

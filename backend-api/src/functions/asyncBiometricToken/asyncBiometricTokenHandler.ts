@@ -71,8 +71,6 @@ export async function lambdaHandlerConstructor(
   }
   const { documentType, sessionId } = validateRequestBodyResult.value;
 
-  appendPersistentIdentifiersToLogger({ sessionId });
-
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
@@ -93,6 +91,13 @@ export async function lambdaHandlerConstructor(
       txmaAuditEncoded,
     });
   }
+
+  const getSessionAttributes =
+    getSessionResult.value as BiometricTokenIssuedSessionAttributes;
+
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: getSessionAttributes.govukSigninJourneyId,
+  });
 
   const submitterKeyResult = await getSubmitterKeyForDocumentType(
     documentType,
@@ -136,10 +141,6 @@ export async function lambdaHandlerConstructor(
 
   const sessionAttributes = updateSessionResult.value
     .attributes as BiometricTokenIssuedSessionAttributes;
-
-  appendPersistentIdentifiersToLogger({
-    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-  });
 
   const responseBody = {
     accessToken: biometricTokenResult.value,

@@ -53,15 +53,15 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
-  
-  AsyncAbortSessionSubscriptionFilter:    
+
+  AsyncAbortSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
     Properties:
       DestinationArn:
         !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
       FilterPattern: ""
       LogGroupName: !Ref AsyncAbortSessionLogGroup
-    Condition: isNotDev
 
   AsyncAbortSessionLambdaRole:
     Type: AWS::IAM::Role

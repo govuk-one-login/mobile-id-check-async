@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.1.0/schemas/schema.json",
+  "services": [
+    {
+      "quality-gates": [
+        {
+          "check-types": [
+            "code style and linting"
+          ],
+          "config": {
+            "file": ".github/workflows/backend-api-pull-request.yml",
+            "name": "Run CI checks",
+            "path": "jobs.ci-checks"
+          },
+          "phase": "pre-merge",
+          "provider": "GitHub"
+        },
+        {
+          "check-types": [
+            "code style and linting",
+            "contract",
+            "secret scanning",
+            "sensitive data scanning",
+            "unit",
+            "vulnerability detection"
+          ],
+          "config": {
+            "file": ".github/workflows/backend-api-pull-request.yml",
+            "name": "Run test suite",
+            "path": "jobs.run-test-suite"
+          },
+          "phase": "pre-merge",
+          "provider": "GitHub"
+        },
+        {
+          "check-types": [
+            "code style and linting"
+          ],
+          "config": {
+            "file": ".github/workflows/test-resources-pull-request.yml",
+            "name": "Run CI checks",
+            "path": "jobs.ci-checks"
+          },
+          "phase": "pre-merge",
+          "provider": "GitHub"
+        },
+        {
+          "check-types": [
+            "code style and linting",
+            "secret scanning",
+            "sensitive data scanning",
+            "unit",
+            "vulnerability detection"
+          ],
+          "config": {
+            "file": ".github/workflows/test-resources-pull-request.yml",
+            "name": "Run test suite",
+            "path": "jobs.run-test-suite"
+          },
+          "phase": "pre-merge",
+          "provider": "GitHub"
+        }
+      ],
+      "service-tag": "mobile-id-check"
+    }
+  ]
+}

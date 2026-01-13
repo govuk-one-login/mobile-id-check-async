@@ -36,23 +36,6 @@ describe("Logger", () => {
       });
     });
 
-    describe("Given sessionId is passed to the logger", () => {
-      it("Writes a log including the session data", () => {
-        const loggingAdapter = new MockLoggingAdapter();
-        const logger = new Logger<MockMessage>(
-          loggingAdapter,
-          mockRegisteredLogs,
-        );
-        logger.setSessionId({ sessionId: "mockSessionId" });
-        logger.log("MOCK_MESSAGE_NAME");
-        expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
-          message: "MOCK_MESSAGE_NAME",
-          messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
-          sessionId: "mockSessionId",
-        });
-      });
-    });
-
     describe("Given custom data is passed into the log message", () => {
       it("Writes a log including custom data", () => {
         const loggingAdapter = new MockLoggingAdapter();

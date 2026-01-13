@@ -22,3 +22,4 @@ Resources:
           Dimensions:
             - Key: DocumentType
               Value: $.documentType
+

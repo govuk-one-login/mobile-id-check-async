@@ -1,9 +1,12 @@
 import { logger } from "../logger";
 
-export const appendPersistentIdentifiersToLogger = (attributes: {
+export type PersistentIdentifiers = {
   biometricSessionId?: string;
   govukSigninJourneyId?: string;
-  sessionId?: string;
-}): void => {
+};
+
+export const appendPersistentIdentifiersToLogger = (
+  attributes: PersistentIdentifiers,
+): void => {
   logger.appendKeys({ persistentIdentifiers: attributes });
 };

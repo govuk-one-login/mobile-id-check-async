@@ -35,26 +35,26 @@ logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
 To assist tracing user requests across the system to aide in support queries, we have decided to append the following identifiers to the logger as soon as we have access to them in the lambda handler:
 
 | Identifier             | Origin                                                                 | Purpose                                                                 |
-|------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `biometricSessionId`   | In request from mobile app to `async/finishBiometricSession`           | Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance |
-| `govukSigninJourneyId` | In request from IPV Core to `async/Credential`                         | A correlation ID to trace a user's journey through One Login's identity proving |
-| `sessionId`            | Set by `async/Credential` when creating a new session                  | The primary key for the user's asynchronous session in DynamoDB that can be used for session lookup and tracing the user's ID Check asynchronous journey |
+| `govukSigninJourneyId` | In request from IPV Core to `async/Credential`                         | A correlation ID to trace a user's journey through One Login's identity proving, can be used for session lookup and tracing the user's ID Check asynchronous journey |
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
 
 ```ts
 import { appendPersistentIdentifiersToLogger } from "relative/path/to/logging/helpers/appendPersistentIdentifiersToLogger.ts";
 
-// Option 1: Add all identifiers at once
-const { biometricSessionId, govukSigninJourneyId, sessionId } = sessionAttributes
-appendPersistentIdentifiersToLogger({ biometricSessionId, govukSigninJourneyId, sessionId })
+const { biometricSessionId, govukSigninJourneyId } = sessionAttributes;
+appendPersistentIdentifiersToLogger({ biometricSessionId, govukSigninJourneyId });
+```
 
-// Option 2: Add them incrementally
-const { sessionId } = requestBody
-appendPersistentIdentifiersToLogger({ sessionId })
+Note that calling `appendPersistentIdentifiersToLogger()` will overwrite any existing identifiers; in other words, they cannot be written incrementally:
 
-const { biometricSessionId, govukSigninJourneyId } = sessionAttributes
-appendPersistentIdentifiersToLogger({ biometricSessionId, govukSigninJourneyId })
+```ts
+appendPersistentIdentifiersToLogger({ biometricSessionId });
+appendPersistentIdentifiersToLogger({ govukSigninJourneyId });
+
+// At this point, the logger will only have the identifier `govukSigninJourneyId` on it.
 ```
 
 As a single logger instance is shared across the modules of our Lambda, these keys will persist until cleared or
@@ -139,8 +139,7 @@ fields @timestamp, message, messageCode
   "functionVersion": "1",
   "persistentIdentifiers": {
     "biometricSessionId": "22222222-2222-2222-2222-222222222222",
-    "sessionId": "33333333-3333-3333-3333-333333333333",
-    "govukSigninJourneyId": "44444444-4444-4444-4444-444444444444"
+    "govukSigninJourneyId": "33333333-3333-3333-3333-333333333333",
   },
   "messageCode": "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED"
 }
@@ -167,7 +166,7 @@ Finally, in our tests, we can use the custom matcher to assert that certain fiel
 expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
   messageCode: 'MOBILE_ASYNC_EXPECTED_CODE',
   persistentIdentifiers: {
-    sessionId: mockSessionId
+    govukSigninJourneyId: mockGovukSigninJourneyId,
   },
 })
 expect(consoleErrorSpy).not.toHaveBeenCalledWithLogFields({

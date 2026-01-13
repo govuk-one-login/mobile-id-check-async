@@ -99,7 +99,9 @@ export async function lambdaHandlerConstructor(
     return notFoundResponse;
   }
 
-  appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: session.govukSigninJourneyId,
+  });
 
   return await handleOkResponse(eventService, {
     session,

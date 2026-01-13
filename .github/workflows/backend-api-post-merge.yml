@@ -65,6 +65,7 @@ jobs:
       ./.github/workflows/job_upload-sam-artifact.yml
     with:
       GENERATE_OPEN_PROXY_API_SPEC: true
+      PRIVATE_PACKAGES_REQUIRED: true
       WORKING_DIRECTORY: backend-api
     secrets:
       ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
@@ -93,6 +94,7 @@ jobs:
       ./.github/workflows/job_upload-sam-artifact.yml
     with:
       GENERATE_OPEN_PROXY_API_SPEC: true
+      PRIVATE_PACKAGES_REQUIRED: true
       WORKING_DIRECTORY: backend-api
     secrets:
       ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}

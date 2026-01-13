@@ -8,7 +8,7 @@ RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
 WORKDIR /test-resources
 
 COPY package.json package-lock.json ./
-RUN npm clean-install --no-scripts
+RUN npm clean-install --ignore-scripts
 
 COPY tests/ ./tests/
 COPY jest.config.ts tsconfig.json ./

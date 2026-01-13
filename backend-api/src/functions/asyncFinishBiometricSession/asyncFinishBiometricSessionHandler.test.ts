@@ -478,6 +478,9 @@ describe("Async Finish Biometric Session", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -486,6 +489,9 @@ describe("Async Finish Biometric Session", () => {
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });
@@ -519,6 +525,9 @@ describe("Async Finish Biometric Session", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -588,6 +597,9 @@ describe("Async Finish Biometric Session", () => {
           data: {
             auditEventName: "DCMAW_ASYNC_APP_END",
           },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 
@@ -624,7 +636,6 @@ describe("Async Finish Biometric Session", () => {
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
         persistentIdentifiers: {
           biometricSessionId: mockBiometricSessionId,
-          sessionId: mockSessionId,
           govukSigninJourneyId: mockGovukSigninJourneyId,
         },
       });

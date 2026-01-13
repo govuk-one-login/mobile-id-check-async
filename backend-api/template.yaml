@@ -312,7 +312,7 @@ Conditions:
 
   DeployProxyCsls: !And
     - !Condition ProxyApiDeployment
-    - !Condition isNotDev
+    - !Condition EgressLogsToSplunkUsingCsls
 
   DevelopmentStack: !And
     - !Equals
@@ -322,6 +322,17 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-async-backend
+
+  EgressLogsToSplunkUsingCsls: !Or
+    - !Equals
+      - !Ref Environment
+      - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
 
   IntegrateIpvCore: !Or
     - !Equals
@@ -403,11 +414,6 @@ Conditions:
     - !Ref Environment
     - dev
 
-  isNotDev: !Not
-    - !Equals
-      - !Ref Environment
-      - dev
-
   isNotDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -481,7 +487,7 @@ Globals:
         TXMA_SQS: !GetAtt TxMASqs.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSqs.QueueUrl
     Layers:
-      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_2_20250307-045250_with_collector_nodejs:1
+      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_325_7_20250925-155144_with_collector_nodejs:1
     LoggingConfig:
       ApplicationLogLevel: !FindInMap
         - EnvironmentVariables
@@ -1005,7 +1011,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncAbortSessionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncAbortSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1484,7 +1490,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncActiveSessionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncActiveSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2112,7 +2118,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncBiometricTokenThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2721,7 +2727,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncCredentialLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncCredentialThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3310,7 +3316,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncFinishBiometricSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4059,7 +4065,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncIssueBiometricCredentialTimeToIssueVcMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -4074,6 +4080,33 @@ Resources:
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: $.vendorProcessingQueueToVcIssuanceElapsedTimeInMs
           Unit: Milliseconds
+    Condition: DeployAlarms
+
+  AsyncIssueBiometricCredentialUnexpectedFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: Triggers when the biometric-credential package throws an error.
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-unexpected-failure
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialVendorLikenessDisabledAlarm:
@@ -4150,7 +4183,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncPrivateApiAccessLogs
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4717,7 +4750,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncTokenLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncTokenThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4877,7 +4910,7 @@ Resources:
           ReturnData: false
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Threshold: 1
+      Threshold: 5
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
@@ -5154,7 +5187,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncTxmaEventThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5815,7 +5848,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref JsonWebKeysFunctionLogGroup
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   KMSEncryptionKey:
     Type: AWS::KMS::Key
@@ -6523,7 +6556,7 @@ Resources:
         - !Ref Environment
       FilterPattern: ""
       LogGroupName: !Ref SessionsApiAccessLogs
-    Condition: isNotDev
+    Condition: EgressLogsToSplunkUsingCsls
 
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
@@ -6978,15 +7011,25 @@ Resources:
             - value
       AlarmName: !Sub ${AWS::StackName}-zero-journeys-started
       ComparisonOperator: LessThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      EvaluationPeriods: 1
+      DatapointsToAlarm: 25
+      EvaluationPeriods: 25
       InsufficientDataActions: []
-      MetricName: JourneysStarted
-      Namespace: !Sub ${AWS::StackName}/LogMessages
+      Metrics:
+        - Id: journeysStarted
+          Label: journeysStarted
+          MetricStat:
+            Metric:
+              MetricName: JourneysStarted
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: FILL(journeysStarted, 0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Period: 1500
-      Statistic: Sum
       Threshold: 0
       TreatMissingData: breaching
     Condition: DeployAlarms

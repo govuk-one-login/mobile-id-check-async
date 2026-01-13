@@ -50,6 +50,7 @@ import { GenericEventNames, IEventService } from "../services/events/types";
 import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
+import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -71,10 +72,8 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const sessionId = validateSqsEventResult.value;
   const sqsMessage = event.Records[0];
 
-  appendPersistentIdentifiersToLogger({ sessionId });
   appendSqsMessagePropertiesToLogger(sqsMessage);
 
   const sessionRegistry = dependencies.getSessionRegistry(
@@ -82,6 +81,7 @@ export async function lambdaHandlerConstructor(
   );
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const sessionId = validateSqsEventResult.value;
 
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
@@ -208,6 +208,7 @@ export async function lambdaHandlerConstructor(
         biometricSession,
         fraudCheckData,
         getCredentialFromBiometricSessionOptions,
+        getCredentialFromBiometricSessionLogger,
       );
   } catch (error: unknown) {
     return await handleGetCredentialFailure(
