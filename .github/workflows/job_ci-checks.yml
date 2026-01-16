@@ -1,5 +1,12 @@
 name: CI Checks
 
+description: {
+  "name": "ci-checks",
+  "version": "v1.0.0",
+  "message":
+    "This update adds versioning to the ci-checks job."
+  }
+
 on:
   workflow_call:
     inputs:
