@@ -333,6 +333,37 @@ export class LogMessage implements LogAttributes {
     "Lambda handler processing has completed successfully.",
   );
 
+  // Backoff-retry Demo
+  static readonly BACKOFF_RETRY_DEMO_STARTED = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_STARTED",
+    "Lambda handler processing has started.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_INVALID_SQS_EVENT = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_INVALID_SQS_EVENT",
+    "SQS Event from demo queue is invalid",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_RETRYING = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_RETRYING",
+    "Downstream call failed - retrying later.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_RETRIES_EXHAUSTED = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_RETRIES_EXHAUSTED",
+    "Downstream call failed - not retrying, we've run out of tries.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+
   // Issue Biometric Credential
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_STARTED = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED",
