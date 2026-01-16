@@ -111,6 +111,12 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_SUCCESS",
     "Successfully writen message to SQS.",
   );
+
+  static readonly CHANGE_MESSAGE_VISIBILITY_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_CHANGE_MESSAGE_VISIBILITY_ATTEMPT",
+    "Attempting to change message visibility in SQS.",
+  );
+
   static readonly CREATE_SIGNED_JWT_ATTEMPT = new LogMessage(
     "MOBILE_ASYNC_CREATE_SIGNED_JWT_ATTEMPT",
     "Attempting to sign JWT with KMS",
@@ -330,6 +336,37 @@ export class LogMessage implements LogAttributes {
   );
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+
+  // Backoff-retry Demo
+  static readonly BACKOFF_RETRY_DEMO_STARTED = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_STARTED",
+    "Lambda handler processing has started.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_INVALID_SQS_EVENT = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_INVALID_SQS_EVENT",
+    "SQS Event from demo queue is invalid",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_RETRYING = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_RETRYING",
+    "Downstream call failed - retrying later.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_RETRIES_EXHAUSTED = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_RETRIES_EXHAUSTED",
+    "Downstream call failed - not retrying, we've run out of tries.",
+  );
+
+  static readonly BACKOFF_RETRY_DEMO_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_BACKOFF_RETRY_DEMO_COMPLETED",
     "Lambda handler processing has completed successfully.",
   );
 
