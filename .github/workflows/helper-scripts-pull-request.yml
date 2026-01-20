@@ -22,7 +22,7 @@ jobs:
     name: CI checks
     if: github.event.pull_request.draft == false
     uses:
-      ./.github/workflows/job_ci-checks.yml
+      govuk-one-login/mobile-id-check-async/.github/workflows/jobs_ci-checks.yml@ci-checks/v1.0.0
     with:
       RUN_CHECKOV: false
       WORKING_DIRECTORY: helper-scripts
