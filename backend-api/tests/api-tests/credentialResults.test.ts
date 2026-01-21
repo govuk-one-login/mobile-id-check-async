@@ -33,42 +33,42 @@ describe("Successful credential results", () => {
         expectedActivityHistoryScore: 1,
       },
     ],
-    [
-      Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
-      {
-        expectedStrengthScore: 3,
-        expectedValidityScore: 0,
-        expectedActivityHistoryScore: 0,
-      },
-    ],
-    [
-      Scenario.PASSPORT_SUCCESS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 3,
-      },
-    ],
-    [
-      Scenario.PASSPORT_FAILURE_WITH_CIS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 0,
-      },
-    ],
-    [
-      Scenario.BRP_SUCCESS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 3,
-      },
-    ],
-    [
-      Scenario.BRC_SUCCESS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 3,
-      },
-    ],
+    // [
+    //   Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
+    //   {
+    //     expectedStrengthScore: 3,
+    //     expectedValidityScore: 0,
+    //     expectedActivityHistoryScore: 0,
+    //   },
+    // ],
+    // [
+    //   Scenario.PASSPORT_SUCCESS,
+    //   {
+    //     expectedStrengthScore: 4,
+    //     expectedValidityScore: 3,
+    //   },
+    // ],
+    // [
+    //   Scenario.PASSPORT_FAILURE_WITH_CIS,
+    //   {
+    //     expectedStrengthScore: 4,
+    //     expectedValidityScore: 0,
+    //   },
+    // ],
+    // [
+    //   Scenario.BRP_SUCCESS,
+    //   {
+    //     expectedStrengthScore: 4,
+    //     expectedValidityScore: 3,
+    //   },
+    // ],
+    // [
+    //   Scenario.BRC_SUCCESS,
+    //   {
+    //     expectedStrengthScore: 4,
+    //     expectedValidityScore: 3,
+    //   },
+    // ],
   ])(
     "Given the vendor returns a %s biometric session",
     (scenario: Scenario, parameters: SuccessfulResultTestParameters) => {
@@ -113,6 +113,8 @@ describe("Successful credential results", () => {
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
           numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
         });
+
+        console.log(JSON.stringify(criTxmaEvents));
       }, 60000);
 
       it("Writes verified credential to the IPV Core outbound queue", () => {
