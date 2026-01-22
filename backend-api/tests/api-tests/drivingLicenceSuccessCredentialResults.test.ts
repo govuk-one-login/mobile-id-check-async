@@ -21,7 +21,9 @@ import {
   FailEvidence,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { mockClientState, mockGovukSigninJourneyId } from "./utils/apiTestData";
+import {
+  expectedEventDrivingLicenceSuccess, mockClientState, mockGovukSigninJourneyId
+} from "./utils/apiTestData";
 
 describe("Successful credential results", () => {
   describe.each([
@@ -31,42 +33,6 @@ describe("Successful credential results", () => {
         expectedStrengthScore: 3,
         expectedValidityScore: 2,
         expectedActivityHistoryScore: 1,
-      },
-    ],
-    [
-      Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
-      {
-        expectedStrengthScore: 3,
-        expectedValidityScore: 0,
-        expectedActivityHistoryScore: 0,
-      },
-    ],
-    [
-      Scenario.PASSPORT_SUCCESS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 3,
-      },
-    ],
-    [
-      Scenario.PASSPORT_FAILURE_WITH_CIS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 0,
-      },
-    ],
-    [
-      Scenario.BRP_SUCCESS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 3,
-      },
-    ],
-    [
-      Scenario.BRC_SUCCESS,
-      {
-        expectedStrengthScore: 4,
-        expectedValidityScore: 3,
       },
     ],
   ])(
@@ -155,9 +121,41 @@ describe("Successful credential results", () => {
         );
       });
 
+      it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
+        expectTxmaEventToHaveBeenWritten(
+          criTxmaEvents,
+          "DCMAW_ASYNC_CRI_VC_ISSUED",
+        );
+
+        const actualEvent = getVcIssuedEventObject();
+
+        if(actualEvent) {
+          expectTxmaEventWithValidProperties(
+            actualEvent as Record<string, unknown>,
+            expectedEventDrivingLicenceSuccess,
+          )
+        }
+      });
+
       it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
         expectTxmaEventToHaveBeenWritten(criTxmaEvents, "DCMAW_ASYNC_CRI_END");
       });
+
+      function getVcIssuedEventObject(): object | undefined {
+        const eventResponse = criTxmaEvents.find(item =>
+          item.event &&
+          'event_name' in item.event &&
+          item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED"
+        );
+        return eventResponse?.event;
+      }
+
+      function expectTxmaEventWithValidProperties(
+        actualEvent: Record<string, unknown>,
+        schema: Record<string, unknown>,
+      ) {
+        expect(actualEvent).toMatchObject(schema);
+      }
     },
   );
 });
