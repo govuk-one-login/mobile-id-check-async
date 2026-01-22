@@ -21,8 +21,7 @@ import {
   FailEvidence,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import {
-  expectedEventDrivingLicenceSuccess, mockClientState, mockGovukSigninJourneyId
+import { mockClientState, mockGovukSigninJourneyId
 } from "./utils/apiTestData";
 
 describe("Successful credential results", () => {
@@ -39,6 +38,7 @@ describe("Successful credential results", () => {
     "Given the vendor returns a %s biometric session",
     (scenario: Scenario, parameters: SuccessfulResultTestParameters) => {
       let subjectIdentifier: string;
+      let sessionId: string;
       let criTxmaEvents: EventResponse[];
       let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
@@ -46,7 +46,7 @@ describe("Successful credential results", () => {
         subjectIdentifier = randomUUID();
         await createSessionForSub(subjectIdentifier);
 
-        const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+        sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
 
         const issueBiometricTokenResponse =
           await issueBiometricToken(sessionId);
@@ -82,6 +82,54 @@ describe("Successful credential results", () => {
 
         console.log(JSON.stringify(criTxmaEvents));
       }, 60000);
+
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+      const getExpectedEventDrivingLicenceSuccess = () => ({
+        user: {
+          user_id: subjectIdentifier,
+          session_id: sessionId,
+          govuk_signin_journey_id: expect.stringMatching(uuidRegex),
+        },
+        event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+        component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`, // yes
+        restricted: {
+          name: [
+            {
+              nameParts: expect.any(Array)
+            },
+          ],
+          birthDate: expect.arrayContaining([
+            expect.any(Object)
+          ]),
+          drivingPermit: expect.arrayContaining([
+            expect.objectContaining(
+              {
+                expiryDate: expect.any(String),
+                issuedBy: "DVLA",
+              }),
+          ]),
+          address: expect.arrayContaining([
+            expect.any(Object)
+          ]),
+        },
+        extensions: {
+          redirect_uri: "https://mockRedirectUri.com",
+          evidence: [
+            {
+              type: "IdentityCheck",
+              strengthScore: 3,
+              validityScore: 2,
+              activityHistoryScore: 1,
+              checkDetails: expect.arrayContaining([
+                expect.objectContaining(
+                  { biometricVerificationProcessLevel: 3, checkMethod: "bvr" },
+                )
+              ]),
+            },
+          ],
+        },
+      });
 
       it("Writes verified credential to the IPV Core outbound queue", () => {
         const { protectedHeader, payload } = verifiedJwt;
@@ -132,7 +180,7 @@ describe("Successful credential results", () => {
         if(actualEvent) {
           expectTxmaEventWithValidProperties(
             actualEvent as Record<string, unknown>,
-            expectedEventDrivingLicenceSuccess,
+            getExpectedEventDrivingLicenceSuccess(),
           )
         }
       });
