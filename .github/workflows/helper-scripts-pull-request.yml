@@ -19,10 +19,13 @@ on:
 
 jobs:
   ci-checks:
-    name: CI checks
-    if: github.event.pull_request.draft == false
-    uses:
-      ./.github/workflows/job_ci-checks.yml
-    with:
-      RUN_CHECKOV: false
-      WORKING_DIRECTORY: helper-scripts
+    - name: Run format check
+      run: npm run format:check
+
+    - name: CI checks
+      if: github.event.pull_request.draft == false
+      uses:
+        ./.github/workflows/job_ci-checks.yml
+      with:
+        RUN_CHECKOV: false
+        WORKING_DIRECTORY: helper-scripts

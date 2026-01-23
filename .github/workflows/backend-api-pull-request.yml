@@ -33,12 +33,15 @@ jobs:
       WORKING_DIRECTORY: backend-api
 
   run-test-suite:
-    name: Run test suite
-    needs: ci-checks
-    uses:
-      ./.github/workflows/job_test-suite.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      RUN_PACT_TESTS: true
-      WORKING_DIRECTORY: backend-api
-    secrets: inherit
+    - name: Run format check
+      run: npm run format:check
+
+    - name: Run test suite
+        needs: ci-checks
+        uses:
+          ./.github/workflows/job_test-suite.yml
+        with:
+          PRIVATE_PACKAGES_REQUIRED: true
+          RUN_PACT_TESTS: true
+          WORKING_DIRECTORY: backend-api
+        secrets: inherit

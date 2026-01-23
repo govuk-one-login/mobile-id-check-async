@@ -29,10 +29,13 @@ jobs:
       WORKING_DIRECTORY: test-resources
 
   run-test-suite:
-    name: Run test suite
-    needs: ci-checks
-    uses:
-      ./.github/workflows/job_test-suite.yml
-    with:
-      WORKING_DIRECTORY: test-resources
-    secrets: inherit
+    - name: Run format check
+      run: npm run format:check
+
+    - name: Run test suite
+      needs: ci-checks
+      uses:
+        ./.github/workflows/job_test-suite.yml
+      with:
+        WORKING_DIRECTORY: test-resources
+      secrets: inherit
