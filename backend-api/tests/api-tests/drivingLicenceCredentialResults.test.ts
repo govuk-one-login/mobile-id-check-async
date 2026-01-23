@@ -285,7 +285,7 @@ const getExpectedEventDrivingLicenceFailure = (user: string, session: string) =>
         validityScore: 0,
         activityHistoryScore: 0,
         ci: expect.any(Array),
-        failecCheckDetails: expect.arrayContaining([
+        failedCheckDetails: expect.arrayContaining([
           expect.objectContaining(
             { biometricVerificationProcessLevel: 3, checkMethod: "bvr" },
           )
