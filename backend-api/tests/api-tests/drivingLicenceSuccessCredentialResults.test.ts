@@ -28,7 +28,7 @@ describe("Driving licence credential results", () => {
     let criTxmaEvents: EventResponse[];
     let verifiedJwt: JWTVerifyResult & ResolvedKey;
     const scenario = Scenario.DRIVING_LICENCE_SUCCESS;
-    const evidenceScores = {
+    const expectedEvidence = {
       expectedStrengthScore: 3,
       expectedValidityScore: 2,
       expectedActivityHistoryScore: 1,
@@ -55,14 +55,14 @@ describe("Driving licence credential results", () => {
 
       await finishBiometricSession(sessionId, biometricSessionId);
 
-      const credentialJwt =
+      const credentialJwtFromQueue =
         await getCredentialFromIpvOutboundQueue(subjectIdentifier);
 
       const jwks = createRemoteJWKSet(
         new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
       );
 
-      verifiedJwt = await jwtVerify(credentialJwt, jwks, {
+      verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
         algorithms: ["ES256"],
       });
 
@@ -94,16 +94,6 @@ describe("Driving licence credential results", () => {
         kid: expect.any(String),
         typ: "JWT",
       });
-
-      const expectedEvidence: Partial<PassEvidence | FailEvidence> = {
-        strengthScore: evidenceScores.expectedStrengthScore,
-        validityScore: evidenceScores.expectedValidityScore,
-      };
-
-      if (evidenceScores.expectedActivityHistoryScore) {
-        expectedEvidence.activityHistoryScore =
-          evidenceScores.expectedActivityHistoryScore;
-      }
 
       expect(payload).toEqual({
         iat: expect.any(Number),
