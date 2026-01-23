@@ -18,7 +18,7 @@ import {
 } from "jose";
 
 describe("Driving licence credential results", () => {
-  describe("Given the vendor returns a successful biometric session", () => {
+  describe("Given the vendor returns a driving licence success biometric session", () => {
     let subjectIdentifier: string;
     let sessionId: string;
     let criTxmaEvents: EventResponse[];
@@ -71,18 +71,7 @@ describe("Driving licence credential results", () => {
       console.log(JSON.stringify(criTxmaEvents));
     }, 60000);
 
-    function expectTxmaEventToHaveBeenWritten(
-      txmaEvents: EventResponse[],
-      eventName: string,
-    ) {
-      expect(
-        txmaEvents.some((item) => {
-          return "event_name" in item.event && item.event.event_name === eventName;
-        }),
-      ).toBe(true);
-    }
-
-    it("Writes verified credential to the IPV Core outbound queue", () => {
+    it("Writes verified credential with passed evidence to the IPV Core outbound queue", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
@@ -104,29 +93,41 @@ describe("Driving licence credential results", () => {
     });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
-      const actualEvent = getVcIssuedEventObject();
+      const actualEvent = getVcIssuedEventObject(criTxmaEvents);
       const expectedEvent = getExpectedEventDrivingLicenceSuccess(subjectIdentifier, sessionId);
 
       expect(actualEvent).toMatchObject(expectedEvent);
-
-      function getVcIssuedEventObject(): object {
-        const eventResponse = criTxmaEvents.find(item =>
-          item.event &&
-          'event_name' in item.event &&
-          item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED"
-        );
-        if (!eventResponse) {
-          throw Error("VC ISSUED event not found.");
-        }
-        return eventResponse.event;
-      }
     });
 
     it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
       expectTxmaEventToHaveBeenWritten(criTxmaEvents, "DCMAW_ASYNC_CRI_END");
     });
   })
+
 })
+
+function getVcIssuedEventObject(txmaEvents: EventResponse[]): object {
+  const eventResponse = txmaEvents.find(item =>
+    item.event &&
+    'event_name' in item.event &&
+    item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED"
+  );
+  if (!eventResponse) {
+    throw Error("VC ISSUED event not found.");
+  }
+  return eventResponse.event;
+}
+
+function expectTxmaEventToHaveBeenWritten(
+  txmaEvents: EventResponse[],
+  eventName: string,
+) {
+  expect(
+    txmaEvents.some((item) => {
+      return "event_name" in item.event && item.event.event_name === eventName;
+    }),
+  ).toBe(true);
+}
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
