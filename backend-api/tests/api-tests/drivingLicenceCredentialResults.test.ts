@@ -93,7 +93,7 @@ describe("Driving licence credential results", () => {
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-      const expectedEvent = getExpectedEventDrivingLicenceSuccess(
+      const expectedEvent = getExpectedEventDrivingLicenceVcIssuedPassEvent(
         subjectIdentifier,
         sessionId,
       );
@@ -176,7 +176,7 @@ describe("Driving licence credential results", () => {
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-      const expectedEvent = getExpectedEventDrivingLicenceFailure(
+      const expectedEvent = getExpectedEventDrivingLicenceVcIssuedFailedEvent(
         subjectIdentifier,
         sessionId,
       );
@@ -219,7 +219,7 @@ function expectTxmaEventToHaveBeenWritten(
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const getExpectedEventDrivingLicenceSuccess = (
+const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
   user: string,
   session: string,
 ) => ({
@@ -264,7 +264,7 @@ const getExpectedEventDrivingLicenceSuccess = (
   },
 });
 
-const getExpectedEventDrivingLicenceFailure = (
+const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
   user: string,
   session: string,
 ) => ({
