@@ -27,11 +27,11 @@ import { mockClientState, mockGovukSigninJourneyId
 describe("Successful credential results", () => {
   describe.each([
     [
-      Scenario.DRIVING_LICENCE_SUCCESS,
+      Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
       {
         expectedStrengthScore: 3,
-        expectedValidityScore: 2,
-        expectedActivityHistoryScore: 1,
+        expectedValidityScore: 0,
+        expectedActivityHistoryScore: 0,
       },
     ],
   ])(
@@ -114,6 +114,13 @@ describe("Successful credential results", () => {
         });
       });
 
+      it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
+        expectTxmaEventToHaveBeenWritten(
+          criTxmaEvents,
+          "DCMAW_ASYNC_CRI_VC_ISSUED",
+        );
+      });
+
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
         expectTxmaEventToHaveBeenWritten(
           criTxmaEvents,
@@ -125,7 +132,7 @@ describe("Successful credential results", () => {
         if(actualEvent) {
           expectTxmaEventWithValidProperties(
             actualEvent as Record<string, unknown>,
-            getExpectedEventDrivingLicenceSuccess(subjectIdentifier, sessionId),
+            getExpectedEventDrivingLicenceFailure(subjectIdentifier, sessionId),
           )
         }
       });
@@ -166,7 +173,7 @@ describe("Unsuccessful credential results", () => {
     [
       "Given the opaque ID in the biometric session does not match the opaque ID in the user session",
       {
-        scenario: Scenario.DRIVING_LICENCE_SUCCESS,
+        scenario: Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
         opaqueId: randomUUID(),
         expectedError: "access_denied",
         expectedErrorDescription: "Suspected fraud detected",
@@ -176,7 +183,7 @@ describe("Unsuccessful credential results", () => {
     [
       "Given the biometric session was created before the user session",
       {
-        scenario: Scenario.DRIVING_LICENCE_SUCCESS,
+        scenario: Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
         creationDate: "2022-06-10T07:35:48.431Z",
         expectedError: "access_denied",
         expectedErrorDescription: "Suspected fraud detected",
@@ -281,7 +288,7 @@ function expectTxmaEventToHaveBeenWritten(
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const getExpectedEventDrivingLicenceSuccess = (user: string, session: string) => ({
+const getExpectedEventDrivingLicenceFailure = (user: string, session: string) => ({
   user: {
     user_id: user,
     session_id: session,
@@ -315,8 +322,8 @@ const getExpectedEventDrivingLicenceSuccess = (user: string, session: string) =>
       {
         type: "IdentityCheck",
         strengthScore: 3,
-        validityScore: 2,
-        activityHistoryScore: 1,
+        validityScore: 0,
+        activityHistoryScore: 0,
         checkDetails: expect.arrayContaining([
           expect.objectContaining(
             { biometricVerificationProcessLevel: 3, checkMethod: "bvr" },
