@@ -37,7 +37,7 @@ describe("Driving licence credential results", () => {
   }, 60000);
 
   describe("Given the vendor returns a driving licence success biometric session", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
       await setupBiometricSessionByScenario(
         biometricSessionId,
         Scenario.DRIVING_LICENCE_SUCCESS,
@@ -106,7 +106,7 @@ describe("Driving licence credential results", () => {
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
 
-    beforeEach(async () => {
+    beforeAll(async () => {
       await setupBiometricSessionByScenario(
         biometricSessionId,
         Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
