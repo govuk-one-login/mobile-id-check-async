@@ -16,10 +16,6 @@ import {
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
-import {
-  FailEvidence,
-  PassEvidence,
-} from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 describe("Driving licence credential results", () => {
   describe("Given the vendor returns a successful biometric session", () => {
@@ -108,34 +104,21 @@ describe("Driving licence credential results", () => {
     });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
-      expectTxmaEventToHaveBeenWritten(
-        criTxmaEvents,
-        "DCMAW_ASYNC_CRI_VC_ISSUED",
-      );
-
       const actualEvent = getVcIssuedEventObject();
+      const expectedEvent = getExpectedEventDrivingLicenceSuccess(subjectIdentifier, sessionId);
 
-      if(actualEvent) {
-        expectTxmaEventWithValidProperties(
-          actualEvent as Record<string, unknown>,
-          getExpectedEventDrivingLicenceSuccess(subjectIdentifier, sessionId),
-        )
-      }
+      expect(actualEvent).toMatchObject(expectedEvent);
 
-      function getVcIssuedEventObject(): object | undefined {
+      function getVcIssuedEventObject(): object {
         const eventResponse = criTxmaEvents.find(item =>
           item.event &&
           'event_name' in item.event &&
           item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED"
         );
-        return eventResponse?.event;
-      }
-
-      function expectTxmaEventWithValidProperties(
-        actualEvent: Record<string, unknown>,
-        schema: Record<string, unknown>,
-      ) {
-        expect(actualEvent).toMatchObject(schema);
+        if (!eventResponse) {
+          throw Error("VC ISSUED event not found.");
+        }
+        return eventResponse.event;
       }
     });
 
