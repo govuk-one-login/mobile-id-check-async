@@ -29,9 +29,9 @@ describe("Driving licence credential results", () => {
     let verifiedJwt: JWTVerifyResult & ResolvedKey;
     const scenario = Scenario.DRIVING_LICENCE_SUCCESS;
     const expectedEvidence = {
-      expectedStrengthScore: 3,
-      expectedValidityScore: 2,
-      expectedActivityHistoryScore: 1,
+      strengthScore: 3,
+      validityScore: 2,
+      activityHistoryScore: 1,
     }
 
     beforeAll(async () => {
