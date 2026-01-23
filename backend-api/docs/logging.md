@@ -9,9 +9,9 @@ This library is used to write logs in a structured JSON format, so that they can
 Log messages are defined at `backend-api/src/functions/common/logging/LogMessage.ts`. Each log message must have
 the following fields defined:
 
-* `messageCode` - a concise, machine-readable identifier for the message that can be used for querying and filtering our
-logs, e.g. `MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_FAILURE`
-* `message` - a human-readable description of what has occurred, e.g. `Failed to retrieve one or more secrets from SSM Parameter Store.`
+- `messageCode` - a concise, machine-readable identifier for the message that can be used for querying and filtering our
+  logs, e.g. `MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_FAILURE`
+- `message` - a human-readable description of what has occurred, e.g. `Failed to retrieve one or more secrets from SSM Parameter Store.`
 
 ## Using the Logger
 
@@ -24,20 +24,20 @@ additional fields and values to be logged. e.g.
 
 ```ts
 logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
-    data: {
-        key: "value"
-    }
-})
+  data: {
+    key: "value",
+  },
+});
 ```
 
 ### Persistent Identifiers
 
 To assist tracing user requests across the system to aide in support queries, we have decided to append the following identifiers to the logger as soon as we have access to them in the lambda handler:
 
-| Identifier             | Origin                                                                 | Purpose                                                                 |
-| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `biometricSessionId`   | In request from mobile app to `async/finishBiometricSession`           | Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance |
-| `govukSigninJourneyId` | In request from IPV Core to `async/Credential`                         | A correlation ID to trace a user's journey through One Login's identity proving, can be used for session lookup and tracing the user's ID Check asynchronous journey |
+| Identifier             | Origin                                                       | Purpose                                                                                                                                                              |
+| ---------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `biometricSessionId`   | In request from mobile app to `async/finishBiometricSession` | Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance                                                 |
+| `govukSigninJourneyId` | In request from IPV Core to `async/Credential`               | A correlation ID to trace a user's journey through One Login's identity proving, can be used for session lookup and tracing the user's ID Check asynchronous journey |
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
 
@@ -45,7 +45,10 @@ Logging fields that should persist across multiple uses of the logger within a s
 import { appendPersistentIdentifiersToLogger } from "relative/path/to/logging/helpers/appendPersistentIdentifiersToLogger.ts";
 
 const { biometricSessionId, govukSigninJourneyId } = sessionAttributes;
-appendPersistentIdentifiersToLogger({ biometricSessionId, govukSigninJourneyId });
+appendPersistentIdentifiersToLogger({
+  biometricSessionId,
+  govukSigninJourneyId,
+});
 ```
 
 Note that calling `appendPersistentIdentifiersToLogger()` will overwrite any existing identifiers; in other words, they cannot be written incrementally:
@@ -92,13 +95,13 @@ would surface in the logs.
 
 ### Standard log messages
 
-* All Lambda functions must emit a `STARTED` log message at the start of processing, and a `COMPLETED`
+- All Lambda functions must emit a `STARTED` log message at the start of processing, and a `COMPLETED`
   log
   message
   after successful completion of processing, to allow us to monitor the function's success or failure. Both should
   be at `INFO` level.
 
-* Network calls - e.g. to AWS services via the SDKs, or directly to an HTTP API - should have `DEBUG` level logs for
+- Network calls - e.g. to AWS services via the SDKs, or directly to an HTTP API - should have `DEBUG` level logs for
   the attempt (made immediately before the network call) and success (made after the call returns successfully) of
   the operation, to allow us to debug issues with network calls. They should also have one or more `ERROR` level
   logs for each relevant failure mode (e.g. for an UpdateItem call to DynamoDB, we might have one error log for
@@ -139,7 +142,7 @@ fields @timestamp, message, messageCode
   "functionVersion": "1",
   "persistentIdentifiers": {
     "biometricSessionId": "22222222-2222-2222-2222-222222222222",
-    "govukSigninJourneyId": "33333333-3333-3333-3333-333333333333",
+    "govukSigninJourneyId": "33333333-3333-3333-3333-333333333333"
   },
   "messageCode": "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED"
 }
@@ -153,10 +156,10 @@ First, we must set the environment variable `POWERTOOLS_DEV` to `true`, which wi
 Next, we must spy on the relevant method (`info`, `error`, etc) of the global console object, so we can track calls made to it.
 
 ```ts
-let consoleErrorSpy: jest.SpyInstance
+let consoleErrorSpy: jest.SpyInstance;
 
 beforeEach(() => {
-  consoleErrorSpy = jest.spyOn(console, 'error')
+  consoleErrorSpy = jest.spyOn(console, "error");
 });
 ```
 
@@ -164,19 +167,19 @@ Finally, in our tests, we can use the custom matcher to assert that certain fiel
 
 ```ts
 expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-  messageCode: 'MOBILE_ASYNC_EXPECTED_CODE',
+  messageCode: "MOBILE_ASYNC_EXPECTED_CODE",
   persistentIdentifiers: {
     govukSigninJourneyId: mockGovukSigninJourneyId,
   },
-})
+});
 expect(consoleErrorSpy).not.toHaveBeenCalledWithLogFields({
-  messageCode: 'MOBILE_ASYNC_UNWANTED_CODE',
-})
+  messageCode: "MOBILE_ASYNC_UNWANTED_CODE",
+});
 ```
 
 In any jest test file where we need to make log assertions, we must import the following:
 
 ```ts
 import { expect } from "@jest/globals";
-import 'relative/path/to/testUtils/matchers'
+import "relative/path/to/testUtils/matchers";
 ```

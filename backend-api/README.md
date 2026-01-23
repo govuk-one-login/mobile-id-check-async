@@ -23,29 +23,28 @@ directory i.e. the same level as the `package.json` - with the contents
 `ignore-scripts=true`. See guidance [here](https://team-manual.account.gov.uk/development-standards-processes/coding-practices-and-processes/configure-node-package-managers/#for-npm).
 
 1. On GitHub, generate a Personal Access Token (classic) with the following scopes:
-
-    - `read:packages`
-    - `repo`
+   - `read:packages`
+   - `repo`
 
    It is recommended to:
-    - create a new PAT with only the required scopes, to ensure least-privilege
-    - store this PAT _securely_ for re-use in the OS keychain to avoid needing to generate a new PAT for each install
+   - create a new PAT with only the required scopes, to ensure least-privilege
+   - store this PAT _securely_ for re-use in the OS keychain to avoid needing to generate a new PAT for each install
 
 1. Set your token as an environment variable
 
-    Ensure you do **not** use your token directly in the `.npmrc` file. Instead,
-    use an environment variable, which will be referenced in the `.npmrc`.
+   Ensure you do **not** use your token directly in the `.npmrc` file. Instead,
+   use an environment variable, which will be referenced in the `.npmrc`.
 
-    ```zsh
-    export NPM_TOKEN=<your-classic-pat>
-    ```
+   ```zsh
+   export NPM_TOKEN=<your-classic-pat>
+   ```
 
 1. Use script to create a `.npmrc` file referencing this environment variable:
 
-    ```bash
-    # From /backend-api
-    ./generate_npmrc.sh
-    ```
+   ```bash
+   # From /backend-api
+   ./generate_npmrc.sh
+   ```
 
 **NOTE:** the above steps must be followed before installing dependencies (`npm install`).
 
@@ -85,43 +84,43 @@ npm run test:infra
 
 1. Ensure you are on the GDS VPN
 1. Configure Pact broker credentials
-    - Request encrypted Pact broker credentials from your tech lead, or follow [this process](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3783131729/Transferring+Pact+Broker+Credentials+Securely#How-to-securely-transfer-Pact-Broker-Credentials) to request them from Dev Platform
-    - Place the encrypted credentials file into `~/gds/encrypted-pact-broker-credentials`
-    - Update the filename to `encrypted-credentials.json.gpg`
-    - **Important:** Do **not** store this folder on any shared drives, it should be stored locally only
+   - Request encrypted Pact broker credentials from your tech lead, or follow [this process](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3783131729/Transferring+Pact+Broker+Credentials+Securely#How-to-securely-transfer-Pact-Broker-Credentials) to request them from Dev Platform
+   - Place the encrypted credentials file into `~/gds/encrypted-pact-broker-credentials`
+   - Update the filename to `encrypted-credentials.json.gpg`
+   - **Important:** Do **not** store this folder on any shared drives, it should be stored locally only
 1. Run tests
 
-    ```bash
-    # From /backend-api
-    npm run test:pact:local
-    ```
+   ```bash
+   # From /backend-api
+   npm run test:pact:local
+   ```
 
 ### API tests
 
 1. Activate AWS credentials
 1. Deploy your stack
 
-    ```bash
-    # From /backend-api
-    npm run generate-proxy-open-api
-    npm run deploy:dev <your-stack-name>
-    ```
+   ```bash
+   # From /backend-api
+   npm run generate-proxy-open-api
+   npm run deploy:dev <your-stack-name>
+   ```
 
-    Note: For more information, see `helper-scripts` [README](../helper-scripts/README.md#deploy_backend.sh))
+   Note: For more information, see `helper-scripts` [README](../helper-scripts/README.md#deploy_backend.sh))
 
 1. The deployment script will generate you a `.env` file for your stack. To generate a `.env` for another deployed stack
 
-    ```bash
-    # From /backend-api
-    sh generate_env_file.sh <stack_name>
-    ```
+   ```bash
+   # From /backend-api
+   sh generate_env_file.sh <stack_name>
+   ```
 
 1. Run tests
 
-    ```bash
-    # From /backend-api
-    npm run test:api
-    ```
+   ```bash
+   # From /backend-api
+   npm run test:api
+   ```
 
 ## Formatting
 
@@ -158,9 +157,9 @@ See [here](docs/logging.md)
 
 This section acts as a technical reference. There are three logical components in this SAM application (mob-async-backend). All the infrastructure is defined in the template.yaml:
 
-1) Private API
-2) Proxy API
-3) Regional API
+1. Private API
+2. Proxy API
+3. Regional API
 
 This infrastructure is deployed via a Github action post-merge workflow and uploaded to S3 in the AWS Dev and Build accounts. This is then deployed via CodePipeline following the [Dev Platform methodology](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3052077059/Secure+Delivery+Pipelines).
 

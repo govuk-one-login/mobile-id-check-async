@@ -10,8 +10,8 @@
     "build": "./node_modules/.bin/tsc",
     "generateHashedSecret": "npm run build --silent && node dist/generateHashedSecret/generateHashedSecret --silent",
     "deleteStacks": "npm run build && node dist/deleteStacks/deleteStacks",
-    "format": "./node_modules/.bin/prettier --write '**/*.ts'",
-    "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
+    "format": "./node_modules/.bin/prettier --write '**/*.{ts,md}'",
+    "format:check": "./node_modules/.bin/prettier --check '**/*.{ts,md}'",
     "lint": "./node_modules/.bin/eslint ./src"
   },
   "license": "MIT",

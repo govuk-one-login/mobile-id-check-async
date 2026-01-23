@@ -7,8 +7,8 @@
   "scripts": {
     "build:env": "./generate_env_file.sh",
     "build:infra": "./combine_template.sh",
-    "format": "./node_modules/.bin/prettier --write '**/*.ts'",
-    "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
+    "format": "./node_modules/.bin/prettier --write '**/*.{ts,md}'",
+    "format:check": "./node_modules/.bin/prettier --check '**/*.{ts,md}'",
     "lint": "./node_modules/.bin/eslint ./src",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
     "test:api": "NODE_OPTIONS=--experimental-vm-modules ./node_modules/.bin/jest --testPathPatterns=api-tests/",
