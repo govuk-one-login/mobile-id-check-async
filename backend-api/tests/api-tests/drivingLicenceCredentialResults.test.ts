@@ -284,11 +284,16 @@ const getExpectedEventDrivingLicenceFailure = (user: string, session: string) =>
         strengthScore: 3,
         validityScore: 0,
         activityHistoryScore: 0,
-        checkDetails: expect.arrayContaining([
+        ci: expect.any(Array),
+        failecCheckDetails: expect.arrayContaining([
           expect.objectContaining(
             { biometricVerificationProcessLevel: 3, checkMethod: "bvr" },
           )
         ]),
+        ciReasons: expect.arrayContaining([
+          expect.any(Object)
+        ]),
+        txmaContraIndicators: expect.any(Array),
       },
     ],
     // reminder, to be removed: new field docExpiry will go here
