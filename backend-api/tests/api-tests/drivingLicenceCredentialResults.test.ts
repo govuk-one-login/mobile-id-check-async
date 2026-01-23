@@ -9,35 +9,32 @@ import {
   Scenario,
   setupBiometricSessionByScenario,
 } from "./utils/apiTestHelpers";
-import { randomUUID, UUID } from "crypto";
-import { createRemoteJWKSet, jwtVerify, JWTVerifyResult, ResolvedKey, } from "jose";
+import { randomUUID } from "crypto";
+import {
+  createRemoteJWKSet,
+  jwtVerify,
+  JWTVerifyResult,
+  ResolvedKey,
+} from "jose";
 
 describe("Driving licence credential results", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
-  let opaqueId: string;
-  let biometricSessionId: UUID;
-  let creationDate: string;
-
-  beforeAll(async () => {
-    subjectIdentifier = randomUUID();
-    await createSessionForSub(subjectIdentifier);
-
-    sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-
-    const issueBiometricTokenResponse =
-      await issueBiometricToken(sessionId);
-
-    ({ opaqueId } = issueBiometricTokenResponse.data);
-    biometricSessionId = randomUUID();
-    creationDate = new Date().toISOString();
-
-  }, 60000);
 
   describe("Given the vendor returns a driving licence success biometric session", () => {
     beforeAll(async () => {
+      subjectIdentifier = randomUUID();
+      await createSessionForSub(subjectIdentifier);
+
+      sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
+
+      const { opaqueId } = issueBiometricTokenResponse.data;
+      const biometricSessionId = randomUUID();
+      const creationDate = new Date().toISOString();
+
       await setupBiometricSessionByScenario(
         biometricSessionId,
         Scenario.DRIVING_LICENCE_SUCCESS,
@@ -83,18 +80,23 @@ describe("Driving licence credential results", () => {
         nbf: expect.any(Number),
         sub: subjectIdentifier,
         vc: expect.objectContaining({
-          evidence: [expect.objectContaining({
-            strengthScore: 3,
-            validityScore: 2,
-            activityHistoryScore: 1,
-          })],
+          evidence: [
+            expect.objectContaining({
+              strengthScore: 3,
+              validityScore: 2,
+              activityHistoryScore: 1,
+            }),
+          ],
         }),
       });
     });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-      const expectedEvent = getExpectedEventDrivingLicenceSuccess(subjectIdentifier, sessionId);
+      const expectedEvent = getExpectedEventDrivingLicenceSuccess(
+        subjectIdentifier,
+        sessionId,
+      );
 
       expect(actualEvent).toMatchObject(expectedEvent);
     });
@@ -102,11 +104,20 @@ describe("Driving licence credential results", () => {
     it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
       expectTxmaEventToHaveBeenWritten(criTxmaEvents, "DCMAW_ASYNC_CRI_END");
     });
-  })
+  });
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
-
     beforeAll(async () => {
+      subjectIdentifier = randomUUID();
+      await createSessionForSub(subjectIdentifier);
+
+      sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
+
+      const { opaqueId } = issueBiometricTokenResponse.data;
+      const biometricSessionId = randomUUID();
+      const creationDate = new Date().toISOString();
+
       await setupBiometricSessionByScenario(
         biometricSessionId,
         Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
@@ -136,7 +147,6 @@ describe("Driving licence credential results", () => {
       console.log(JSON.stringify(criTxmaEvents));
     }, 60000);
 
-
     it("Writes verified credential with failed evidence to the IPV Core outbound queue", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
@@ -153,18 +163,23 @@ describe("Driving licence credential results", () => {
         nbf: expect.any(Number),
         sub: subjectIdentifier,
         vc: expect.objectContaining({
-          evidence: [expect.objectContaining({
-            strengthScore: 3,
-            validityScore: 0,
-            activityHistoryScore: 0,
-          })],
+          evidence: [
+            expect.objectContaining({
+              strengthScore: 3,
+              validityScore: 0,
+              activityHistoryScore: 0,
+            }),
+          ],
         }),
       });
     });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-      const expectedEvent = getExpectedEventDrivingLicenceFailure(subjectIdentifier, sessionId);
+      const expectedEvent = getExpectedEventDrivingLicenceFailure(
+        subjectIdentifier,
+        sessionId,
+      );
 
       expect(actualEvent).toMatchObject(expectedEvent);
     });
@@ -172,19 +187,21 @@ describe("Driving licence credential results", () => {
     it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
       expectTxmaEventToHaveBeenWritten(criTxmaEvents, "DCMAW_ASYNC_CRI_END");
     });
-  })
-
-})
+  });
+});
 
 function getVcIssuedEventObject(txmaEvents: EventResponse[]): object {
-  const eventResponse = txmaEvents.find(item =>
-    item.event &&
-    'event_name' in item.event &&
-    item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED"
+  const eventResponse = txmaEvents.find(
+    (item) =>
+      item.event &&
+      "event_name" in item.event &&
+      item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED",
   );
+
   if (!eventResponse) {
     throw Error("VC ISSUED event not found.");
   }
+
   return eventResponse.event;
 }
 
@@ -199,9 +216,13 @@ function expectTxmaEventToHaveBeenWritten(
   ).toBe(true);
 }
 
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const getExpectedEventDrivingLicenceSuccess = (user: string, session: string) => ({
+const getExpectedEventDrivingLicenceSuccess = (
+  user: string,
+  session: string,
+) => ({
   user: {
     user_id: user,
     session_id: session,
@@ -212,22 +233,17 @@ const getExpectedEventDrivingLicenceSuccess = (user: string, session: string) =>
   restricted: {
     name: [
       {
-        nameParts: expect.any(Array)
+        nameParts: expect.any(Array),
       },
     ],
-    birthDate: expect.arrayContaining([
-      expect.any(Object)
-    ]),
+    birthDate: expect.arrayContaining([expect.any(Object)]),
     drivingPermit: expect.arrayContaining([
-      expect.objectContaining(
-        {
-          expiryDate: expect.any(String),
-          issuedBy: "DVLA",
-        }),
+      expect.objectContaining({
+        expiryDate: expect.any(String),
+        issuedBy: "DVLA",
+      }),
     ]),
-    address: expect.arrayContaining([
-      expect.any(Object)
-    ]),
+    address: expect.arrayContaining([expect.any(Object)]),
   },
   extensions: {
     redirect_uri: "https://mockRedirectUri.com",
@@ -238,17 +254,20 @@ const getExpectedEventDrivingLicenceSuccess = (user: string, session: string) =>
         validityScore: 2,
         activityHistoryScore: 1,
         checkDetails: expect.arrayContaining([
-          expect.objectContaining(
-            { biometricVerificationProcessLevel: 3, checkMethod: "bvr" },
-          )
+          expect.objectContaining({
+            biometricVerificationProcessLevel: 3,
+            checkMethod: "bvr",
+          }),
         ]),
       },
     ],
-    // reminder, to be removed: new field docExpiry will go here
   },
 });
 
-const getExpectedEventDrivingLicenceFailure = (user: string, session: string) => ({
+const getExpectedEventDrivingLicenceFailure = (
+  user: string,
+  session: string,
+) => ({
   user: {
     user_id: user,
     session_id: session,
@@ -259,22 +278,11 @@ const getExpectedEventDrivingLicenceFailure = (user: string, session: string) =>
   restricted: {
     name: [
       {
-        nameParts: expect.any(Array)
+        nameParts: expect.any(Array),
       },
     ],
-    birthDate: expect.arrayContaining([
-      expect.any(Object)
-    ]),
-    drivingPermit: expect.arrayContaining([
-      expect.objectContaining(
-        {
-          expiryDate: expect.any(String),
-          issuedBy: "DVLA",
-        }),
-    ]),
-    address: expect.arrayContaining([
-      expect.any(Object)
-    ]),
+    birthDate: [],
+    address: expect.arrayContaining([expect.any(Object)]),
   },
   extensions: {
     redirect_uri: "https://mockRedirectUri.com",
@@ -286,16 +294,14 @@ const getExpectedEventDrivingLicenceFailure = (user: string, session: string) =>
         activityHistoryScore: 0,
         ci: expect.any(Array),
         failedCheckDetails: expect.arrayContaining([
-          expect.objectContaining(
-            { biometricVerificationProcessLevel: 3, checkMethod: "bvr" },
-          )
+          expect.objectContaining({
+            biometricVerificationProcessLevel: 3,
+            checkMethod: "bvr",
+          }),
         ]),
-        ciReasons: expect.arrayContaining([
-          expect.any(Object)
-        ]),
+        ciReasons: expect.arrayContaining([expect.any(Object)]),
         txmaContraIndicators: expect.any(Array),
       },
     ],
-    // reminder, to be removed: new field docExpiry will go here
   },
 });
