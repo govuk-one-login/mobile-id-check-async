@@ -1,6 +1,7 @@
 import {
   createSessionForSub,
   EventResponse,
+  expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
@@ -112,11 +113,11 @@ describe("Driving licence credential results", () => {
             },
           ],
           birthDate: expect.arrayContaining([expect.any(Object)]),
-          deviceId: expect.arrayContaining([expect.objectContaining(
-            {
-              value: expect.any(String)
-            }
-          )]),
+          deviceId: expect.arrayContaining([
+            expect.objectContaining({
+              value: expect.any(String),
+            }),
+          ]),
           drivingPermit: expect.arrayContaining([
             expect.objectContaining({
               expiryDate: expect.any(String),
@@ -140,7 +141,7 @@ describe("Driving licence credential results", () => {
                 }),
               ]),
               txmaContraIndicators: [],
-              txn: expect.any(String)
+              txn: expect.any(String),
             },
           ],
         },
@@ -166,15 +167,4 @@ function getVcIssuedEventObject(txmaEvents: EventResponse[]): object {
   }
 
   return eventResponse.event;
-}
-
-function expectTxmaEventToHaveBeenWritten(
-  txmaEvents: EventResponse[],
-  eventName: string,
-) {
-  expect(
-    txmaEvents.some((item) => {
-      return "event_name" in item.event && item.event.event_name === eventName;
-    }),
-  ).toBe(true);
 }

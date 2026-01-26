@@ -371,6 +371,17 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
   return credentialResults;
 }
 
+export function expectTxmaEventToHaveBeenWritten(
+  txmaEvents: EventResponse[],
+  eventName: string,
+) {
+  expect(
+    txmaEvents.some((item) => {
+      return "event_name" in item.event && item.event.event_name === eventName;
+    }),
+  ).toBe(true);
+}
+
 export enum Scenario {
   DRIVING_LICENCE_SUCCESS = "DRIVING_LICENCE_SUCCESS",
   DRIVING_LICENCE_FAILURE_WITH_CIS = "DRIVING_LICENCE_FAILURE_WITH_CIS",

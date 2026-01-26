@@ -1,6 +1,7 @@
 import {
   createSessionForSub,
   EventResponse,
+  expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
@@ -21,7 +22,10 @@ import {
   FailEvidence,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { mockClientState, mockGovukSigninJourneyId } from "../utils/apiTestData";
+import {
+  mockClientState,
+  mockGovukSigninJourneyId,
+} from "../utils/apiTestData";
 
 describe("Successful credential results", () => {
   describe.each([
@@ -97,7 +101,6 @@ describe("Successful credential results", () => {
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
           numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
         });
-
       }, 60000);
 
       it("Writes verified credential to the IPV Core outbound queue", () => {
@@ -258,15 +261,4 @@ interface UnsuccessfulResultTestParameters {
   expectedError: string;
   expectedErrorDescription: string;
   expectedSuspectedFraudSignal?: string;
-}
-
-function expectTxmaEventToHaveBeenWritten(
-  txmaEvents: EventResponse[],
-  eventName: string,
-) {
-  expect(
-    txmaEvents.some((item) => {
-      return "event_name" in item.event && item.event.event_name === eventName;
-    }),
-  ).toBe(true);
 }
