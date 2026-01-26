@@ -371,6 +371,32 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
   return credentialResults;
 }
 
+export function expectTxmaEventToHaveBeenWritten(
+  txmaEvents: EventResponse[],
+  eventName: string,
+) {
+  expect(
+    txmaEvents.some((item) => {
+      return "event_name" in item.event && item.event.event_name === eventName;
+    }),
+  ).toBe(true);
+}
+
+export function getVcIssuedEventObject(txmaEvents: EventResponse[]): object {
+  const eventResponse = txmaEvents.find(
+    (item) =>
+      item.event &&
+      "event_name" in item.event &&
+      item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED",
+  );
+
+  if (!eventResponse) {
+    throw Error("VC ISSUED event not found.");
+  }
+
+  return eventResponse.event;
+}
+
 export enum Scenario {
   DRIVING_LICENCE_SUCCESS = "DRIVING_LICENCE_SUCCESS",
   DRIVING_LICENCE_FAILURE_WITH_CIS = "DRIVING_LICENCE_FAILURE_WITH_CIS",
