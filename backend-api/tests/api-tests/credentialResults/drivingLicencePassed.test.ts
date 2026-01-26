@@ -101,7 +101,7 @@ describe("Driving licence passed credential result", () => {
         user: {
           user_id: subjectIdentifier,
           session_id: sessionId,
-          govuk_signin_journey_id: expect.any(String),
+          govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
           transaction_id: biometricSessionId,
         },
         event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",

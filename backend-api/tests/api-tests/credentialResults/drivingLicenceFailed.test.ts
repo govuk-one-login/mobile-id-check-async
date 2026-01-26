@@ -101,7 +101,7 @@ describe("Driving licence failed credential result", () => {
         user: {
           user_id: subjectIdentifier,
           session_id: sessionId,
-          govuk_signin_journey_id: expect.any(String),
+          govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
           transaction_id: biometricSessionId,
         },
         event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
@@ -129,7 +129,7 @@ describe("Driving licence failed credential result", () => {
               strengthScore: 3,
               validityScore: 0,
               activityHistoryScore: 0,
-              ci: expect.any(Array),
+              ci: expect.any(Array.length > 0),
               failedCheckDetails: [
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
