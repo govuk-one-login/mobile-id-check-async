@@ -5,6 +5,7 @@ import {
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
+  getVcIssuedEventObject,
   issueBiometricToken,
   pollForEvents,
   Scenario,
@@ -149,18 +150,3 @@ describe("Driving licence credential results", () => {
     });
   });
 });
-
-function getVcIssuedEventObject(txmaEvents: EventResponse[]): object {
-  const eventResponse = txmaEvents.find(
-    (item) =>
-      item.event &&
-      "event_name" in item.event &&
-      item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED",
-  );
-
-  if (!eventResponse) {
-    throw Error("VC ISSUED event not found.");
-  }
-
-  return eventResponse.event;
-}
