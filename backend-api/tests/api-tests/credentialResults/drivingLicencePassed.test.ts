@@ -112,19 +112,19 @@ describe("Driving licence credential results", () => {
               nameParts: expect.any(Array),
             },
           ],
-          birthDate: expect.arrayContaining([expect.any(Object)]),
-          deviceId: expect.arrayContaining([
-            expect.objectContaining({
+          birthDate: [expect.any(Object)],
+          deviceId: [
+            {
               value: expect.any(String),
-            }),
-          ]),
-          drivingPermit: expect.arrayContaining([
+            },
+          ],
+          drivingPermit: [
             expect.objectContaining({
               expiryDate: expect.any(String),
               issuedBy: "DVLA",
             }),
-          ]),
-          address: expect.arrayContaining([expect.any(Object)]),
+          ],
+          address: [expect.any(Object)],
         },
         extensions: {
           redirect_uri: "https://mockRedirectUri.com",

@@ -113,12 +113,12 @@ describe("Driving licence credential results", () => {
             },
           ],
           birthDate: [],
-          deviceId: expect.arrayContaining([
-            expect.objectContaining({
+          deviceId: [
+            {
               value: expect.any(String),
-            }),
-          ]),
-          address: expect.arrayContaining([expect.any(Object)]),
+            },
+          ],
+          address: [expect.any(Object)],
         },
         extensions: {
           redirect_uri: "https://mockRedirectUri.com",
@@ -129,13 +129,13 @@ describe("Driving licence credential results", () => {
               validityScore: 0,
               activityHistoryScore: 0,
               ci: expect.any(Array),
-              failedCheckDetails: expect.arrayContaining([
+              failedCheckDetails: [
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
                   checkMethod: "bvr",
                 }),
-              ]),
-              ciReasons: expect.arrayContaining([expect.any(Object)]),
+              ],
+              ciReasons: [expect.any(Object)],
               txmaContraIndicators: expect.any(Array),
               txn: expect.any(String),
             },
