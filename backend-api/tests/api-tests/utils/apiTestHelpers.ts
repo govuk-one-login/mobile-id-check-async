@@ -12,6 +12,7 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 export interface ClientDetails {
   client_id: string;
@@ -405,4 +406,50 @@ export enum Scenario {
   BRP_SUCCESS = "BRP_SUCCESS",
   BRC_SUCCESS = "BRC_SUCCESS",
   INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
+}
+
+export async function doAsyncJourney(scenario: Scenario) {
+  const subjectIdentifier = randomUUID();
+  await createSessionForSub(subjectIdentifier);
+
+  const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+  const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
+
+  const { opaqueId } = issueBiometricTokenResponse.data;
+  const biometricSessionId = randomUUID();
+  const creationDate = new Date().toISOString();
+
+  await setupBiometricSessionByScenario(
+    biometricSessionId,
+    scenario,
+    opaqueId,
+    creationDate,
+  );
+
+  await finishBiometricSession(sessionId, biometricSessionId);
+
+  const credentialJwtFromQueue =
+    await getCredentialFromIpvOutboundQueue(subjectIdentifier);
+
+  const jwks = createRemoteJWKSet(
+    new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
+  );
+
+  const verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
+    algorithms: ["ES256"],
+  });
+
+  const criTxmaEvents = await pollForEvents({
+    partitionKey: `SESSION#${sessionId}`,
+    sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
+    numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
+  });
+
+  return {
+    subjectIdentifier,
+    sessionId,
+    biometricSessionId,
+    verifiedJwt,
+    criTxmaEvents,
+  };
 }
