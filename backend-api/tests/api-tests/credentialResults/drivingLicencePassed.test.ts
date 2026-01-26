@@ -1,23 +1,12 @@
 import {
-  createSessionForSub,
+  doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
-  finishBiometricSession,
-  getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue,
   getVcIssuedEventObject,
-  issueBiometricToken,
-  pollForEvents,
   Scenario,
-  setupBiometricSessionByScenario,
 } from "../utils/apiTestHelpers";
-import { randomUUID, UUID } from "crypto";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
+import { UUID } from "crypto";
+import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
 
 describe("Driving licence passed credential result", () => {
@@ -29,41 +18,13 @@ describe("Driving licence passed credential result", () => {
 
   describe("Given the vendor returns a driving licence success biometric session", () => {
     beforeAll(async () => {
-      subjectIdentifier = randomUUID();
-      await createSessionForSub(subjectIdentifier);
-
-      sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
-
-      const { opaqueId } = issueBiometricTokenResponse.data;
-      biometricSessionId = randomUUID();
-      const creationDate = new Date().toISOString();
-
-      await setupBiometricSessionByScenario(
+      ({
+        subjectIdentifier,
+        sessionId,
         biometricSessionId,
-        Scenario.DRIVING_LICENCE_SUCCESS,
-        opaqueId,
-        creationDate,
-      );
-
-      await finishBiometricSession(sessionId, biometricSessionId);
-
-      const credentialJwtFromQueue =
-        await getCredentialFromIpvOutboundQueue(subjectIdentifier);
-
-      const jwks = createRemoteJWKSet(
-        new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
-      );
-
-      verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
-        algorithms: ["ES256"],
-      });
-
-      criTxmaEvents = await pollForEvents({
-        partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
-        numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
-      });
+        criTxmaEvents,
+        verifiedJwt,
+      } = await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS));
     }, 60000);
 
     it("Writes verified credential with passed evidence to the IPV Core outbound queue", () => {
