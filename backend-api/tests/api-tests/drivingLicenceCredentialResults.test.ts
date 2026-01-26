@@ -3,7 +3,7 @@ import {
   EventResponse,
   finishBiometricSession,
   getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue, getUuidMatcher,
+  getCredentialFromIpvOutboundQueue,
   issueBiometricToken,
   pollForEvents,
   Scenario,
@@ -16,6 +16,7 @@ import {
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
+import { expect } from "@jest/globals";
 
 describe("Driving licence credential results", () => {
   let subjectIdentifier: string;
@@ -216,9 +217,6 @@ function expectTxmaEventToHaveBeenWritten(
   ).toBe(true);
 }
 
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
   user: string,
   session: string,
@@ -226,7 +224,7 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
   user: {
     user_id: user,
     session_id: session,
-    govuk_signin_journey_id: getUuidMatcher(),
+    govuk_signin_journey_id: expect.toBeValidUuid(),
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
   component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`, // yes
@@ -271,7 +269,7 @@ const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
   user: {
     user_id: user,
     session_id: session,
-    govuk_signin_journey_id: expect.stringMatching(uuidRegex),
+    govuk_signin_journey_id: expect.toBeValidUuid(),
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
   component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`, // yes
