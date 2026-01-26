@@ -57,7 +57,7 @@ describe("Successful credential results", () => {
       let sessionId: string;
 
       beforeAll(async () => {
-        ({ subjectIdentifier, sessionId } = await doAsyncJourney(scenario));
+        ({ sessionId, subjectIdentifier } = await doAsyncJourney(scenario));
 
         verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -155,7 +155,7 @@ describe("Unsuccessful credential results", () => {
     };
 
     beforeAll(async () => {
-      ({ subjectIdentifier, sessionId } = await doAsyncJourney(
+      ({ sessionId, subjectIdentifier } = await doAsyncJourney(
         parameters.scenario,
         overrides,
       ));

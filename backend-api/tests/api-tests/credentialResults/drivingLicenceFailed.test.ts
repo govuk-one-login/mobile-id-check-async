@@ -19,7 +19,7 @@ describe("Driving licence failed credential result", () => {
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
-      ({ subjectIdentifier, sessionId, biometricSessionId } =
+      ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
