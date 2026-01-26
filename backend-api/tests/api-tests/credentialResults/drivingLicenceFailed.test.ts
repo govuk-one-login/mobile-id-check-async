@@ -129,7 +129,7 @@ describe("Driving licence failed credential result", () => {
               strengthScore: 3,
               validityScore: 0,
               activityHistoryScore: 0,
-              ci: expect.any(Array),
+              ci: expect.arrayContaining([expect.any(String)]),
               failedCheckDetails: expect.arrayContaining([
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
