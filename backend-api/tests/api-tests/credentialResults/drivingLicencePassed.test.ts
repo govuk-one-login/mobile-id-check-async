@@ -20,7 +20,7 @@ import {
 } from "jose";
 import { expect } from "@jest/globals";
 
-describe("Driving licence credential results", () => {
+describe("Driving licence passed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: UUID;
