@@ -233,7 +233,7 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
     transaction_id: biometricSessionId,
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-  event_timestamp: expect.any(Number),
+  event_timestamp_ms: expect.any(Number),
   component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
   restricted: {
     name: [
