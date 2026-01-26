@@ -8,8 +8,8 @@ import {
   pollForEvents,
   Scenario,
   setupBiometricSessionByScenario,
-} from "./utils/apiTestHelpers";
-import { randomUUID } from "crypto";
+} from "../utils/apiTestHelpers";
+import { randomUUID, UUID } from "crypto";
 import {
   createRemoteJWKSet,
   jwtVerify,
@@ -21,6 +21,7 @@ import { expect } from "@jest/globals";
 describe("Driving licence credential results", () => {
   let subjectIdentifier: string;
   let sessionId: string;
+  let biometricSessionId: UUID;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
@@ -33,7 +34,7 @@ describe("Driving licence credential results", () => {
       const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
 
       const { opaqueId } = issueBiometricTokenResponse.data;
-      const biometricSessionId = randomUUID();
+      biometricSessionId = randomUUID();
       const creationDate = new Date().toISOString();
 
       await setupBiometricSessionByScenario(
@@ -116,7 +117,7 @@ describe("Driving licence credential results", () => {
       const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
 
       const { opaqueId } = issueBiometricTokenResponse.data;
-      const biometricSessionId = randomUUID();
+      biometricSessionId = randomUUID();
       const creationDate = new Date().toISOString();
 
       await setupBiometricSessionByScenario(
@@ -180,6 +181,7 @@ describe("Driving licence credential results", () => {
       const expectedEvent = getExpectedEventDrivingLicenceVcIssuedFailedEvent(
         subjectIdentifier,
         sessionId,
+        biometricSessionId,
       );
 
       expect(actualEvent).toMatchObject(expectedEvent);
@@ -265,13 +267,17 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
 const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
   user: string,
   session: string,
+  biometricSessionId: string,
 ) => ({
+  timestamp: expect.any(Number),
   user: {
     user_id: user,
     session_id: session,
     govuk_signin_journey_id: expect.any(String),
+    transaction_id: biometricSessionId,
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+  event_timestamp_ms: expect.any(Number),
   component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
   restricted: {
     name: [
@@ -280,6 +286,11 @@ const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
       },
     ],
     birthDate: [],
+    deviceId: expect.arrayContaining([expect.objectContaining(
+      {
+        value: expect.any(String)
+      }
+    )]),
     address: expect.arrayContaining([expect.any(Object)]),
   },
   extensions: {
@@ -299,6 +310,7 @@ const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
         ]),
         ciReasons: expect.arrayContaining([expect.any(Object)]),
         txmaContraIndicators: expect.any(Array),
+        txn: expect.any(String)
       },
     ],
   },

@@ -9,7 +9,7 @@ import {
   pollForEvents,
   Scenario,
   setupBiometricSessionByScenario,
-} from "./utils/apiTestHelpers";
+} from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
 import {
   createRemoteJWKSet,
@@ -21,7 +21,7 @@ import {
   FailEvidence,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { mockClientState, mockGovukSigninJourneyId } from "./utils/apiTestData";
+import { mockClientState, mockGovukSigninJourneyId } from "../utils/apiTestData";
 
 describe("Successful credential results", () => {
   describe.each([
