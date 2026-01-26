@@ -7,14 +7,13 @@ import {
   pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
-import { UUID } from "crypto";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
-  let biometricSessionId: UUID;
+  let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 

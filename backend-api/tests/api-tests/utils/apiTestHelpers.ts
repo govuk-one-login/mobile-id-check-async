@@ -12,7 +12,12 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import {
+  createRemoteJWKSet,
+  jwtVerify,
+  JWTVerifyResult,
+  ResolvedKey,
+} from "jose";
 
 export interface ClientDetails {
   client_id: string;
@@ -411,7 +416,11 @@ export enum Scenario {
 export async function doAsyncJourney(
   scenario: Scenario,
   overrides?: { creationDate?: string; opaqueId?: string },
-) {
+): Promise<{
+  biometricSessionId: string;
+  sessionId: string;
+  subjectIdentifier: string;
+}> {
   const subjectIdentifier = randomUUID();
   await createSessionForSub(subjectIdentifier);
 
@@ -433,13 +442,15 @@ export async function doAsyncJourney(
   await finishBiometricSession(sessionId, biometricSessionId);
 
   return {
-    subjectIdentifier,
-    sessionId,
     biometricSessionId,
+    sessionId,
+    subjectIdentifier,
   };
 }
 
-export async function getVerifiedJwt(subjectIdentifier: string) {
+export async function getVerifiedJwt(
+  subjectIdentifier: string,
+): Promise<JWTVerifyResult & ResolvedKey> {
   const credentialJwtFromQueue =
     await getCredentialFromIpvOutboundQueue(subjectIdentifier);
 
