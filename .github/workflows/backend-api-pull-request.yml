@@ -14,7 +14,7 @@ on:
       - ".github/workflows/workflow_pull-request.yml"
       - ".github/workflows/job_ci-checks.yml"
       - ".github/workflows/job_test-suite.yml"
-      - "!backend-api/**/*.md"
+      - "backend-api/**/*.md"
       - "!backend-api/**/*.png"
 
   workflow_dispatch:
