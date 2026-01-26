@@ -114,7 +114,6 @@ describe("Successful credential results", () => {
           numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
         });
 
-        console.log(JSON.stringify(criTxmaEvents));
       }, 60000);
 
       it("Writes verified credential to the IPV Core outbound queue", () => {

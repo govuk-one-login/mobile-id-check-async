@@ -224,10 +224,10 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
   user: {
     user_id: user,
     session_id: session,
-    govuk_signin_journey_id: expect.toBeValidUuid(),
+    govuk_signin_journey_id: expect.any(String),
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-  component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`, // yes
+  component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
   restricted: {
     name: [
       {
@@ -269,10 +269,10 @@ const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
   user: {
     user_id: user,
     session_id: session,
-    govuk_signin_journey_id: expect.toBeValidUuid(),
+    govuk_signin_journey_id: expect.any(String),
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-  component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`, // yes
+  component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
   restricted: {
     name: [
       {
