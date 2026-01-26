@@ -3,7 +3,7 @@ import {
   EventResponse,
   finishBiometricSession,
   getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue,
+  getCredentialFromIpvOutboundQueue, getUuidMatcher,
   issueBiometricToken,
   pollForEvents,
   Scenario,
@@ -226,7 +226,7 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
   user: {
     user_id: user,
     session_id: session,
-    govuk_signin_journey_id: expect.stringMatching(uuidRegex),
+    govuk_signin_journey_id: getUuidMatcher(),
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
   component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`, // yes

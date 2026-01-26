@@ -371,6 +371,13 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
   return credentialResults;
 }
 
+export const getUuidMatcher = () => {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  return expect.stringMatching(uuidRegex);
+}
+
 export enum Scenario {
   DRIVING_LICENCE_SUCCESS = "DRIVING_LICENCE_SUCCESS",
   DRIVING_LICENCE_FAILURE_WITH_CIS = "DRIVING_LICENCE_FAILURE_WITH_CIS",
