@@ -1,15 +1,11 @@
 import {
-  createSessionForSub,
   doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
-  finishBiometricSession,
-  getActiveSessionIdFromSub,
-  issueBiometricToken,
+  getVerifiedJwt,
   pollForCredentialResults,
   pollForEvents,
   Scenario,
-  setupBiometricSessionByScenario,
 } from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
 import { JWTVerifyResult, ResolvedKey } from "jose";
@@ -61,8 +57,9 @@ describe("Successful credential results", () => {
       let sessionId: string;
 
       beforeAll(async () => {
-        ({ subjectIdentifier, sessionId, verifiedJwt } =
-          await doAsyncJourney(scenario));
+        ({ subjectIdentifier, sessionId } = await doAsyncJourney(scenario));
+
+        verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
         criTxmaEvents = await pollForEvents({
           partitionKey: `SESSION#${sessionId}`,
@@ -151,28 +148,17 @@ describe("Unsuccessful credential results", () => {
     let subjectIdentifier: string;
     let criErrorTxmaEvent: object;
     let credentialResult: object;
+    let sessionId: string;
+    const overrides = {
+      creationDate: parameters.creationDate,
+      opaqueId: parameters.opaqueId,
+    };
 
     beforeAll(async () => {
-      subjectIdentifier = randomUUID();
-      await createSessionForSub(subjectIdentifier);
-
-      const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-
-      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
-
-      const biometricSessionId = randomUUID();
-      const opaqueIdFromSession: string =
-        issueBiometricTokenResponse.data.opaqueId;
-      const opaqueId = parameters.opaqueId ?? opaqueIdFromSession;
-      const creationDate = parameters.creationDate ?? new Date().toISOString();
-      await setupBiometricSessionByScenario(
-        biometricSessionId,
+      ({ subjectIdentifier, sessionId } = await doAsyncJourney(
         parameters.scenario,
-        opaqueId,
-        creationDate,
-      );
-
-      await finishBiometricSession(sessionId, biometricSessionId);
+        overrides,
+      ));
 
       const credentialResultsResponse = await pollForCredentialResults(
         `SUB#${subjectIdentifier}`,

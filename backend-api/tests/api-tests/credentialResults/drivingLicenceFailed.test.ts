@@ -3,6 +3,7 @@ import {
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   getVcIssuedEventObject,
+  getVerifiedJwt,
   pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
@@ -19,8 +20,10 @@ describe("Driving licence failed credential result", () => {
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
-      ({ subjectIdentifier, sessionId, biometricSessionId, verifiedJwt } =
+      ({ subjectIdentifier, sessionId, biometricSessionId } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
+
+      verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
       criTxmaEvents = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,

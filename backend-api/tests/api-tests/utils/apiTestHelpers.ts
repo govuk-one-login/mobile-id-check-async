@@ -408,16 +408,20 @@ export enum Scenario {
   INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
 }
 
-export async function doAsyncJourney(scenario: Scenario) {
+export async function doAsyncJourney(
+  scenario: Scenario,
+  overrides?: { creationDate?: string; opaqueId?: string },
+) {
   const subjectIdentifier = randomUUID();
   await createSessionForSub(subjectIdentifier);
 
   const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
   const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
 
-  const { opaqueId } = issueBiometricTokenResponse.data;
   const biometricSessionId = randomUUID();
-  const creationDate = new Date().toISOString();
+  const creationDate = overrides?.creationDate ?? new Date().toISOString();
+  const opaqueId =
+    overrides?.opaqueId ?? issueBiometricTokenResponse.data.opaqueId;
 
   await setupBiometricSessionByScenario(
     biometricSessionId,
@@ -428,6 +432,14 @@ export async function doAsyncJourney(scenario: Scenario) {
 
   await finishBiometricSession(sessionId, biometricSessionId);
 
+  return {
+    subjectIdentifier,
+    sessionId,
+    biometricSessionId,
+  };
+}
+
+export async function getVerifiedJwt(subjectIdentifier: string) {
   const credentialJwtFromQueue =
     await getCredentialFromIpvOutboundQueue(subjectIdentifier);
 
@@ -439,10 +451,5 @@ export async function doAsyncJourney(scenario: Scenario) {
     algorithms: ["ES256"],
   });
 
-  return {
-    subjectIdentifier,
-    sessionId,
-    biometricSessionId,
-    verifiedJwt,
-  };
+  return verifiedJwt;
 }
