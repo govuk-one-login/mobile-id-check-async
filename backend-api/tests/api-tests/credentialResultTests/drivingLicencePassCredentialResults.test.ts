@@ -62,8 +62,6 @@ describe("Driving licence credential results", () => {
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
         numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
       });
-
-      console.log(JSON.stringify(criTxmaEvents));
     }, 60000);
 
     it("Writes verified credential with passed evidence to the IPV Core outbound queue", () => {
@@ -95,13 +93,58 @@ describe("Driving licence credential results", () => {
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event with valid properties", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-      const expectedEvent = getExpectedEventDrivingLicenceVcIssuedPassEvent(
-        subjectIdentifier,
-        sessionId,
-        biometricSessionId,
-      );
 
-      expect(actualEvent).toStrictEqual(expectedEvent);
+      expect(actualEvent).toStrictEqual({
+        timestamp: expect.any(Number),
+        user: {
+          user_id: subjectIdentifier,
+          session_id: sessionId,
+          govuk_signin_journey_id: expect.any(String),
+          transaction_id: biometricSessionId,
+        },
+        event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+        event_timestamp_ms: expect.any(Number),
+        component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+        restricted: {
+          name: [
+            {
+              nameParts: expect.any(Array),
+            },
+          ],
+          birthDate: expect.arrayContaining([expect.any(Object)]),
+          deviceId: expect.arrayContaining([expect.objectContaining(
+            {
+              value: expect.any(String)
+            }
+          )]),
+          drivingPermit: expect.arrayContaining([
+            expect.objectContaining({
+              expiryDate: expect.any(String),
+              issuedBy: "DVLA",
+            }),
+          ]),
+          address: expect.arrayContaining([expect.any(Object)]),
+        },
+        extensions: {
+          redirect_uri: "https://mockRedirectUri.com",
+          evidence: [
+            {
+              type: "IdentityCheck",
+              strengthScore: 3,
+              validityScore: 2,
+              activityHistoryScore: 1,
+              checkDetails: expect.arrayContaining([
+                expect.objectContaining({
+                  biometricVerificationProcessLevel: 3,
+                  checkMethod: "bvr",
+                }),
+              ]),
+              txmaContraIndicators: [],
+              txn: expect.any(String)
+            },
+          ],
+        },
+      });
     });
 
     it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
@@ -135,59 +178,3 @@ function expectTxmaEventToHaveBeenWritten(
     }),
   ).toBe(true);
 }
-
-const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
-  user: string,
-  session: string,
-  biometricSessionId: UUID,
-) => ({
-  timestamp: expect.any(Number),
-  user: {
-    user_id: user,
-    session_id: session,
-    govuk_signin_journey_id: expect.any(String),
-    transaction_id: biometricSessionId,
-  },
-  event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-  event_timestamp_ms: expect.any(Number),
-  component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
-  restricted: {
-    name: [
-      {
-        nameParts: expect.any(Array),
-      },
-    ],
-    birthDate: expect.arrayContaining([expect.any(Object)]),
-    deviceId: expect.arrayContaining([expect.objectContaining(
-      {
-        value: expect.any(String)
-      }
-    )]),
-    drivingPermit: expect.arrayContaining([
-      expect.objectContaining({
-        expiryDate: expect.any(String),
-        issuedBy: "DVLA",
-      }),
-    ]),
-    address: expect.arrayContaining([expect.any(Object)]),
-  },
-  extensions: {
-    redirect_uri: "https://mockRedirectUri.com",
-    evidence: [
-      {
-        type: "IdentityCheck",
-        strengthScore: 3,
-        validityScore: 2,
-        activityHistoryScore: 1,
-        checkDetails: expect.arrayContaining([
-          expect.objectContaining({
-            biometricVerificationProcessLevel: 3,
-            checkMethod: "bvr",
-          }),
-        ]),
-        txmaContraIndicators: [],
-        txn: expect.any(String)
-      },
-    ],
-  },
-});
