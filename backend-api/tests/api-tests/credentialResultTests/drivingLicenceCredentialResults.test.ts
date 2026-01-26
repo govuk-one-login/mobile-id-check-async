@@ -98,9 +98,10 @@ describe("Driving licence credential results", () => {
       const expectedEvent = getExpectedEventDrivingLicenceVcIssuedPassEvent(
         subjectIdentifier,
         sessionId,
+        biometricSessionId,
       );
 
-      expect(actualEvent).toMatchObject(expectedEvent);
+      expect(actualEvent).toStrictEqual(expectedEvent);
     });
 
     it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
@@ -184,7 +185,7 @@ describe("Driving licence credential results", () => {
         biometricSessionId,
       );
 
-      expect(actualEvent).toMatchObject(expectedEvent);
+      expect(actualEvent).toStrictEqual(expectedEvent);
     });
 
     it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
@@ -222,13 +223,17 @@ function expectTxmaEventToHaveBeenWritten(
 const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
   user: string,
   session: string,
+  biometricSessionId: UUID,
 ) => ({
+  timestamp: expect.any(Number),
   user: {
     user_id: user,
     session_id: session,
     govuk_signin_journey_id: expect.any(String),
+    transaction_id: biometricSessionId,
   },
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+  event_timestamp: expect.any(Number),
   component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
   restricted: {
     name: [
@@ -237,6 +242,11 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
       },
     ],
     birthDate: expect.arrayContaining([expect.any(Object)]),
+    deviceId: expect.arrayContaining([expect.objectContaining(
+      {
+        value: expect.any(String)
+      }
+    )]),
     drivingPermit: expect.arrayContaining([
       expect.objectContaining({
         expiryDate: expect.any(String),
@@ -259,6 +269,8 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
             checkMethod: "bvr",
           }),
         ]),
+        txmaContraIndicators: [],
+        txn: expect.any(String)
       },
     ],
   },
@@ -267,7 +279,7 @@ const getExpectedEventDrivingLicenceVcIssuedPassEvent = (
 const getExpectedEventDrivingLicenceVcIssuedFailedEvent = (
   user: string,
   session: string,
-  biometricSessionId: string,
+  biometricSessionId: UUID,
 ) => ({
   timestamp: expect.any(Number),
   user: {
