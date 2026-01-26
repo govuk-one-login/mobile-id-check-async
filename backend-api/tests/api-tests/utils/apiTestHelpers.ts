@@ -439,17 +439,10 @@ export async function doAsyncJourney(scenario: Scenario) {
     algorithms: ["ES256"],
   });
 
-  const criTxmaEvents = await pollForEvents({
-    partitionKey: `SESSION#${sessionId}`,
-    sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
-    numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
-  });
-
   return {
     subjectIdentifier,
     sessionId,
     biometricSessionId,
     verifiedJwt,
-    criTxmaEvents,
   };
 }

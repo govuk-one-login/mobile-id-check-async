@@ -3,6 +3,7 @@ import {
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   getVcIssuedEventObject,
+  pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
 import { UUID } from "crypto";
@@ -18,13 +19,14 @@ describe("Driving licence failed credential result", () => {
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
-      ({
-        subjectIdentifier,
-        sessionId,
-        biometricSessionId,
-        criTxmaEvents,
-        verifiedJwt,
-      } = await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
+      ({ subjectIdentifier, sessionId, biometricSessionId, verifiedJwt } =
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
+
+      criTxmaEvents = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
+        numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
+      });
     }, 60000);
 
     it("Writes verified credential with failed evidence to the IPV Core outbound queue", () => {

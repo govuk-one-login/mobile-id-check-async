@@ -3,6 +3,7 @@ import {
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   getVcIssuedEventObject,
+  pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
 import { UUID } from "crypto";
@@ -18,13 +19,14 @@ describe("Driving licence passed credential result", () => {
 
   describe("Given the vendor returns a driving licence success biometric session", () => {
     beforeAll(async () => {
-      ({
-        subjectIdentifier,
-        sessionId,
-        biometricSessionId,
-        criTxmaEvents,
-        verifiedJwt,
-      } = await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS));
+      ({ subjectIdentifier, sessionId, biometricSessionId, verifiedJwt } =
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS));
+
+      criTxmaEvents = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
+        numberOfEvents: 4, // Should find CRI_APP_START, CRI_START, CRI_END and CRI_VC_ISSUED
+      });
     }, 60000);
 
     it("Writes verified credential with passed evidence to the IPV Core outbound queue", () => {

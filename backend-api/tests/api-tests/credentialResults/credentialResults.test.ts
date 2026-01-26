@@ -1,10 +1,10 @@
 import {
   createSessionForSub,
+  doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue,
   issueBiometricToken,
   pollForCredentialResults,
   pollForEvents,
@@ -12,12 +12,7 @@ import {
   setupBiometricSessionByScenario,
 } from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
+import { JWTVerifyResult, ResolvedKey } from "jose";
 import {
   FailEvidence,
   PassEvidence,
@@ -63,38 +58,11 @@ describe("Successful credential results", () => {
       let subjectIdentifier: string;
       let criTxmaEvents: EventResponse[];
       let verifiedJwt: JWTVerifyResult & ResolvedKey;
+      let sessionId: string;
 
       beforeAll(async () => {
-        subjectIdentifier = randomUUID();
-        await createSessionForSub(subjectIdentifier);
-
-        const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-
-        const issueBiometricTokenResponse =
-          await issueBiometricToken(sessionId);
-
-        const { opaqueId } = issueBiometricTokenResponse.data;
-        const biometricSessionId = randomUUID();
-        const creationDate = new Date().toISOString();
-        await setupBiometricSessionByScenario(
-          biometricSessionId,
-          scenario,
-          opaqueId,
-          creationDate,
-        );
-
-        await finishBiometricSession(sessionId, biometricSessionId);
-
-        const credentialJwt =
-          await getCredentialFromIpvOutboundQueue(subjectIdentifier);
-
-        const jwks = createRemoteJWKSet(
-          new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
-        );
-
-        verifiedJwt = await jwtVerify(credentialJwt, jwks, {
-          algorithms: ["ES256"],
-        });
+        ({ subjectIdentifier, sessionId, verifiedJwt } =
+          await doAsyncJourney(scenario));
 
         criTxmaEvents = await pollForEvents({
           partitionKey: `SESSION#${sessionId}`,
