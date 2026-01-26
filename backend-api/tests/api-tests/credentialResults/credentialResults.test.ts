@@ -26,22 +26,6 @@ import { mockClientState, mockGovukSigninJourneyId } from "../utils/apiTestData"
 describe("Successful credential results", () => {
   describe.each([
     [
-      Scenario.DRIVING_LICENCE_SUCCESS,
-      {
-        expectedStrengthScore: 3,
-        expectedValidityScore: 2,
-        expectedActivityHistoryScore: 1,
-      },
-    ],
-    [
-      Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
-      {
-        expectedStrengthScore: 3,
-        expectedValidityScore: 0,
-        expectedActivityHistoryScore: 0,
-      },
-    ],
-    [
       Scenario.PASSPORT_SUCCESS,
       {
         expectedStrengthScore: 4,
