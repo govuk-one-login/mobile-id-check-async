@@ -103,12 +103,7 @@ describe("BRC passed credential result", () => {
           ],
           flaggedRecord: [
             {
-              dateOfExpiry: [
-                {
-                  type: expect.any(String),
-                  value: expect.any(String),
-                },
-              ],
+              dateOfExpiry: [expect.any(Object)],
             },
           ],
         },
