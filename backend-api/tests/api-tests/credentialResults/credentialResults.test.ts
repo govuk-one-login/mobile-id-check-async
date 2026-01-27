@@ -1,23 +1,14 @@
 import {
-  createSessionForSub,
+  doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
-  finishBiometricSession,
-  getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue,
-  issueBiometricToken,
+  getVerifiedJwt,
   pollForCredentialResults,
   pollForEvents,
   Scenario,
-  setupBiometricSessionByScenario,
 } from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
+import { JWTVerifyResult, ResolvedKey } from "jose";
 import {
   FailEvidence,
   PassEvidence,
@@ -63,38 +54,12 @@ describe("Successful credential results", () => {
       let subjectIdentifier: string;
       let criTxmaEvents: EventResponse[];
       let verifiedJwt: JWTVerifyResult & ResolvedKey;
+      let sessionId: string;
 
       beforeAll(async () => {
-        subjectIdentifier = randomUUID();
-        await createSessionForSub(subjectIdentifier);
+        ({ sessionId, subjectIdentifier } = await doAsyncJourney(scenario));
 
-        const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-
-        const issueBiometricTokenResponse =
-          await issueBiometricToken(sessionId);
-
-        const { opaqueId } = issueBiometricTokenResponse.data;
-        const biometricSessionId = randomUUID();
-        const creationDate = new Date().toISOString();
-        await setupBiometricSessionByScenario(
-          biometricSessionId,
-          scenario,
-          opaqueId,
-          creationDate,
-        );
-
-        await finishBiometricSession(sessionId, biometricSessionId);
-
-        const credentialJwt =
-          await getCredentialFromIpvOutboundQueue(subjectIdentifier);
-
-        const jwks = createRemoteJWKSet(
-          new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
-        );
-
-        verifiedJwt = await jwtVerify(credentialJwt, jwks, {
-          algorithms: ["ES256"],
-        });
+        verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
         criTxmaEvents = await pollForEvents({
           partitionKey: `SESSION#${sessionId}`,
@@ -183,28 +148,17 @@ describe("Unsuccessful credential results", () => {
     let subjectIdentifier: string;
     let criErrorTxmaEvent: object;
     let credentialResult: object;
+    let sessionId: string;
+    const biometricSessionOverrides = {
+      creationDate: parameters.creationDate,
+      opaqueId: parameters.opaqueId,
+    };
 
     beforeAll(async () => {
-      subjectIdentifier = randomUUID();
-      await createSessionForSub(subjectIdentifier);
-
-      const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-
-      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
-
-      const biometricSessionId = randomUUID();
-      const opaqueIdFromSession: string =
-        issueBiometricTokenResponse.data.opaqueId;
-      const opaqueId = parameters.opaqueId ?? opaqueIdFromSession;
-      const creationDate = parameters.creationDate ?? new Date().toISOString();
-      await setupBiometricSessionByScenario(
-        biometricSessionId,
+      ({ sessionId, subjectIdentifier } = await doAsyncJourney(
         parameters.scenario,
-        opaqueId,
-        creationDate,
-      );
-
-      await finishBiometricSession(sessionId, biometricSessionId);
+        biometricSessionOverrides,
+      ));
 
       const credentialResultsResponse = await pollForCredentialResults(
         `SUB#${subjectIdentifier}`,

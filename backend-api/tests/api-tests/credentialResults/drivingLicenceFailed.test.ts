@@ -1,63 +1,28 @@
 import {
-  createSessionForSub,
+  doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
-  finishBiometricSession,
-  getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue,
   getVcIssuedEventObject,
-  issueBiometricToken,
+  getVerifiedJwt,
   pollForEvents,
   Scenario,
-  setupBiometricSessionByScenario,
 } from "../utils/apiTestHelpers";
-import { randomUUID, UUID } from "crypto";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
+import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
-  let biometricSessionId: UUID;
+  let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
-      subjectIdentifier = randomUUID();
-      await createSessionForSub(subjectIdentifier);
+      ({ biometricSessionId, sessionId, subjectIdentifier } =
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
 
-      sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
-
-      const { opaqueId } = issueBiometricTokenResponse.data;
-      biometricSessionId = randomUUID();
-      const creationDate = new Date().toISOString();
-
-      await setupBiometricSessionByScenario(
-        biometricSessionId,
-        Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
-        opaqueId,
-        creationDate,
-      );
-
-      await finishBiometricSession(sessionId, biometricSessionId);
-
-      const credentialJwtFromQueue =
-        await getCredentialFromIpvOutboundQueue(subjectIdentifier);
-
-      const jwks = createRemoteJWKSet(
-        new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
-      );
-
-      verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
-        algorithms: ["ES256"],
-      });
+      verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
       criTxmaEvents = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,

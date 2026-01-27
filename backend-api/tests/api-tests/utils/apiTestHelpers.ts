@@ -12,6 +12,12 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
+import {
+  createRemoteJWKSet,
+  jwtVerify,
+  JWTVerifyResult,
+  ResolvedKey,
+} from "jose";
 
 export interface ClientDetails {
   client_id: string;
@@ -405,4 +411,58 @@ export enum Scenario {
   BRP_SUCCESS = "BRP_SUCCESS",
   BRC_SUCCESS = "BRC_SUCCESS",
   INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
+}
+
+export async function doAsyncJourney(
+  biometricSessionScenario: Scenario,
+  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
+): Promise<{
+  biometricSessionId: string;
+  sessionId: string;
+  subjectIdentifier: string;
+}> {
+  const subjectIdentifier = randomUUID();
+  await createSessionForSub(subjectIdentifier);
+
+  const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+  const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
+
+  const biometricSessionId = randomUUID();
+  const creationDate =
+    biometricSessionOverrides?.creationDate ?? new Date().toISOString();
+  const opaqueId =
+    biometricSessionOverrides?.opaqueId ??
+    issueBiometricTokenResponse.data.opaqueId;
+
+  await setupBiometricSessionByScenario(
+    biometricSessionId,
+    biometricSessionScenario,
+    opaqueId,
+    creationDate,
+  );
+
+  await finishBiometricSession(sessionId, biometricSessionId);
+
+  return {
+    biometricSessionId,
+    sessionId,
+    subjectIdentifier,
+  };
+}
+
+export async function getVerifiedJwt(
+  subjectIdentifier: string,
+): Promise<JWTVerifyResult & ResolvedKey> {
+  const credentialJwtFromQueue =
+    await getCredentialFromIpvOutboundQueue(subjectIdentifier);
+
+  const jwks = createRemoteJWKSet(
+    new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
+  );
+
+  const verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
+    algorithms: ["ES256"],
+  });
+
+  return verifiedJwt;
 }
