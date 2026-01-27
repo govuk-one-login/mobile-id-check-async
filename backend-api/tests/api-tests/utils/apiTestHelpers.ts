@@ -415,7 +415,7 @@ export enum Scenario {
 
 export async function doAsyncJourney(
   scenario: Scenario,
-  overrides?: { creationDate?: string; opaqueId?: string },
+  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
 ): Promise<{
   biometricSessionId: string;
   sessionId: string;
@@ -428,9 +428,11 @@ export async function doAsyncJourney(
   const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
 
   const biometricSessionId = randomUUID();
-  const creationDate = overrides?.creationDate ?? new Date().toISOString();
+  const creationDate =
+    biometricSessionOverrides?.creationDate ?? new Date().toISOString();
   const opaqueId =
-    overrides?.opaqueId ?? issueBiometricTokenResponse.data.opaqueId;
+    biometricSessionOverrides?.opaqueId ??
+    issueBiometricTokenResponse.data.opaqueId;
 
   await setupBiometricSessionByScenario(
     biometricSessionId,

@@ -149,7 +149,7 @@ describe("Unsuccessful credential results", () => {
     let criErrorTxmaEvent: object;
     let credentialResult: object;
     let sessionId: string;
-    const overrides = {
+    const biometricSessionOverrides = {
       creationDate: parameters.creationDate,
       opaqueId: parameters.opaqueId,
     };
@@ -157,7 +157,7 @@ describe("Unsuccessful credential results", () => {
     beforeAll(async () => {
       ({ sessionId, subjectIdentifier } = await doAsyncJourney(
         parameters.scenario,
-        overrides,
+        biometricSessionOverrides,
       ));
 
       const credentialResultsResponse = await pollForCredentialResults(
