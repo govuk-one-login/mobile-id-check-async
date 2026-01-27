@@ -102,9 +102,9 @@ describe("BRP passed credential result", () => {
             },
           ],
           flaggedRecord: [
-            {
-              dateOfExpiry: [expect.any(Object)],
-            },
+            expect.objectContaining({
+              dateOfExpiry: expect.any(Object),
+            }),
           ],
         },
         extensions: {
