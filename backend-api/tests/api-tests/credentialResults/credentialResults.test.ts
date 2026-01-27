@@ -1,6 +1,7 @@
 import {
   createSessionForSub,
   EventResponse,
+  expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
@@ -9,7 +10,7 @@ import {
   pollForEvents,
   Scenario,
   setupBiometricSessionByScenario,
-} from "./utils/apiTestHelpers";
+} from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
 import {
   createRemoteJWKSet,
@@ -21,26 +22,13 @@ import {
   FailEvidence,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { mockClientState, mockGovukSigninJourneyId } from "./utils/apiTestData";
+import {
+  mockClientState,
+  mockGovukSigninJourneyId,
+} from "../utils/apiTestData";
 
 describe("Successful credential results", () => {
   describe.each([
-    [
-      Scenario.DRIVING_LICENCE_SUCCESS,
-      {
-        expectedStrengthScore: 3,
-        expectedValidityScore: 2,
-        expectedActivityHistoryScore: 1,
-      },
-    ],
-    [
-      Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
-      {
-        expectedStrengthScore: 3,
-        expectedValidityScore: 0,
-        expectedActivityHistoryScore: 0,
-      },
-    ],
     [
       Scenario.PASSPORT_SUCCESS,
       {
@@ -273,15 +261,4 @@ interface UnsuccessfulResultTestParameters {
   expectedError: string;
   expectedErrorDescription: string;
   expectedSuspectedFraudSignal?: string;
-}
-
-function expectTxmaEventToHaveBeenWritten(
-  txmaEvents: EventResponse[],
-  eventName: string,
-) {
-  expect(
-    txmaEvents.some((item) => {
-      return "event_name" in item.event && item.event.event_name === eventName;
-    }),
-  ).toBe(true);
 }
