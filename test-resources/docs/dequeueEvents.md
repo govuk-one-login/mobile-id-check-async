@@ -57,7 +57,7 @@ backend API SQS queue. This is done using an
 (an example can be found in the [SAM template](../infra/dequeueEvents/function.yaml)).
 
 > The number of TxMA events that are sent in a batch can be configuring by
-specifying the `BatchSize` on the `EventSourceMapping` resource.
+> specifying the `BatchSize` on the `EventSourceMapping` resource.
 
 3. #### Event validation
 
@@ -85,6 +85,7 @@ const putItemCommandInput: PutItemCommandInput = {
 ```
 
 > ###### Partition Key and Sort Key
+>
 > The Partition Key (PK) and Sort Key (SK) make up the composite key used to
 > query the Events table. The structure of the keys allows for multiple types of
 > event and event identifier, keeping the schema flexible for future use cases.
@@ -113,12 +114,12 @@ queue to be reprocessed.
 {
   batchItemFailures: [
     {
-      itemIdentifier: '62ca7bbf-ae6d-47b1-9120-59bc28bbebeb'
+      itemIdentifier: "62ca7bbf-ae6d-47b1-9120-59bc28bbebeb",
     },
     {
-      itemIdentifier: 'ea20501e-d117-4556-96ed-7c46de41d81c'
-    }
-  ]
+      itemIdentifier: "ea20501e-d117-4556-96ed-7c46de41d81c",
+    },
+  ];
 }
 ```
 

@@ -11,15 +11,12 @@ const toHaveSameFirstLetterAs = function toHaveSameFirstLetterAs(
   word: string,
   target: string,
 ) {
-  const pass = word[0] === target[0]
+  const pass = word[0] === target[0];
   return {
     pass,
     message: pass
-      ? () =>
-        `Expected ${word} not to have the same first letter as ${target}`
-      : () =>
-        `Expected ${word} to have the same first letter as ${target}`
-
+      ? () => `Expected ${word} not to have the same first letter as ${target}`
+      : () => `Expected ${word} to have the same first letter as ${target}`,
   };
 };
 
@@ -33,10 +30,8 @@ declare module "expect" {
   }
 }
 
-expect('apple').toHaveSameFirstLetterAs('apricot')
-expect('apple').not.toHaveSameFirstLetterAs('banana')
-
-
+expect("apple").toHaveSameFirstLetterAs("apricot");
+expect("apple").not.toHaveSameFirstLetterAs("banana");
 ```
 
 Our custom matchers are defined in `backend-api/src/functions/testUtils/matchers.ts`.
