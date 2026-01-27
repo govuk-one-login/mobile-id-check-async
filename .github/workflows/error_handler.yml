@@ -1,0 +1,33 @@
+name: Error Handler
+
+on:
+  workflow_run:
+    workflows:
+      - backend-api-post-merge
+    types:
+      - completed
+    branches:
+      - main
+      - DCMAW-17136
+
+permissions:
+  contents: read
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      # - name: Notify on failure
+      #   uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+      #   with:
+      #     webhook-type: webhook-trigger
+      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     payload: |
+      #       {
+      #         "github_repo": "${{ github.repository }}",
+      #         "message": "Github Workflow ${{ github.event.workflow.name }} has failed."
+      #       }
+
+      - name: testing
+        run: echo "Error Handler workflow has been triggered."

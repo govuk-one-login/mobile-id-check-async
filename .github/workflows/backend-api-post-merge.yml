@@ -23,80 +23,88 @@ defaults:
     working-directory: ./backend-api
 
 jobs:
-  ci-checks:
-    name: Pre-deployment
-    uses:
-      ./.github/workflows/job_ci-checks.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      WORKING_DIRECTORY: backend-api
+  fail:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: fail
+        run: exit 1
 
-  run-test-suite:
-    name: Pre-deployment
-    uses:
-      ./.github/workflows/job_test-suite.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      RUN_PACT_TESTS: true
-      PUBLISH_PACT_VERIFICATION_RESULTS: true
-      SONARQUBE_CONTINUE_ON_ERROR: true
-      WORKING_DIRECTORY: backend-api
-    secrets: inherit
+  # ci-checks:
+  #   name: Pre-deployment
+  #   uses:
+  #     ./.github/workflows/job_ci-checks.yml
+  #   with:
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     WORKING_DIRECTORY: backend-api
 
-  push-docker-image-dev:
-    name: Dev
-    needs: 
-      - ci-checks
-      - run-test-suite
-    uses:
-      ./.github/workflows/job_push-docker-image.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      WORKING_DIRECTORY: backend-api
-    secrets:
-      CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
+  # run-test-suite:
+  #   name: Pre-deployment
+  #   uses:
+  #     ./.github/workflows/job_test-suite.yml
+  #   with:
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     RUN_PACT_TESTS: true
+  #     PUBLISH_PACT_VERIFICATION_RESULTS: true
+  #     SONARQUBE_CONTINUE_ON_ERROR: true
+  #     WORKING_DIRECTORY: backend-api
+  #   secrets: inherit
 
-  upload-sam-artifact-dev:
-    name: Dev
-    needs: push-docker-image-dev
-    uses:
-      ./.github/workflows/job_upload-sam-artifact.yml
-    with:
-      GENERATE_OPEN_PROXY_API_SPEC: true
-      PRIVATE_PACKAGES_REQUIRED: true
-      WORKING_DIRECTORY: backend-api
-    secrets:
-      ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
-      SIGNING_PROFILE_NAME: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+  # push-docker-image-dev:
+  #   name: Dev
+  #   needs: 
+  #     - ci-checks
+  #     - run-test-suite
+  #   uses:
+  #     ./.github/workflows/job_push-docker-image.yml
+  #   with:
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     WORKING_DIRECTORY: backend-api
+  #   secrets:
+  #     CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
+  #     GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
+  #     TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
 
-  push-docker-image-build:
-    name: Build
-    needs: 
-      - ci-checks
-      - run-test-suite
-    uses:
-      ./.github/workflows/job_push-docker-image.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      WORKING_DIRECTORY: backend-api
-    secrets:
-      CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+  # upload-sam-artifact-dev:
+  #   name: Dev
+  #   needs: push-docker-image-dev
+  #   uses:
+  #     ./.github/workflows/job_upload-sam-artifact.yml
+  #   with:
+  #     GENERATE_OPEN_PROXY_API_SPEC: true
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     WORKING_DIRECTORY: backend-api
+  #   secrets:
+  #     ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
+  #     GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
+  #     SIGNING_PROFILE_NAME: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
 
-  upload-sam-artifact-build:
-    name: Build
-    needs: push-docker-image-build
-    uses:
-      ./.github/workflows/job_upload-sam-artifact.yml
-    with:
-      GENERATE_OPEN_PROXY_API_SPEC: true
-      PRIVATE_PACKAGES_REQUIRED: true
-      WORKING_DIRECTORY: backend-api
-    secrets:
-      ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
-      SIGNING_PROFILE_NAME: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
+  # push-docker-image-build:
+  #   name: Build
+  #   needs: 
+  #     - ci-checks
+  #     - run-test-suite
+  #   uses:
+  #     ./.github/workflows/job_push-docker-image.yml
+  #   with:
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     WORKING_DIRECTORY: backend-api
+  #   secrets:
+  #     CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+  #     GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
+  #     TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+
+  # upload-sam-artifact-build:
+  #   name: Build
+  #   needs: push-docker-image-build
+  #   uses:
+  #     ./.github/workflows/job_upload-sam-artifact.yml
+  #   with:
+  #     GENERATE_OPEN_PROXY_API_SPEC: true
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     WORKING_DIRECTORY: backend-api
+  #   secrets:
+  #     ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
+  #     GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
+  #     SIGNING_PROFILE_NAME: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
