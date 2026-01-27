@@ -88,7 +88,7 @@ describe("BRP passed credential result", () => {
               documentNumber: expect.any(String),
               expiryDate: expect.any(String),
               icaoIssuerCode: expect.any(String),
-              documentType: expect.any(String),
+              documentType: "IR",
             },
           ],
           flaggedRecord: [
