@@ -7,7 +7,7 @@ import {
   pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
-import { JWTVerifyResult, ResolvedKey, } from "jose";
+import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
 
 describe("Passport failed credential result", () => {

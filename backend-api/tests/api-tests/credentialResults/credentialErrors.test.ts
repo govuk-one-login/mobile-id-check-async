@@ -1,6 +1,14 @@
-import { doAsyncJourney, pollForCredentialResults, pollForEvents, Scenario, } from "../utils/apiTestHelpers";
+import {
+  doAsyncJourney,
+  pollForCredentialResults,
+  pollForEvents,
+  Scenario,
+} from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
-import { mockClientState, mockGovukSigninJourneyId, } from "../utils/apiTestData";
+import {
+  mockClientState,
+  mockGovukSigninJourneyId,
+} from "../utils/apiTestData";
 
 describe("Credential error results", () => {
   describe.each([
