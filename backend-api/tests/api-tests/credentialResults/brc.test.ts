@@ -1,11 +1,11 @@
 import {
-  createSessionForSub,
+  createSessionForSub, doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
-  getVcIssuedEventObject,
+  getVcIssuedEventObject, getVerifiedJwt,
   issueBiometricToken,
   pollForEvents,
   Scenario,
@@ -23,41 +23,16 @@ import { expect } from "@jest/globals";
 describe("BRC passed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
-  let biometricSessionId: UUID;
+  let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
   describe("Given the vendor returns a brc success biometric session", () => {
     beforeAll(async () => {
-      subjectIdentifier = randomUUID();
-      await createSessionForSub(subjectIdentifier);
+      ({ biometricSessionId, sessionId, subjectIdentifier } =
+        await doAsyncJourney(Scenario.BRC_SUCCESS));
 
-      sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
-      const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
-
-      const { opaqueId } = issueBiometricTokenResponse.data;
-      biometricSessionId = randomUUID();
-      const creationDate = new Date().toISOString();
-
-      await setupBiometricSessionByScenario(
-        biometricSessionId,
-        Scenario.BRC_SUCCESS,
-        opaqueId,
-        creationDate,
-      );
-
-      await finishBiometricSession(sessionId, biometricSessionId);
-
-      const credentialJwtFromQueue =
-        await getCredentialFromIpvOutboundQueue(subjectIdentifier);
-
-      const jwks = createRemoteJWKSet(
-        new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
-      );
-
-      verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
-        algorithms: ["ES256"],
-      });
+      verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
       criTxmaEvents = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
