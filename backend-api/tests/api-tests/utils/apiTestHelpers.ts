@@ -1,7 +1,4 @@
-import {
-  GetSecretValueCommand,
-  SecretsManagerClient,
-} from "@aws-sdk/client-secrets-manager";
+import { GetSecretValueCommand, SecretsManagerClient, } from "@aws-sdk/client-secrets-manager";
 import { AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
 import {
@@ -12,12 +9,7 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
+import { createRemoteJWKSet, jwtVerify, JWTVerifyResult, ResolvedKey, } from "jose";
 
 export interface ClientDetails {
   client_id: string;

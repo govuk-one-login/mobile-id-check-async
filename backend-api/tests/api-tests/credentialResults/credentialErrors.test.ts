@@ -1,16 +1,8 @@
-import {
-  doAsyncJourney,
-  pollForCredentialResults,
-  pollForEvents,
-  Scenario,
-} from "../utils/apiTestHelpers";
+import { doAsyncJourney, pollForCredentialResults, pollForEvents, Scenario, } from "../utils/apiTestHelpers";
 import { randomUUID } from "crypto";
-import {
-  mockClientState,
-  mockGovukSigninJourneyId,
-} from "../utils/apiTestData";
+import { mockClientState, mockGovukSigninJourneyId, } from "../utils/apiTestData";
 
-describe("Unsuccessful credential results", () => {
+describe("Credential error results", () => {
   describe.each([
     [
       "Given the vendor returns an invalid biometric session",
@@ -41,7 +33,7 @@ describe("Unsuccessful credential results", () => {
           "BIOMETRIC_SESSION_OLDER_THAN_AUTH_SESSION",
       },
     ],
-  ])("%s", (_: string, parameters: UnsuccessfulResultTestParameters) => {
+  ])("%s", (_: string, parameters: ErrorResultTestParameters) => {
     let subjectIdentifier: string;
     let criErrorTxmaEvent: object;
     let credentialResult: object;
@@ -99,7 +91,7 @@ describe("Unsuccessful credential results", () => {
   });
 });
 
-interface UnsuccessfulResultTestParameters {
+interface ErrorResultTestParameters {
   scenario: Scenario;
   opaqueId?: string;
   creationDate?: string;

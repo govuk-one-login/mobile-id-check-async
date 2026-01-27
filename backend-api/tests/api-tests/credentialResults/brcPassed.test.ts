@@ -1,25 +1,13 @@
 import {
-  createSessionForSub,
   doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
-  finishBiometricSession,
-  getActiveSessionIdFromSub,
-  getCredentialFromIpvOutboundQueue,
   getVcIssuedEventObject,
   getVerifiedJwt,
-  issueBiometricToken,
   pollForEvents,
   Scenario,
-  setupBiometricSessionByScenario,
 } from "../utils/apiTestHelpers";
-import { randomUUID, UUID } from "crypto";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
+import { JWTVerifyResult, ResolvedKey, } from "jose";
 import { expect } from "@jest/globals";
 
 describe("BRC passed credential result", () => {
