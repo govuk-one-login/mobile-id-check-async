@@ -1,11 +1,13 @@
 import {
-  createSessionForSub, doAsyncJourney,
+  createSessionForSub,
+  doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
-  getVcIssuedEventObject, getVerifiedJwt,
+  getVcIssuedEventObject,
+  getVerifiedJwt,
   issueBiometricToken,
   pollForEvents,
   Scenario,
@@ -90,8 +92,8 @@ describe("Passport passed credential result", () => {
           birthDate: [expect.any(Object)],
           deviceId: [
             {
-            value: expect.any(String),
-            }
+              value: expect.any(String),
+            },
           ],
           passport: [
             {

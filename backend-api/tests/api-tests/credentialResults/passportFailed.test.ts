@@ -1,11 +1,13 @@
 import {
-  createSessionForSub, doAsyncJourney,
+  createSessionForSub,
+  doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   finishBiometricSession,
   getActiveSessionIdFromSub,
   getCredentialFromIpvOutboundQueue,
-  getVcIssuedEventObject, getVerifiedJwt,
+  getVcIssuedEventObject,
+  getVerifiedJwt,
   issueBiometricToken,
   pollForEvents,
   Scenario,
@@ -91,7 +93,7 @@ describe("Passport failed credential result", () => {
           deviceId: [
             {
               value: expect.any(String),
-            }
+            },
           ],
           passport: [
             {
