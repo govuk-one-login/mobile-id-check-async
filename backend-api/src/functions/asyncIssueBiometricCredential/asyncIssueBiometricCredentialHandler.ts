@@ -52,7 +52,6 @@ import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
-import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -287,7 +286,7 @@ export async function lambdaHandlerConstructor(
 
   const writeVCIssuedEventResult = await writeVcIssuedEvent(
     eventService,
-    sendMessageToSqs,
+    dependencies.sendMessageToSqs,
     sessionAttributes,
     credential,
     audit,

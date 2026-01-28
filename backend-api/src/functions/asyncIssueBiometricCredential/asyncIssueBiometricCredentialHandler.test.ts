@@ -44,6 +44,7 @@ import {
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
+import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -1206,9 +1207,10 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
+      let vcIssuedSqsMock: jest.Mock;
       
       beforeEach(async () => {
-        const vcIssuedSqsMock = jest.fn().mockResolvedValueOnce(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(emptyFailure())
+        vcIssuedSqsMock = jest.fn().mockResolvedValueOnce(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(emptyFailure())
         dependencies = {
           ...dependencies,
           sendMessageToSqs: vcIssuedSqsMock,
@@ -1216,6 +1218,10 @@ describe("Async Issue Biometric Credential", () => {
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
+
+      it("sendMessageToSqs called with correct arguments", () => {
+        expect(vcIssuedSqsMock).toHaveBeenNthCalledWith(2, "",{biometricSessionId: "", sessionId: ""})
+      })
 
       it("Logs the DCMAW_ASYNC_CRI_VC_ISSUED event failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
