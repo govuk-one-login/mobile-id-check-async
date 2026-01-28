@@ -35,7 +35,7 @@ import {
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
 } from "../testUtils/unitTestData";
-import { emptyFailure, errorResult, successResult } from "../utils/result";
+import { emptyFailure, emptySuccess, errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
 import {
   BiometricSession,
@@ -1206,14 +1206,12 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
+      
       beforeEach(async () => {
+        const vcIssuedSqsMock = jest.fn().mockResolvedValue(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(emptyFailure())
         dependencies = {
           ...dependencies,
-          sendMessageToSqs: () => Promise.resolve(
-            {
-            isError: true,
-            }
-          )
+          sendMessageToSqs: vcIssuedSqsMock,
         };
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
