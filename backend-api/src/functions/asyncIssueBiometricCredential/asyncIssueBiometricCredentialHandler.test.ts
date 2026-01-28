@@ -1208,7 +1208,7 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
       
       beforeEach(async () => {
-        const vcIssuedSqsMock = jest.fn().mockResolvedValue(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(emptyFailure())
+        const vcIssuedSqsMock = jest.fn().mockResolvedValueOnce(successResult(mockSqsResponseMessageId)).mockResolvedValueOnce(emptyFailure())
         dependencies = {
           ...dependencies,
           sendMessageToSqs: vcIssuedSqsMock,
