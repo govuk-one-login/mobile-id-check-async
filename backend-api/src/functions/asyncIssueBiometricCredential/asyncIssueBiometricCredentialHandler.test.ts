@@ -1365,42 +1365,50 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
-            1,
-            {
-              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              componentId: mockIssuer,
-              getNowInMilliseconds: Date.now,
-              sessionId: mockSessionId,
-              govukSigninJourneyId: mockGovukSigninJourneyId,
-              transactionId: mockBiometricSessionId,
-              ipAddress: undefined,
-              redirect_uri: undefined,
-              sub: mockSubjectIdentifier,
-              suspected_fraud_signal: undefined,
-              txmaAuditEncoded: undefined,
-              flaggedRecord: undefined,
-              flags: undefined,
-              evidence: [
-                {
-                  type: "IdentityCheck",
-                  txn: "mockTxn",
-                  strengthScore: 0,
-                  validityScore: 0,
-                  activityHistoryScore: 0,
-                  checkDetails: [
-                    {
-                      checkMethod: "bvr",
-                      identityCheckPolicy: "published",
-                      activityFrom: undefined,
-                      biometricVerificationProcessLevel: 0,
-                    },
-                  ],
-                  txmaContraIndicators: [],
-                },
-              ],
-              credentialSubject: mockCredentialSubject,
-            },
+          expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
+            2,
+            "", {
+              user: {
+                user_id: mockSubjectIdentifier,
+                session_id: mockSessionId,
+                govuk_signin_journey_id: mockGovukSigninJourneyId,
+                transaction_id: mockBiometricSessionId,
+              }
+            }
+            // {
+            //   eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+            //   componentId: mockIssuer,
+            //   getNowInMilliseconds: Date.now,
+            //   sessionId: mockSessionId,
+            //   govukSigninJourneyId: mockGovukSigninJourneyId,
+            //   transactionId: mockBiometricSessionId,
+            //   ipAddress: undefined,
+            //   redirect_uri: undefined,
+            //   sub: mockSubjectIdentifier,
+            //   suspected_fraud_signal: undefined,
+            //   txmaAuditEncoded: undefined,
+            //   flaggedRecord: undefined,
+            //   flags: undefined,
+            //   evidence: [
+            //     {
+            //       type: "IdentityCheck",
+            //       txn: "mockTxn",
+            //       strengthScore: 0,
+            //       validityScore: 0,
+            //       activityHistoryScore: 0,
+            //       checkDetails: [
+            //         {
+            //           checkMethod: "bvr",
+            //           identityCheckPolicy: "published",
+            //           activityFrom: undefined,
+            //           biometricVerificationProcessLevel: 0,
+            //         },
+            //       ],
+            //       txmaContraIndicators: [],
+            //     },
+            //   ],
+            //   credentialSubject: mockCredentialSubject,
+            // },
           );
         });
 

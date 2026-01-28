@@ -1,3 +1,5 @@
+import { VCIssuedEvent } from "../../../services/events/types";
+
 export interface VendorProcessingMessage {
   biometricSessionId: string;
   sessionId: string;
@@ -19,6 +21,7 @@ export interface VerifiableCredentialMessage {
 }
 
 export type SQSMessageBody =
+  | VCIssuedEvent
   | VendorProcessingMessage
   | OutboundQueueErrorMessage
   | VerifiableCredentialMessage;

@@ -122,6 +122,15 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   };
 }
 
+export interface VCIssuedEvent {
+  user: {
+    user_id: string;
+    session_id: string;
+    govuk_signin_journey_id: string;
+    transaction_id: string;
+  };
+}
+
 export type TxmaEvents =
   | GenericTxmaEvent
   | CredentialTokenIssuedEvent

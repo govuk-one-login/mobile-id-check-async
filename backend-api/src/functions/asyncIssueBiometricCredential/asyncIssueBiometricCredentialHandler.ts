@@ -52,6 +52,7 @@ import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
+import { getVcIssuedEvent } from "./buildVcIssuedEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -676,7 +677,7 @@ const writeVcIssuedEvent = async (
   //   credentialSubject,
   //   flags: hasFlags ? flags : undefined,
   // });
-const writeEventResult = await sendMessageToSqs("",{biometricSessionId: "", sessionId: ""})
+const writeEventResult = await sendMessageToSqs("", getVcIssuedEvent(subjectIdentifier, sessionId, govukSigninJourneyId, biometricSessionId))
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
