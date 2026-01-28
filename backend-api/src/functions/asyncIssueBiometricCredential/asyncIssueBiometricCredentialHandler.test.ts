@@ -1209,7 +1209,11 @@ describe("Async Issue Biometric Credential", () => {
       beforeEach(async () => {
         dependencies = {
           ...dependencies,
-          getEventService: () => mockFailingEventService,
+          sendMessageToSqs: () => Promise.resolve(
+            {
+            isError: true,
+            }
+          )
         };
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
