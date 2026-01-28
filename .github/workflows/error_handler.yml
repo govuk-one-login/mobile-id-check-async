@@ -1,4 +1,4 @@
-name: Error Handler
+name: GHA Error Handler
 
 on:
   workflow_run:
@@ -8,8 +8,7 @@ on:
     types:
       - completed
     branches:
-      - main
-      - DCMAW-17136
+      - ghaerrorhandler/**
 
 permissions:
   contents: read
