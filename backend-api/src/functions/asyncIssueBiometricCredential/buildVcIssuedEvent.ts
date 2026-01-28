@@ -1,4 +1,4 @@
-import { CredentialSubject, FailEvidence, FlaggedRecord, PassEvidence, TxmaContraIndicator } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { CredentialSubject, FailEvidence, FlaggedRecord, PassEvidence } from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 type VcEvidence =
   (PassEvidence | FailEvidence) &
