@@ -31,35 +31,33 @@ jobs:
       - name: success
         run: echo "success"
 
-  # fail:
-  #   runs-on: ubuntu-24.04
-  #   steps:
-  #     - name: Check out repository code
-  #       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-  #     - name: fail
-  #       run: exit 1
-
-  unsure:
-    needs: 
-      # - fail
-      - success
+  failure:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: unsure
-        run: echo "does this run?"
+      - name: failure
+        run: exit 1
 
   error-handler:
     if: ${{ failure() }}
     needs: 
-      - unsure
+      - success
+      - failure
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: testing
-        run: echo "Error Handler job has been triggered."
+
+      - name: Notify on failure
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          webhook-type: webhook-trigger
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "workflow_name": "${{ github.event.workflow }}"
+            }
 
   # ci-checks:
   #   name: Pre-deployment
