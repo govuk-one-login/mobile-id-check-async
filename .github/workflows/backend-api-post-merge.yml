@@ -23,17 +23,37 @@ defaults:
     working-directory: ./backend-api
 
 jobs:
-  fail:
+  success:
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: fail
-        run: exit 1
+      - name: success
+        run: echo "success"
+
+  # fail:
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+  #     - name: fail
+  #       run: exit 1
+
+  unsure:
+    needs: 
+      # - fail
+      - success
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: unsure
+        run: echo "does this run?"
 
   error-handler:
     if: ${{ failure() }}
-    needs: fail
+    needs: 
+      - unsure
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
