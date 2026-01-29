@@ -1,13 +1,18 @@
-import { CredentialSubject, FailEvidence, FlaggedRecord, PassEvidence } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
+  AuditData,
+  BiometricCredential,
+  CredentialSubject,
+  FailEvidence,
+  FlaggedRecord, Flags,
+  PassEvidence,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { BiometricSessionFinishedAttributes } from "../common/session/session";
 
 type VcEvidence =
   (PassEvidence | FailEvidence) &
   {
     txmaContraIndicators: string[],
-    ciReasons?: string[],
-    dcmawFlagsPassport?: Record<string, unknown>
-    dcmawFlagsDL?: Record<string, unknown>
-    dcmawFlagsBRP?: Record<string, unknown>
+    ciReasons?: Record<string, unknown>,
   }
 
 type VcIssuedTxMAEvent = {
@@ -26,23 +31,58 @@ type VcIssuedTxMAEvent = {
   },
   extensions: {
     redirect_uri?: string,
-    evidence: VcEvidence[]
+    evidence: VcEvidence[],
+    dcmawFlagsPassport?: Flags,
+    dcmawFlagsDL?: Flags,
+    dcmawFlagsBRP?: Flags
   },
 };
 
-export const getVcIssuedEvent = (userId: string, sessionId: string, journeyId: string, transactionId: string): VcIssuedTxMAEvent => {
+const hasContraIndicators = (credential: BiometricCredential): boolean => {
+  const credentialEvidence = credential.evidence[0];
+  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
+};
+
+const hasFlags = (audit: AuditData): boolean => {
+  const auditFlags = audit.flags;
+  return auditFlags !== null;
+}
+
+// make this function accept the session, audit and credential
+export const getVcIssuedEvent = (credential: BiometricCredential, audit: AuditData,
+                                 session: BiometricSessionFinishedAttributes): VcIssuedTxMAEvent => {
+  const timestamp_ms = Date.now();
+  const timestamp = Math.floor(timestamp_ms / 1000);
+  const flaggedRecord = audit.flaggedRecord;
+  const ciReasons = audit.contraIndicatorReasons;
+  const auditFlags = audit.flags;
+
   return {
+    event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
-      user_id: userId,
-      session_id
-        :
-        sessionId,
-      govuk_signin_journey_id
-        :
-        journeyId,
-      transaction_id
-        :
-        transactionId,
+      user_id: session.subjectIdentifier,
+      session_id: session.sessionId,
+      govuk_signin_journey_id: session.govukSigninJourneyId,
+      transaction_id: session.biometricSessionId,
+    },
+    timestamp: timestamp,
+    event_timestamp_ms: timestamp_ms,
+    component_id: session.issuer,
+    restricted: { ...credential.credentialSubject, flaggedRecord },
+    extensions: {
+      redirect_uri: session.redirectUri,
+      ...(hasFlags(audit) && {
+        ...auditFlags
+      }),
+      evidence: [
+          {
+            ...credential.evidence[0],
+            ...(hasContraIndicators(credential) && {
+              ciReasons: { ciReasons }
+            }),
+            txmaContraIndicators: audit.txmaContraIndicators,
+          },
+      ],
     }
   }
 }

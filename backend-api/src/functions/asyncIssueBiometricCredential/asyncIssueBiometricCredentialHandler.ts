@@ -652,32 +652,7 @@ const writeVcIssuedEvent = async (
 
   const hasFlags = flags != null;
 
-  // const writeEventResult = await eventService.writeGenericEvent({
-  //   eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-  //   sub: subjectIdentifier,
-  //   sessionId,
-  //   govukSigninJourneyId,
-  //   getNowInMilliseconds: Date.now,
-  //   transactionId: biometricSessionId,
-  //   componentId: issuer,
-  //   ipAddress: undefined,
-  //   txmaAuditEncoded: undefined,
-  //   redirect_uri: redirectUri,
-  //   suspected_fraud_signal: undefined,
-  //   evidence: [
-  //     {
-  //       ...credential.evidence[0],
-  //       ...(hasContraIndicators(credential) && {
-  //         ciReasons: contraIndicatorReasons,
-  //       }),
-  //       txmaContraIndicators,
-  //     },
-  //   ],
-  //   flaggedRecord: hasFlags ? flaggedRecord : undefined,
-  //   credentialSubject,
-  //   flags: hasFlags ? flags : undefined,
-  // });
-const writeEventResult = await sendMessageToSqs("", getVcIssuedEvent(subjectIdentifier, sessionId, govukSigninJourneyId, biometricSessionId))
+const writeEventResult = await sendMessageToSqs("", getVcIssuedEvent(credential, audit, sessionAttributes))
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
