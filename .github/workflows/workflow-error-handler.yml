@@ -1,0 +1,23 @@
+name: Workflow Error Handler
+
+on:
+  workflow_run:
+    workflows:
+      - backend-api-post-merge.yml
+      - Backend API Post Merge
+      - .github/workflows/backend-api-post-merge.yml
+    types:
+      - completed
+    branches:
+      - DCMAW-17136
+
+permissions:
+  contents: read
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Print 
+        run: echo "helloworld"
