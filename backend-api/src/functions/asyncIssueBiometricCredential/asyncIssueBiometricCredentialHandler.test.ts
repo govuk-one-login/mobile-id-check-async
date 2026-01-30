@@ -1451,7 +1451,7 @@ describe("Async Issue Biometric Credential", () => {
 
         it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
-            2,
+            1,
             {
               eventName: "DCMAW_ASYNC_CRI_END",
               componentId: mockIssuer,
