@@ -630,16 +630,18 @@ export const buildCredentialJwtPayload = (jwtData: {
 
 const writeVcIssuedEvent = async (
   sendMessageToSqs: (
-      sqsArn: string,
-      messageBody: SQSMessageBody,
-    ) => Promise<Result<string | undefined, void>>,
+    sqsArn: string,
+    messageBody: SQSMessageBody,
+  ) => Promise<Result<string | undefined, void>>,
   txmaSqsArn: string,
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
 ): Promise<Result<void, void>> => {
-
-const writeEventResult = await sendMessageToSqs(txmaSqsArn, getVcIssuedEvent(credential, audit, sessionAttributes))
+  const writeEventResult = await sendMessageToSqs(
+    txmaSqsArn,
+    getVcIssuedEvent(credential, audit, sessionAttributes),
+  );
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },

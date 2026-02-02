@@ -3,39 +3,38 @@ import {
   BiometricCredential,
   CredentialSubject,
   FailEvidence,
-  FlaggedRecord, Flags,
+  FlaggedRecord,
+  Flags,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
 
-type VcEvidence =
-  (PassEvidence | FailEvidence) &
-  {
-    txmaContraIndicators: string[],
-    ciReasons?: Record<string, unknown>,
-  }
+type VcEvidence = (PassEvidence | FailEvidence) & {
+  txmaContraIndicators: string[];
+  ciReasons?: Record<string, unknown>;
+};
 
 type VcIssuedTxMAEvent = {
-  event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+  event_name: "DCMAW_ASYNC_CRI_VC_ISSUED";
   user: {
-    user_id: string,
-    session_id: string,
-    govuk_signin_journey_id: string,
-    transaction_id: string
-  },
-  timestamp: number,
-  event_timestamp_ms: number,
-  component_id: string,
+    user_id: string;
+    session_id: string;
+    govuk_signin_journey_id: string;
+    transaction_id: string;
+  };
+  timestamp: number;
+  event_timestamp_ms: number;
+  component_id: string;
   restricted: CredentialSubject & {
-    flaggedRecord?: FlaggedRecord[]
-  },
+    flaggedRecord?: FlaggedRecord[];
+  };
   extensions: {
-    redirect_uri?: string,
-    evidence: VcEvidence[],
-    dcmawFlagsPassport?: Flags,
-    dcmawFlagsDL?: Flags,
-    dcmawFlagsBRP?: Flags
-  },
+    redirect_uri?: string;
+    evidence: VcEvidence[];
+    dcmawFlagsPassport?: Flags;
+    dcmawFlagsDL?: Flags;
+    dcmawFlagsBRP?: Flags;
+  };
 };
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
@@ -46,11 +45,14 @@ const hasContraIndicators = (credential: BiometricCredential): boolean => {
 const hasFlags = (audit: AuditData): boolean => {
   const auditFlags = audit.flags;
   return auditFlags !== null;
-}
+};
 
 // make this function accept the session, audit and credential
-export const getVcIssuedEvent = (credential: BiometricCredential, audit: AuditData,
-                                 session: BiometricSessionFinishedAttributes): VcIssuedTxMAEvent => {
+export const getVcIssuedEvent = (
+  credential: BiometricCredential,
+  audit: AuditData,
+  session: BiometricSessionFinishedAttributes,
+): VcIssuedTxMAEvent => {
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
   const flaggedRecord = audit.flaggedRecord;
@@ -72,17 +74,17 @@ export const getVcIssuedEvent = (credential: BiometricCredential, audit: AuditDa
     extensions: {
       redirect_uri: session.redirectUri,
       ...(hasFlags(audit) && {
-        ...auditFlags
+        ...auditFlags,
       }),
       evidence: [
-          {
-            ...credential.evidence[0],
-            ...(hasContraIndicators(credential) && {
-              ciReasons: { ciReasons }
-            }),
-            txmaContraIndicators: audit.txmaContraIndicators,
-          },
+        {
+          ...credential.evidence[0],
+          ...(hasContraIndicators(credential) && {
+            ciReasons: { ciReasons },
+          }),
+          txmaContraIndicators: audit.txmaContraIndicators,
+        },
       ],
-    }
-  }
-}
+    },
+  };
+};
