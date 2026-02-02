@@ -1215,7 +1215,7 @@ describe("Async Issue Biometric Credential", () => {
       it("sendMessageToSqs called with correct arguments", () => {
         expect(vcIssuedSqsMock).toHaveBeenNthCalledWith(
           2,
-          "", {
+          "mockTxmaSqs", {
             event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
             user: {
               user_id: mockSubjectIdentifier,
@@ -1448,7 +1448,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
             2,
-            "", {
+            "mockTxmaSqs", {
               event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
               user: {
                 user_id: mockSubjectIdentifier,
@@ -1606,7 +1606,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with flaggedRecord to TxMA", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
             2,
-            "", {
+            "mockTxmaSqs", {
               event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
               user: {
                 user_id: mockSubjectIdentifier,
@@ -1735,7 +1735,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with ciReasons to TxMA", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
             2,
-            "", {
+            "mockTxmaSqs", {
               event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
               user: {
                 user_id: mockSubjectIdentifier,
@@ -1868,7 +1868,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with both flaggedRecord and ciReasons to TxMA", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
             2,
-            "", {
+            "mockTxmaSqs", {
               event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
               user: {
                 user_id: mockSubjectIdentifier,

@@ -286,8 +286,8 @@ export async function lambdaHandlerConstructor(
   }
 
   const writeVCIssuedEventResult = await writeVcIssuedEvent(
-    eventService,
     dependencies.sendMessageToSqs,
+    config.TXMA_SQS,
     sessionAttributes,
     credential,
     audit,
@@ -629,11 +629,11 @@ export const buildCredentialJwtPayload = (jwtData: {
 };
 
 const writeVcIssuedEvent = async (
-  eventService: IEventService,
   sendMessageToSqs: (
       sqsArn: string,
       messageBody: SQSMessageBody,
     ) => Promise<Result<string | undefined, void>>,
+  txmaSqsArn: string,
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
@@ -652,7 +652,7 @@ const writeVcIssuedEvent = async (
 
   const hasFlags = flags != null;
 
-const writeEventResult = await sendMessageToSqs("", getVcIssuedEvent(credential, audit, sessionAttributes))
+const writeEventResult = await sendMessageToSqs(txmaSqsArn, getVcIssuedEvent(credential, audit, sessionAttributes))
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
