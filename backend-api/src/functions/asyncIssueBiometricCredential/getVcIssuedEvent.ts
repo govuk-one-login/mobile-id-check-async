@@ -49,7 +49,6 @@ const hasFlags = (audit: AuditData): boolean => {
   return auditFlags !== null;
 };
 
-// make this function accept the session, audit and credential
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,

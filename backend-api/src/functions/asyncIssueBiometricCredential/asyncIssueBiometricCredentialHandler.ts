@@ -52,7 +52,7 @@ import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
-import { getVcIssuedEvent } from "./buildVcIssuedEvent";
+import { getVcIssuedEvent } from "./getVcIssuedEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
