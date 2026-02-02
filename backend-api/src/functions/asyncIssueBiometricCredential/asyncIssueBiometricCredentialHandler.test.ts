@@ -1705,7 +1705,7 @@ describe("Async Issue Biometric Credential", () => {
           evidence: [
             {
               ...mockBiometricCredential.evidence[0],
-              ci: ["D14"],
+              ci: ["CI1"],
             },
           ],
         };
@@ -1756,7 +1756,7 @@ describe("Async Issue Biometric Credential", () => {
                     type: "IdentityCheck",
                     txn: "mockTxn",
                     txmaContraIndicators: ["T05", "D03"],
-                    ci: ["D14"],
+                    ci: ["CI1"],
                     ciReasons: {
                       ciReasons: ["Reason 1", "Reason 2"]
                     },
@@ -1835,7 +1835,7 @@ describe("Async Issue Biometric Credential", () => {
           evidence: [
             {
               ...mockBiometricCredential.evidence[0],
-              ci: ["D14"],
+              ci: ["CI1"],
             },
           ],
         };
@@ -1889,7 +1889,7 @@ describe("Async Issue Biometric Credential", () => {
                     type: "IdentityCheck",
                     txn: "mockTxn",
                     txmaContraIndicators: ["T05"],
-                    ci: ["D14"],
+                    ci: ["CI1"],
                     ciReasons: {
                       ciReasons: ["CI Reason"]
                     },
