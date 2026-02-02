@@ -1,17 +1,19 @@
 import {
   AuditData,
   BiometricCredential,
+  ContraIndicatorReason,
   CredentialSubject,
   FailEvidence,
   FlaggedRecord,
   Flags,
   PassEvidence,
+  TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
-  txmaContraIndicators: string[];
-  ciReasons?: Record<string, unknown>;
+  txmaContraIndicators: TxmaContraIndicator[];
+  ciReasons?: ContraIndicatorReason[];
 };
 
 type VcIssuedTxMAEvent = {
@@ -55,9 +57,10 @@ export const getVcIssuedEvent = (
 ): VcIssuedTxMAEvent => {
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
-  const flaggedRecord = audit.flaggedRecord;
-  const ciReasons = audit.contraIndicatorReasons;
-  const auditFlags = audit.flags;
+
+  const { flaggedRecord } = audit;
+  const { contraIndicatorReasons } = audit;
+  const { flags } = audit;
 
   return {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
@@ -74,13 +77,13 @@ export const getVcIssuedEvent = (
     extensions: {
       redirect_uri: session.redirectUri,
       ...(hasFlags(audit) && {
-        ...auditFlags,
+        ...flags,
       }),
       evidence: [
         {
           ...credential.evidence[0],
           ...(hasContraIndicators(credential) && {
-            ciReasons: { ciReasons },
+            ciReasons: contraIndicatorReasons,
           }),
           txmaContraIndicators: audit.txmaContraIndicators,
         },

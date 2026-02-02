@@ -1769,9 +1769,7 @@ describe("Async Issue Biometric Credential", () => {
                     txn: "mockTxn",
                     txmaContraIndicators: ["T05", "D03"],
                     ci: ["CI1"],
-                    ciReasons: {
-                      ciReasons: ["Reason 1", "Reason 2"],
-                    },
+                    ciReasons: ["Reason 1", "Reason 2"],
                     checkDetails: [
                       {
                         checkMethod: "bvr",
@@ -1903,9 +1901,7 @@ describe("Async Issue Biometric Credential", () => {
                     txn: "mockTxn",
                     txmaContraIndicators: ["T05"],
                     ci: ["CI1"],
-                    ciReasons: {
-                      ciReasons: ["CI Reason"],
-                    },
+                    ciReasons: ["CI Reason"],
                     checkDetails: [
                       {
                         checkMethod: "bvr",
