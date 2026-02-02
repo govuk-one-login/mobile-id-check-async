@@ -638,19 +638,6 @@ const writeVcIssuedEvent = async (
   credential: BiometricCredential,
   audit: AuditData,
 ): Promise<Result<void, void>> => {
-  const {
-    biometricSessionId,
-    govukSigninJourneyId,
-    subjectIdentifier,
-    sessionId,
-    issuer,
-    redirectUri,
-  } = sessionAttributes;
-  const { credentialSubject } = credential;
-  const { contraIndicatorReasons, txmaContraIndicators, flags, flaggedRecord } =
-    audit;
-
-  const hasFlags = flags != null;
 
 const writeEventResult = await sendMessageToSqs(txmaSqsArn, getVcIssuedEvent(credential, audit, sessionAttributes))
   if (writeEventResult.isError) {
@@ -660,11 +647,6 @@ const writeEventResult = await sendMessageToSqs(txmaSqsArn, getVcIssuedEvent(cre
     return emptyFailure();
   }
   return emptySuccess();
-};
-
-const hasContraIndicators = (credential: BiometricCredential): boolean => {
-  const credentialEvidence = credential.evidence[0];
-  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
 };
 
 const writeCriEndEvent = async (
