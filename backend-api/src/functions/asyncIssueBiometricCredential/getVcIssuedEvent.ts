@@ -6,13 +6,14 @@ import {
   FailEvidence,
   FlaggedRecord,
   Flags,
+  FlagsWrapper,
   PassEvidence,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
-  txmaContraIndicators: TxmaContraIndicator[];
+  txmaContraIndicators?: TxmaContraIndicator[];
   ciReasons?: ContraIndicatorReason[];
 };
 
@@ -42,6 +43,16 @@ type VcIssuedTxMAEvent = {
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
   const credentialEvidence = credential.evidence[0];
   return "ci" in credentialEvidence && credentialEvidence.ci !== null;
+};
+
+const hasTxMAContraIndicators = (auditData: {
+  txmaContraIndicators: TxmaContraIndicator[];
+}): boolean => {
+  return auditData.txmaContraIndicators !== null;
+};
+
+const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
+  return auditData.flags !== null;
 };
 
 const isMobileAppMobileJourney = (session: {
@@ -87,7 +98,9 @@ export const getVcIssuedEvent = (
           ...(hasContraIndicators(credential) && {
             ciReasons: contraIndicatorReasons,
           }),
-          txmaContraIndicators: audit.txmaContraIndicators,
+          ...(hasTxMAContraIndicators(audit) && {
+            txmaContraIndicators: audit.txmaContraIndicators,
+          }),
         },
       ],
     },

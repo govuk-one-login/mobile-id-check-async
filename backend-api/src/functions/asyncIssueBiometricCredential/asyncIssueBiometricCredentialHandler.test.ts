@@ -1260,7 +1260,6 @@ describe("Async Issue Biometric Credential", () => {
                 activityHistoryScore: 0,
                 type: "IdentityCheck",
                 txn: "mockTxn",
-                txmaContraIndicators: undefined,
                 checkDetails: [
                   {
                     checkMethod: "bvr",
