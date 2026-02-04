@@ -89,7 +89,7 @@ jobs:
         run: sam build --cached --template ${{ inputs.TEMPLATE_NAME }}
 
       - name: Upload SAM Artifact into the Artifact Bucket
-        uses: govuk-one-login/devplatform-upload-action@v3.12.1
+        uses: govuk-one-login/devplatform-upload-action@v3.13.0
         with:
           artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
