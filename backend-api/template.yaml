@@ -1944,6 +1944,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-biometric-token
       Handler: asyncBiometricTokenHandler.lambdaHandler
+      MemorySize: 1024
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
