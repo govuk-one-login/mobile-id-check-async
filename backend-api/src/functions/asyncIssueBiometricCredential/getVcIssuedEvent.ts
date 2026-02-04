@@ -44,9 +44,10 @@ const hasContraIndicators = (credential: BiometricCredential): boolean => {
   return "ci" in credentialEvidence && credentialEvidence.ci !== null;
 };
 
-const hasFlags = (audit: AuditData): boolean => {
-  const auditFlags = audit.flags;
-  return auditFlags !== null;
+const isMobileAppMobileJourney = (session: {
+  redirectUri?: string | undefined;
+}): boolean => {
+  return session.redirectUri !== null;
 };
 
 export const getVcIssuedEvent = (
@@ -74,7 +75,9 @@ export const getVcIssuedEvent = (
     component_id: session.issuer,
     restricted: { ...credential.credentialSubject, flaggedRecord },
     extensions: {
-      redirect_uri: session.redirectUri,
+      ...(isMobileAppMobileJourney(session) && {
+        redirect_uri: session.redirectUri,
+      }),
       ...(hasFlags(audit) && {
         ...flags,
       }),

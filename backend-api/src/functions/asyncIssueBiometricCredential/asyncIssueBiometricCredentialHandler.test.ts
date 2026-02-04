@@ -22,6 +22,7 @@ import {
   mockInertEventService,
   mockInertSessionRegistry,
   mockIssuer,
+  mockRedirectUri,
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
@@ -33,6 +34,7 @@ import {
   NOW_IN_MILLISECONDS,
   ONE_HOUR_AGO_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
+  validBiometricSessionFinishedAttributesMobileApp,
   validResultSentAttributes,
 } from "../testUtils/unitTestData";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -69,6 +71,12 @@ describe("Async Issue Biometric Credential", () => {
   const mockGetSessionSuccess = jest
     .fn()
     .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
+
+  const mockGetSessionSuccessMobileAppMobile = jest
+    .fn()
+    .mockResolvedValue(
+      successResult(validBiometricSessionFinishedAttributesMobileApp),
+    );
 
   const mockGetBiometricSessionSuccess = jest
     .fn()
@@ -129,6 +137,16 @@ describe("Async Issue Biometric Credential", () => {
     updateSession: jest.fn().mockResolvedValue(
       successResult({
         attributes: validBiometricSessionFinishedAttributes,
+      }),
+    ),
+  };
+
+  const mockMobileAppMobileSessionRegistrySuccess: SessionRegistry = {
+    ...mockInertSessionRegistry,
+    getSession: mockGetSessionSuccessMobileAppMobile,
+    updateSession: jest.fn().mockResolvedValue(
+      successResult({
+        attributes: validBiometricSessionFinishedAttributesMobileApp,
       }),
     ),
   };
@@ -1359,6 +1377,106 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
+      describe("Given user is on a mobile-app-mobile journey", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () =>
+            mockMobileAppMobileSessionRegistrySuccess;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with redirect_uri to TxMA", () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
+            2,
+            "mockTxmaSqs",
+            {
+              event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+              user: {
+                user_id: mockSubjectIdentifier,
+                session_id: mockSessionId,
+                govuk_signin_journey_id: mockGovukSigninJourneyId,
+                transaction_id: mockBiometricSessionId,
+              },
+              event_timestamp_ms: 1704110400000,
+              timestamp: 1704110400,
+              component_id: "mockIssuer",
+              extensions: {
+                redirect_uri: mockRedirectUri,
+                evidence: [
+                  {
+                    strengthScore: 0,
+                    validityScore: 0,
+                    activityHistoryScore: 0,
+                    type: "IdentityCheck",
+                    txn: "mockTxn",
+                    checkDetails: [
+                      {
+                        checkMethod: "bvr",
+                        identityCheckPolicy: "published",
+                        activityFrom: undefined,
+                        biometricVerificationProcessLevel: 0,
+                      },
+                    ],
+                  },
+                ],
+              },
+              restricted: {
+                name: [
+                  {
+                    nameParts: [
+                      {
+                        type: "GivenName",
+                        value: "mockGivenName",
+                      },
+                      {
+                        type: "FamilyName",
+                        value: "mockFamilyName",
+                      },
+                    ],
+                  },
+                ],
+                birthDate: [
+                  {
+                    value: "mockBirthDate",
+                  },
+                ],
+                deviceId: [
+                  {
+                    value: "mockDeviceId",
+                  },
+                ],
+                address: [
+                  {
+                    addressCountry: null,
+                    addressLocality: null,
+                    buildingName: null,
+                    buildingNumber: null,
+                    dependentAddressLocality: null,
+                    dependentStreetName: null,
+                    doubleDependentAddressLocality: null,
+                    organisationName: null,
+                    postalCode: "mockPostalCode",
+                    streetName: null,
+                    subBuildingName: null,
+                    uprn: null,
+                  },
+                ],
+                drivingPermit: [
+                  {
+                    expiryDate: "mockExpiryDate",
+                    fullAddress: "mockFullAddress",
+                    issueDate: null,
+                    issueNumber: null,
+                    issuedBy: null,
+                    personalNumber: "mockPersonalNumber",
+                  },
+                ],
+                flaggedRecord: undefined,
+              },
+            },
+          );
+        });
+      });
+
       describe("Given generated biometric credential does not have flags or contraindicators", () => {
         const mockSuccessfulGetCredentialFromBiometricSession = jest
           .fn()
@@ -1626,7 +1744,6 @@ describe("Async Issue Biometric Credential", () => {
               timestamp: 1704110400,
               component_id: "mockIssuer",
               extensions: {
-                redirect_uri: undefined,
                 dcmawFlagsDL: {
                   doEInPast: true,
                   doEGreaterThan31Dec2024: true,
@@ -1891,7 +2008,6 @@ describe("Async Issue Biometric Credential", () => {
               timestamp: 1704110400,
               component_id: "mockIssuer",
               extensions: {
-                redirect_uri: undefined,
                 evidence: [
                   {
                     strengthScore: 0,
