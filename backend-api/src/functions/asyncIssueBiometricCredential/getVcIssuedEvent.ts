@@ -56,7 +56,7 @@ const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
 };
 
 const isMobileAppMobileJourney = (session: {
-  redirectUri?: string | undefined;
+  redirectUri?: string;
 }): boolean => {
   return session.redirectUri !== null;
 };
