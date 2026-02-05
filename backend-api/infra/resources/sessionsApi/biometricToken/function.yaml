@@ -40,7 +40,6 @@ Resources:
             - !Ref DevOverrideReadIdBaseUrl
             - !FindInMap [EnvironmentVariables, ReadIdBaseUrl, !Ref Environment]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
-      MemorySize: 1024
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
