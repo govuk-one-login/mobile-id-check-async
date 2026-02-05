@@ -40,27 +40,6 @@ type VcIssuedTxMAEvent = {
   };
 };
 
-const hasContraIndicators = (credential: BiometricCredential): boolean => {
-  const credentialEvidence = credential.evidence[0];
-  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
-};
-
-const hasTxMAContraIndicators = (auditData: {
-  txmaContraIndicators: TxmaContraIndicator[];
-}): boolean => {
-  return auditData.txmaContraIndicators !== null;
-};
-
-const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
-  return auditData.flags !== null;
-};
-
-const isMobileAppMobileJourney = (session: {
-  redirectUri?: string;
-}): boolean => {
-  return session.redirectUri !== null;
-};
-
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
@@ -98,11 +77,24 @@ export const getVcIssuedEvent = (
           ...(hasContraIndicators(credential) && {
             ciReasons: contraIndicatorReasons,
           }),
-          ...(hasTxMAContraIndicators(audit) && {
-            txmaContraIndicators: audit.txmaContraIndicators,
-          }),
+          txmaContraIndicators: audit.txmaContraIndicators,
         },
       ],
     },
   };
+};
+
+const hasContraIndicators = (credential: BiometricCredential): boolean => {
+  const credentialEvidence = credential.evidence[0];
+  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
+};
+
+const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
+  return auditData.flags !== null;
+};
+
+const isMobileAppMobileJourney = (session: {
+  redirectUri?: string;
+}): boolean => {
+  return session.redirectUri !== null;
 };
