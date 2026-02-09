@@ -1721,7 +1721,10 @@ describe("Async Issue Biometric Credential", () => {
           },
           flaggedRecord: [
             {
-              dateOfBirth: [],
+              dateOfBirth: [{
+                    value: "mockValue",
+                    type: "mockType",
+                  }],
             },
           ],
         };
@@ -1834,7 +1837,10 @@ describe("Async Issue Biometric Credential", () => {
                       personalNumber: "mockPersonalNumber",
                     },
                   ],
-                  flaggedRecord: [{ dateOfBirth: [] }],
+                  flaggedRecord: [{ dateOfBirth: [{
+                    value: "mockValue",
+                    type: "mockType",
+                  }] }],
                 },
               },
             },
@@ -2009,7 +2015,7 @@ describe("Async Issue Biometric Credential", () => {
           flags: { dcmawFlagsPassport: { doBUnknown: true } },
           flaggedRecord: [
             {
-              dateOfBirth: [],
+              dateOfBirth: [{value: "mockValue", type: "mockType"}],
             },
           ],
         };
@@ -2123,7 +2129,10 @@ describe("Async Issue Biometric Credential", () => {
                       personalNumber: "mockPersonalNumber",
                     },
                   ],
-                  flaggedRecord: mockAuditDataWithBothFlagsAndCI.flaggedRecord,
+                  flaggedRecord: [{ dateOfBirth: [{
+                    value: "mockValue",
+                    type: "mockType",
+                  }]}],
                 },
               },
             },
