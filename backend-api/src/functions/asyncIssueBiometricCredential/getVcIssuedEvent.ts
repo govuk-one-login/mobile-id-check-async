@@ -17,7 +17,7 @@ type VcEvidence = (PassEvidence | FailEvidence) & {
   ciReasons?: ContraIndicatorReason[];
 };
 
-type VcIssuedTxMAEvent = {
+export type VcIssuedTxMAEvent = {
   event_name: "DCMAW_ASYNC_CRI_VC_ISSUED";
   user: {
     user_id: string;
@@ -49,8 +49,7 @@ export const getVcIssuedEvent = (
   const timestamp = Math.floor(timestamp_ms / 1000);
 
   const { flaggedRecord } = audit;
-  const { contraIndicatorReasons } = audit;
-  const { flags } = audit;
+  const { contraIndicatorReasons, flags, txmaContraIndicators } = audit;
 
   return {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
@@ -77,7 +76,7 @@ export const getVcIssuedEvent = (
           ...(hasContraIndicators(credential) && {
             ciReasons: contraIndicatorReasons,
           }),
-          txmaContraIndicators: audit.txmaContraIndicators,
+          txmaContraIndicators,
         },
       ],
     },
@@ -86,15 +85,15 @@ export const getVcIssuedEvent = (
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
   const credentialEvidence = credential.evidence[0];
-  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
+  return "ci" in credentialEvidence && credentialEvidence.ci != null;
 };
 
 const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
-  return auditData.flags !== null;
+  return auditData.flags != null;
 };
 
 const isMobileAppMobileJourney = (session: {
   redirectUri?: string;
 }): boolean => {
-  return session.redirectUri !== null;
+  return session.redirectUri != null;
 };

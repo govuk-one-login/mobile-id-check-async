@@ -1,7 +1,37 @@
 import { expect } from "@jest/globals";
+import { AssertionError, deepStrictEqual } from "node:assert";
+import { SQSMessageBody } from "../../src/functions/adapters/aws/sqs/types";
+
+const toHaveBeenCalledNthWithSqsMessage = (
+  mockFn: jest.Mock,
+  nthCall: number,
+  expectedArguments: { sqsArn: string; expectedMessage: SQSMessageBody },
+) => {
+  const mockCalls = mockFn.mock.calls[nthCall - 1];
+  if (mockCalls === undefined) {
+    return {
+      pass: false,
+      message: () => `Only ${mockCalls.length} messages found.`,
+    };
+  }
+  try {
+    deepStrictEqual(mockCalls[0], expectedArguments.sqsArn);
+    deepStrictEqual(mockCalls[1], expectedArguments.expectedMessage);
+  } catch (error) {
+    if (error instanceof AssertionError) {
+      return { pass: false, message: () => error.message };
+    }
+    throw error;
+  }
+  return {
+    pass: true,
+    message: () =>
+      "Expected not to find any Sqs messages matching these arguments",
+  };
+};
 
 const toHaveBeenCalledWithLogFields = (
-  consoleSpy: jest.SpyInstance,
+  consoleSpy: jest.Mock,
   logFields: Record<string, unknown>,
 ) => {
   const messages = consoleSpy.mock.calls.map((args) => args[0]);
@@ -61,6 +91,7 @@ const isValidUuid = (candidate: unknown): boolean => {
 expect.extend({
   toHaveBeenCalledWithLogFields,
   toBeValidUuid,
+  toHaveBeenCalledNthWithSqsMessage,
 });
 
 declare module "expect" {
@@ -70,5 +101,9 @@ declare module "expect" {
   interface Matchers<R> {
     toHaveBeenCalledWithLogFields(logFields: object): R;
     toBeValidUuid(): R;
+    toHaveBeenCalledNthWithSqsMessage(
+      nthCall: number,
+      expectedArguments: { sqsArn: string; expectedMessage: SQSMessageBody },
+    ): R;
   }
 }
