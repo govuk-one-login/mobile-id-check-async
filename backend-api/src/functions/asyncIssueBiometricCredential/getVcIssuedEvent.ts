@@ -13,7 +13,7 @@ import {
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
-  txmaContraIndicators?: TxmaContraIndicator[];
+  txmaContraIndicators: TxmaContraIndicator[];
   ciReasons?: ContraIndicatorReason[];
 };
 
