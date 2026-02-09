@@ -2006,6 +2006,7 @@ describe("Async Issue Biometric Credential", () => {
             "TxMACI1" as TxmaContraIndicator,
             "TxMACI2" as TxmaContraIndicator,
           ],
+          flags: { dcmawFlagsPassport: { doBUnknown: true } },
           flaggedRecord: [
             {
               dateOfBirth: [],
@@ -2069,6 +2070,7 @@ describe("Async Issue Biometric Credential", () => {
                       ],
                     },
                   ],
+                  dcmawFlagsPassport: { doBUnknown: true },
                 },
                 restricted: {
                   name: [
