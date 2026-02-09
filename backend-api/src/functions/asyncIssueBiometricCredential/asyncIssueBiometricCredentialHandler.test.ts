@@ -1992,12 +1992,23 @@ describe("Async Issue Biometric Credential", () => {
           ],
         };
 
-        const mockAuditDataWithBothFlagsAndCI = {
-          contraIndicatorReasons: ["CI Reason"],
-          txmaContraIndicators: ["T05"],
-          flaggedRecord: {
-            mockFlaggedRecordField: "mockFlaggedRecordValue",
-          },
+        const mockAuditDataWithBothFlagsAndCI: AuditData = {
+          contraIndicatorReasons: [
+            {
+              ci: "CI1" as ContraIndicator,
+              reasonCode: "mockReasonCode",
+              reason: "mockReason",
+            },
+          ],
+          txmaContraIndicators: [
+            "TxMACI1" as TxmaContraIndicator,
+            "TxMACI2" as TxmaContraIndicator,
+          ],
+          flaggedRecord: [
+            {
+              dateOfBirth: [],
+            },
+          ],
         };
 
         const mockGetCredentialFromBiometricSessionWithBoth = jest
@@ -2018,95 +2029,97 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with both flaggedRecord and ciReasons to TxMA", () => {
-          expect(mockSendMessageToSqsSuccess).toHaveBeenNthCalledWith(
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
             2,
-            "mockTxmaSqs",
             {
-              event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              user: {
-                user_id: mockSubjectIdentifier,
-                session_id: mockSessionId,
-                govuk_signin_journey_id: mockGovukSigninJourneyId,
-                transaction_id: mockBiometricSessionId,
-              },
-              event_timestamp_ms: 1704110400000,
-              timestamp: 1704110400,
-              component_id: "mockIssuer",
-              extensions: {
-                evidence: [
-                  {
-                    strengthScore: 0,
-                    validityScore: 0,
-                    activityHistoryScore: 0,
-                    type: "IdentityCheck",
-                    txn: "mockTxn",
-                    txmaContraIndicators: ["T05"],
-                    ci: ["CI1"],
-                    ciReasons: ["CI Reason"],
-                    checkDetails: [
-                      {
-                        checkMethod: "bvr",
-                        identityCheckPolicy: "published",
-                        activityFrom: undefined,
-                        biometricVerificationProcessLevel: 0,
-                      },
-                    ],
-                  },
-                ],
-              },
-              restricted: {
-                name: [
-                  {
-                    nameParts: [
-                      {
-                        type: "GivenName",
-                        value: "mockGivenName",
-                      },
-                      {
-                        type: "FamilyName",
-                        value: "mockFamilyName",
-                      },
-                    ],
-                  },
-                ],
-                birthDate: [
-                  {
-                    value: "mockBirthDate",
-                  },
-                ],
-                deviceId: [
-                  {
-                    value: "mockDeviceId",
-                  },
-                ],
-                address: [
-                  {
-                    addressCountry: null,
-                    addressLocality: null,
-                    buildingName: null,
-                    buildingNumber: null,
-                    dependentAddressLocality: null,
-                    dependentStreetName: null,
-                    doubleDependentAddressLocality: null,
-                    organisationName: null,
-                    postalCode: "mockPostalCode",
-                    streetName: null,
-                    subBuildingName: null,
-                    uprn: null,
-                  },
-                ],
-                drivingPermit: [
-                  {
-                    expiryDate: "mockExpiryDate",
-                    fullAddress: "mockFullAddress",
-                    issueDate: null,
-                    issueNumber: null,
-                    issuedBy: null,
-                    personalNumber: "mockPersonalNumber",
-                  },
-                ],
-                flaggedRecord: {
-                  mockFlaggedRecordField: "mockFlaggedRecordValue",
+              sqsArn: "mockTxmaSqs",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                user: {
+                  user_id: mockSubjectIdentifier,
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                  transaction_id: mockBiometricSessionId,
+                },
+                event_timestamp_ms: 1704110400000,
+                timestamp: 1704110400,
+                component_id: "mockIssuer",
+                extensions: {
+                  evidence: [
+                    {
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
+                      type: "IdentityCheck",
+                      txn: "mockTxn",
+                      txmaContraIndicators:
+                        mockAuditDataWithBothFlagsAndCI.txmaContraIndicators,
+                      ci: ["CI1" as ContraIndicator],
+                      ciReasons:
+                        mockAuditDataWithBothFlagsAndCI.contraIndicatorReasons,
+                      checkDetails: [
+                        {
+                          checkMethod: "bvr",
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
+                        },
+                      ],
+                    },
+                  ],
+                },
+                restricted: {
+                  name: [
+                    {
+                      nameParts: [
+                        {
+                          type: "GivenName",
+                          value: "mockGivenName",
+                        },
+                        {
+                          type: "FamilyName",
+                          value: "mockFamilyName",
+                        },
+                      ],
+                    },
+                  ],
+                  birthDate: [
+                    {
+                      value: "mockBirthDate",
+                    },
+                  ],
+                  deviceId: [
+                    {
+                      value: "mockDeviceId",
+                    },
+                  ],
+                  address: [
+                    {
+                      addressCountry: null,
+                      addressLocality: null,
+                      buildingName: null,
+                      buildingNumber: null,
+                      dependentAddressLocality: null,
+                      dependentStreetName: null,
+                      doubleDependentAddressLocality: null,
+                      organisationName: null,
+                      postalCode: "mockPostalCode",
+                      streetName: null,
+                      subBuildingName: null,
+                      uprn: null,
+                    },
+                  ],
+                  drivingPermit: [
+                    {
+                      expiryDate: "mockExpiryDate",
+                      fullAddress: "mockFullAddress",
+                      issueDate: null,
+                      issueNumber: null,
+                      issuedBy: null,
+                      personalNumber: "mockPersonalNumber",
+                    },
+                  ],
+                  flaggedRecord: mockAuditDataWithBothFlagsAndCI.flaggedRecord,
                 },
               },
             },
