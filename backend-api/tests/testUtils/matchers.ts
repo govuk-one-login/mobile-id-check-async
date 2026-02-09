@@ -7,6 +7,13 @@ const toHaveBeenCalledNthWithSqsMessage = (
   nthCall: number,
   expectedArguments: { sqsArn: string; expectedMessage: SQSMessageBody },
 ) => {
+  if (nthCall < 1) {
+    return {
+      pass: false,
+      message: () => "The nthCall parameter must be greater or equal to 1",
+    };
+  }
+
   const mockCalls = mockFn.mock.calls[nthCall - 1];
   if (mockCalls === undefined) {
     return {
