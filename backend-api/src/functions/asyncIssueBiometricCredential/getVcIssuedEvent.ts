@@ -88,6 +88,10 @@ export const getVcIssuedEvent = (
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
   const credentialEvidence = credential.evidence[0];
+
+  // A user can only prove their identity with one document per session.
+  // We therefore only ever issue a credential containing one 'evidence' item.
+  if (credential.evidence.length !== 1) return false;
   return "ci" in credentialEvidence && credentialEvidence.ci != null;
 };
 
