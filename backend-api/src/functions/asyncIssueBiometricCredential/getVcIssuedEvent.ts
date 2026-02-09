@@ -62,7 +62,10 @@ export const getVcIssuedEvent = (
     timestamp: timestamp,
     event_timestamp_ms: timestamp_ms,
     component_id: session.issuer,
-    restricted: { ...credential.credentialSubject, flaggedRecord },
+    restricted: {
+      ...credential.credentialSubject,
+      ...(hasFlaggedRecord(audit) && { flaggedRecord }),
+    },
     extensions: {
       ...(isMobileAppMobileJourney(session) && {
         redirect_uri: session.redirectUri,
@@ -90,6 +93,12 @@ const hasContraIndicators = (credential: BiometricCredential): boolean => {
 
 const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
   return auditData.flags != null;
+};
+
+const hasFlaggedRecord = (auditData: {
+  flaggedRecord?: FlaggedRecord[];
+}): boolean => {
+  return auditData.flaggedRecord != null;
 };
 
 // redirectUri is only stored in Dynamo for mobile-app-mobile journeys
