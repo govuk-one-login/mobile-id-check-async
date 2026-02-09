@@ -638,11 +638,11 @@ const writeVcIssuedEvent = async (
   credential: BiometricCredential,
   audit: AuditData,
 ): Promise<Result<void, void>> => {
-  const writeEventResult = await sendMessageToSqs(
+  const sendMessageToSqsresult = await sendMessageToSqs(
     txmaSqsArn,
     getVcIssuedEvent(credential, audit, sessionAttributes),
   );
-  if (writeEventResult.isError) {
+  if (sendMessageToSqsresult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
     });
