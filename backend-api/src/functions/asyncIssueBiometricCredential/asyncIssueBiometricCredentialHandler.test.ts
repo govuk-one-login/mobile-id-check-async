@@ -1229,23 +1229,25 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
-      let vcIssuedSqsMock: jest.Mock;
+      let mockFailedToSendVCIssuedMessage: jest.Mock;
 
       beforeEach(async () => {
-        vcIssuedSqsMock = jest
+        mockFailedToSendVCIssuedMessage = jest
           .fn()
           .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
           .mockResolvedValueOnce(emptyFailure());
         dependencies = {
           ...dependencies,
-          sendMessageToSqs: vcIssuedSqsMock,
+          sendMessageToSqs: mockFailedToSendVCIssuedMessage,
         };
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
       it("sendMessageToSqs called with correct arguments", () => {
-        expect(vcIssuedSqsMock).toHaveBeenCalledNthWithSqsMessage(2, {
+        expect(
+          mockFailedToSendVCIssuedMessage,
+        ).toHaveBeenCalledNthWithSqsMessage(2, {
           sqsArn: "mockTxmaSqs",
           expectedMessage: {
             event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
