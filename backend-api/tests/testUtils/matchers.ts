@@ -31,7 +31,7 @@ const toHaveBeenCalledNthWithSqsMessage = (
 };
 
 const toHaveBeenCalledWithLogFields = (
-  consoleSpy: jest.Mock,
+  consoleSpy: jest.SpyInstance,
   logFields: Record<string, unknown>,
 ) => {
   const messages = consoleSpy.mock.calls.map((args) => args[0]);
