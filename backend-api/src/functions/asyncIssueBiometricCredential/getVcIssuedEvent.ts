@@ -45,11 +45,11 @@ export const getVcIssuedEvent = (
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
 ): VcIssuedTxMAEvent => {
+  const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
+    audit;
+
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
-
-  const { flaggedRecord } = audit;
-  const { contraIndicatorReasons, flags, txmaContraIndicators } = audit;
 
   return {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
@@ -92,6 +92,7 @@ const hasFlags = (auditData: { flags?: FlagsWrapper }): boolean => {
   return auditData.flags != null;
 };
 
+// redirectUri is only stored in Dynamo for mobile-app-mobile journeys
 const isMobileAppMobileJourney = (session: {
   redirectUri?: string;
 }): boolean => {
