@@ -64,7 +64,7 @@
     "@aws-sdk/node-http-handler": "3.374.0",
     "@aws-sdk/util-dynamodb": "3.983.0",
     "@govuk-one-login/mobile-id-check-biometric-credential": "3.0.0",
-    "axios": "1.13.4",
+    "axios": "1.13.5",
     "ecdsa-sig-formatter": "1.0.11",
     "esbuild": "0.27.2",
     "jose": "5.10.0"
