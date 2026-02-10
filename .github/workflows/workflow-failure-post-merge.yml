@@ -3,8 +3,8 @@ name: Post-Merge Workflow Failure
 on:
   workflow_run:
     workflows:
-      - ".github/workflows/backend-api-post-merge.yml"
-      - ".github/workflows/test-resources-post-merge.yml"
+      - "Backend API Post Merge"
+      - "Test Resources Post Merge"
     types:
       - completed
     branches:
