@@ -1,4 +1,9 @@
-import { Advisory } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
+  Advisory,
+  AuditData,
+  ContraIndicator,
+  TxmaContraIndicator,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { expect } from "@jest/globals";
 import { Context, SQSEvent } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
@@ -22,6 +27,7 @@ import {
   mockInertEventService,
   mockInertSessionRegistry,
   mockIssuer,
+  mockRedirectUri,
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
@@ -33,6 +39,7 @@ import {
   NOW_IN_MILLISECONDS,
   ONE_HOUR_AGO_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
+  validBiometricSessionFinishedAttributesMobileApp,
   validResultSentAttributes,
 } from "../testUtils/unitTestData";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -69,6 +76,12 @@ describe("Async Issue Biometric Credential", () => {
   const mockGetSessionSuccess = jest
     .fn()
     .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
+
+  const mockGetSessionSuccessMobileAppMobile = jest
+    .fn()
+    .mockResolvedValue(
+      successResult(validBiometricSessionFinishedAttributesMobileApp),
+    );
 
   const mockGetBiometricSessionSuccess = jest
     .fn()
@@ -133,13 +146,23 @@ describe("Async Issue Biometric Credential", () => {
     ),
   };
 
+  const mockMobileAppMobileSessionRegistrySuccess: SessionRegistry = {
+    ...mockInertSessionRegistry,
+    getSession: mockGetSessionSuccessMobileAppMobile,
+    updateSession: jest.fn().mockResolvedValue(
+      successResult({
+        attributes: validBiometricSessionFinishedAttributesMobileApp,
+      }),
+    ),
+  };
+
   const mockSuccessfulGetCredentialFromBiometricSession = jest
     .fn()
     .mockReturnValue(
       successResult({
         credential: mockBiometricCredential,
         analytics: mockAnalyticsData,
-        audit: "mockAudit",
+        audit: mockAuditData,
         advisories: "mockAdvisories",
       }),
     );
@@ -1206,13 +1229,111 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
+      let mockFailedToSendVCIssuedMessage: jest.Mock;
+
       beforeEach(async () => {
+        mockFailedToSendVCIssuedMessage = jest
+          .fn()
+          .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
+          .mockResolvedValueOnce(emptyFailure());
         dependencies = {
           ...dependencies,
-          getEventService: () => mockFailingEventService,
+          sendMessageToSqs: mockFailedToSendVCIssuedMessage,
         };
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("sendMessageToSqs called with correct arguments", () => {
+        expect(
+          mockFailedToSendVCIssuedMessage,
+        ).toHaveBeenCalledNthWithSqsMessage(2, {
+          sqsArn: "mockTxmaSqs",
+          expectedMessage: {
+            event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+            user: {
+              user_id: mockSubjectIdentifier,
+              session_id: mockSessionId,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
+              transaction_id: mockBiometricSessionId,
+            },
+            event_timestamp_ms: 1704110400000,
+            timestamp: 1704110400,
+            component_id: "mockIssuer",
+            extensions: {
+              evidence: [
+                {
+                  strengthScore: 0,
+                  validityScore: 0,
+                  activityHistoryScore: 0,
+                  type: "IdentityCheck",
+                  txn: "mockTxn",
+                  checkDetails: [
+                    {
+                      checkMethod: "bvr",
+                      identityCheckPolicy: "published",
+                      activityFrom: undefined,
+                      biometricVerificationProcessLevel: 0,
+                    },
+                  ],
+                  txmaContraIndicators: [],
+                },
+              ],
+            },
+            restricted: {
+              name: [
+                {
+                  nameParts: [
+                    {
+                      type: "GivenName",
+                      value: "mockGivenName",
+                    },
+                    {
+                      type: "FamilyName",
+                      value: "mockFamilyName",
+                    },
+                  ],
+                },
+              ],
+              birthDate: [
+                {
+                  value: "mockBirthDate",
+                },
+              ],
+              deviceId: [
+                {
+                  value: "mockDeviceId",
+                },
+              ],
+              address: [
+                {
+                  addressCountry: null,
+                  addressLocality: null,
+                  buildingName: null,
+                  buildingNumber: null,
+                  dependentAddressLocality: null,
+                  dependentStreetName: null,
+                  doubleDependentAddressLocality: null,
+                  organisationName: null,
+                  postalCode: "mockPostalCode",
+                  streetName: null,
+                  subBuildingName: null,
+                  uprn: null,
+                },
+              ],
+              drivingPermit: [
+                {
+                  expiryDate: "mockExpiryDate",
+                  fullAddress: "mockFullAddress",
+                  issueDate: null,
+                  issueNumber: null,
+                  issuedBy: null,
+                  personalNumber: "mockPersonalNumber",
+                },
+              ],
+            },
+          },
+        });
       });
 
       it("Logs the DCMAW_ASYNC_CRI_VC_ISSUED event failure", () => {
@@ -1264,6 +1385,108 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
+      describe("Given user is on a mobile-app-mobile journey", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () =>
+            mockMobileAppMobileSessionRegistrySuccess;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with redirect_uri to TxMA", () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            2,
+            {
+              sqsArn: "mockTxmaSqs",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                user: {
+                  user_id: mockSubjectIdentifier,
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                  transaction_id: mockBiometricSessionId,
+                },
+                event_timestamp_ms: 1704110400000,
+                timestamp: 1704110400,
+                component_id: "mockIssuer",
+                extensions: {
+                  redirect_uri: mockRedirectUri,
+                  evidence: [
+                    {
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
+                      type: "IdentityCheck",
+                      txn: "mockTxn",
+                      txmaContraIndicators: [],
+                      checkDetails: [
+                        {
+                          checkMethod: "bvr",
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
+                        },
+                      ],
+                    },
+                  ],
+                },
+                restricted: {
+                  name: [
+                    {
+                      nameParts: [
+                        {
+                          type: "GivenName",
+                          value: "mockGivenName",
+                        },
+                        {
+                          type: "FamilyName",
+                          value: "mockFamilyName",
+                        },
+                      ],
+                    },
+                  ],
+                  birthDate: [
+                    {
+                      value: "mockBirthDate",
+                    },
+                  ],
+                  deviceId: [
+                    {
+                      value: "mockDeviceId",
+                    },
+                  ],
+                  address: [
+                    {
+                      addressCountry: null,
+                      addressLocality: null,
+                      buildingName: null,
+                      buildingNumber: null,
+                      dependentAddressLocality: null,
+                      dependentStreetName: null,
+                      doubleDependentAddressLocality: null,
+                      organisationName: null,
+                      postalCode: "mockPostalCode",
+                      streetName: null,
+                      subBuildingName: null,
+                      uprn: null,
+                    },
+                  ],
+                  drivingPermit: [
+                    {
+                      expiryDate: "mockExpiryDate",
+                      fullAddress: "mockFullAddress",
+                      issueDate: null,
+                      issueNumber: null,
+                      issuedBy: null,
+                      personalNumber: "mockPersonalNumber",
+                    },
+                  ],
+                },
+              },
+            },
+          );
+        });
+      });
+
       describe("Given generated biometric credential does not have flags or contraindicators", () => {
         const mockSuccessfulGetCredentialFromBiometricSession = jest
           .fn()
@@ -1357,48 +1580,101 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
-            1,
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            2,
             {
-              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              componentId: mockIssuer,
-              getNowInMilliseconds: Date.now,
-              sessionId: mockSessionId,
-              govukSigninJourneyId: mockGovukSigninJourneyId,
-              transactionId: mockBiometricSessionId,
-              ipAddress: undefined,
-              redirect_uri: undefined,
-              sub: mockSubjectIdentifier,
-              suspected_fraud_signal: undefined,
-              txmaAuditEncoded: undefined,
-              flaggedRecord: undefined,
-              flags: undefined,
-              evidence: [
-                {
-                  type: "IdentityCheck",
-                  txn: "mockTxn",
-                  strengthScore: 0,
-                  validityScore: 0,
-                  activityHistoryScore: 0,
-                  checkDetails: [
+              sqsArn: "mockTxmaSqs",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                user: {
+                  user_id: mockSubjectIdentifier,
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                  transaction_id: mockBiometricSessionId,
+                },
+                event_timestamp_ms: 1704110400000,
+                timestamp: 1704110400,
+                component_id: "mockIssuer",
+                extensions: {
+                  evidence: [
                     {
-                      checkMethod: "bvr",
-                      identityCheckPolicy: "published",
-                      activityFrom: undefined,
-                      biometricVerificationProcessLevel: 0,
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
+                      type: "IdentityCheck",
+                      txn: "mockTxn",
+                      txmaContraIndicators: [],
+                      checkDetails: [
+                        {
+                          checkMethod: "bvr",
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
+                        },
+                      ],
                     },
                   ],
-                  txmaContraIndicators: [],
                 },
-              ],
-              credentialSubject: mockCredentialSubject,
+                restricted: {
+                  name: [
+                    {
+                      nameParts: [
+                        {
+                          type: "GivenName",
+                          value: "mockGivenName",
+                        },
+                        {
+                          type: "FamilyName",
+                          value: "mockFamilyName",
+                        },
+                      ],
+                    },
+                  ],
+                  birthDate: [
+                    {
+                      value: "mockBirthDate",
+                    },
+                  ],
+                  deviceId: [
+                    {
+                      value: "mockDeviceId",
+                    },
+                  ],
+                  address: [
+                    {
+                      addressCountry: null,
+                      addressLocality: null,
+                      buildingName: null,
+                      buildingNumber: null,
+                      dependentAddressLocality: null,
+                      dependentStreetName: null,
+                      doubleDependentAddressLocality: null,
+                      organisationName: null,
+                      postalCode: "mockPostalCode",
+                      streetName: null,
+                      subBuildingName: null,
+                      uprn: null,
+                    },
+                  ],
+                  drivingPermit: [
+                    {
+                      expiryDate: "mockExpiryDate",
+                      fullAddress: "mockFullAddress",
+                      issueDate: null,
+                      issueNumber: null,
+                      issuedBy: null,
+                      personalNumber: "mockPersonalNumber",
+                    },
+                  ],
+                },
+              },
             },
           );
         });
 
         it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
-            2,
+            1,
             {
               eventName: "DCMAW_ASYNC_CRI_END",
               componentId: mockIssuer,
@@ -1437,10 +1713,19 @@ describe("Async Issue Biometric Credential", () => {
       describe("Given generated biometric credential has flags and flaggedRecord", () => {
         const mockAuditDataWithFlags = {
           ...mockAuditData,
-          flags: ["FLAG_1", "FLAG_2"],
-          flaggedRecord: {
-            mockKey: "mockValue",
+          flags: {
+            dcmawFlagsDL: { doEInPast: true, doEGreaterThan31Dec2024: true },
           },
+          flaggedRecord: [
+            {
+              dateOfBirth: [
+                {
+                  value: "mockValue",
+                  type: "mockType",
+                },
+              ],
+            },
+          ],
         };
 
         const mockGetCredentialFromBiometricSessionWithFlags = jest
@@ -1461,19 +1746,109 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with flaggedRecord to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              flaggedRecord: {
-                mockKey: "mockValue",
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            2,
+            {
+              sqsArn: "mockTxmaSqs",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                user: {
+                  user_id: mockSubjectIdentifier,
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                  transaction_id: mockBiometricSessionId,
+                },
+                event_timestamp_ms: 1704110400000,
+                timestamp: 1704110400,
+                component_id: "mockIssuer",
+                extensions: {
+                  dcmawFlagsDL: {
+                    doEInPast: true,
+                    doEGreaterThan31Dec2024: true,
+                  },
+                  evidence: [
+                    {
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
+                      type: "IdentityCheck",
+                      txn: "mockTxn",
+                      txmaContraIndicators: [],
+                      checkDetails: [
+                        {
+                          checkMethod: "bvr",
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
+                        },
+                      ],
+                    },
+                  ],
+                },
+                restricted: {
+                  name: [
+                    {
+                      nameParts: [
+                        {
+                          type: "GivenName",
+                          value: "mockGivenName",
+                        },
+                        {
+                          type: "FamilyName",
+                          value: "mockFamilyName",
+                        },
+                      ],
+                    },
+                  ],
+                  birthDate: [
+                    {
+                      value: "mockBirthDate",
+                    },
+                  ],
+                  deviceId: [
+                    {
+                      value: "mockDeviceId",
+                    },
+                  ],
+                  address: [
+                    {
+                      addressCountry: null,
+                      addressLocality: null,
+                      buildingName: null,
+                      buildingNumber: null,
+                      dependentAddressLocality: null,
+                      dependentStreetName: null,
+                      doubleDependentAddressLocality: null,
+                      organisationName: null,
+                      postalCode: "mockPostalCode",
+                      streetName: null,
+                      subBuildingName: null,
+                      uprn: null,
+                    },
+                  ],
+                  drivingPermit: [
+                    {
+                      expiryDate: "mockExpiryDate",
+                      fullAddress: "mockFullAddress",
+                      issueDate: null,
+                      issueNumber: null,
+                      issuedBy: null,
+                      personalNumber: "mockPersonalNumber",
+                    },
+                  ],
+                  flaggedRecord: [
+                    {
+                      dateOfBirth: [
+                        {
+                          value: "mockValue",
+                          type: "mockType",
+                        },
+                      ],
+                    },
+                  ],
+                },
               },
-              flags: ["FLAG_1", "FLAG_2"],
-              evidence: [
-                expect.objectContaining({
-                  txmaContraIndicators: [],
-                }),
-              ],
-            }),
+            },
           );
         });
       });
@@ -1484,14 +1859,23 @@ describe("Async Issue Biometric Credential", () => {
           evidence: [
             {
               ...mockBiometricCredential.evidence[0],
-              ci: ["CI_1"],
+              ci: ["CI1"],
             },
           ],
         };
 
-        const mockAuditDataWithContraIndicatorReasons = {
-          contraIndicatorReasons: ["Reason 1", "Reason 2"],
-          txmaContraIndicators: ["TxMA_CI_1", "TxMA_CI_2"],
+        const mockAuditDataWithContraIndicatorReasons: AuditData = {
+          contraIndicatorReasons: [
+            {
+              ci: "CI1" as ContraIndicator,
+              reasonCode: "mockReasonCode",
+              reason: "mockReason",
+            },
+          ],
+          txmaContraIndicators: [
+            "TxMACI1" as TxmaContraIndicator,
+            "TxMACI2" as TxmaContraIndicator,
+          ],
         };
 
         const mockGetCredentialFromBiometricSessionWithCI = jest
@@ -1512,18 +1896,99 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with ciReasons to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              flaggedRecord: undefined,
-              evidence: [
-                expect.objectContaining({
-                  ci: ["CI_1"],
-                  ciReasons: ["Reason 1", "Reason 2"],
-                  txmaContraIndicators: ["TxMA_CI_1", "TxMA_CI_2"],
-                }),
-              ],
-            }),
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            2,
+            {
+              sqsArn: "mockTxmaSqs",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                user: {
+                  user_id: mockSubjectIdentifier,
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                  transaction_id: mockBiometricSessionId,
+                },
+                event_timestamp_ms: 1704110400000,
+                timestamp: 1704110400,
+                component_id: "mockIssuer",
+                extensions: {
+                  evidence: [
+                    {
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
+                      type: "IdentityCheck",
+                      txn: "mockTxn",
+                      txmaContraIndicators:
+                        mockAuditDataWithContraIndicatorReasons.txmaContraIndicators,
+                      ci: ["CI1" as ContraIndicator],
+                      ciReasons:
+                        mockAuditDataWithContraIndicatorReasons.contraIndicatorReasons,
+                      checkDetails: [
+                        {
+                          checkMethod: "bvr",
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
+                        },
+                      ],
+                    },
+                  ],
+                },
+                restricted: {
+                  name: [
+                    {
+                      nameParts: [
+                        {
+                          type: "GivenName",
+                          value: "mockGivenName",
+                        },
+                        {
+                          type: "FamilyName",
+                          value: "mockFamilyName",
+                        },
+                      ],
+                    },
+                  ],
+                  birthDate: [
+                    {
+                      value: "mockBirthDate",
+                    },
+                  ],
+                  deviceId: [
+                    {
+                      value: "mockDeviceId",
+                    },
+                  ],
+                  address: [
+                    {
+                      addressCountry: null,
+                      addressLocality: null,
+                      buildingName: null,
+                      buildingNumber: null,
+                      dependentAddressLocality: null,
+                      dependentStreetName: null,
+                      doubleDependentAddressLocality: null,
+                      organisationName: null,
+                      postalCode: "mockPostalCode",
+                      streetName: null,
+                      subBuildingName: null,
+                      uprn: null,
+                    },
+                  ],
+                  drivingPermit: [
+                    {
+                      expiryDate: "mockExpiryDate",
+                      fullAddress: "mockFullAddress",
+                      issueDate: null,
+                      issueNumber: null,
+                      issuedBy: null,
+                      personalNumber: "mockPersonalNumber",
+                    },
+                  ],
+                },
+              },
+            },
           );
         });
       });
@@ -1534,18 +1999,29 @@ describe("Async Issue Biometric Credential", () => {
           evidence: [
             {
               ...mockBiometricCredential.evidence[0],
-              ci: ["CI_1"],
+              ci: ["CI1"],
             },
           ],
         };
 
-        const mockAuditDataWithBothFlagsAndCI = {
-          contraIndicatorReasons: ["CI Reason"],
-          txmaContraIndicators: ["TxMA_CI_1"],
-          flags: ["FLAG_1"],
-          flaggedRecord: {
-            mockFlaggedRecordField: "mockFlaggedRecordValue",
-          },
+        const mockAuditDataWithBothFlagsAndCI: AuditData = {
+          contraIndicatorReasons: [
+            {
+              ci: "CI1" as ContraIndicator,
+              reasonCode: "mockReasonCode",
+              reason: "mockReason",
+            },
+          ],
+          txmaContraIndicators: [
+            "TxMACI1" as TxmaContraIndicator,
+            "TxMACI2" as TxmaContraIndicator,
+          ],
+          flags: { dcmawFlagsPassport: { doBUnknown: true } },
+          flaggedRecord: [
+            {
+              dateOfBirth: [{ value: "mockValue", type: "mockType" }],
+            },
+          ],
         };
 
         const mockGetCredentialFromBiometricSessionWithBoth = jest
@@ -1566,21 +2042,110 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with both flaggedRecord and ciReasons to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              flaggedRecord: {
-                mockFlaggedRecordField: "mockFlaggedRecordValue",
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            2,
+            {
+              sqsArn: "mockTxmaSqs",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                user: {
+                  user_id: mockSubjectIdentifier,
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                  transaction_id: mockBiometricSessionId,
+                },
+                event_timestamp_ms: 1704110400000,
+                timestamp: 1704110400,
+                component_id: "mockIssuer",
+                extensions: {
+                  evidence: [
+                    {
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
+                      type: "IdentityCheck",
+                      txn: "mockTxn",
+                      txmaContraIndicators:
+                        mockAuditDataWithBothFlagsAndCI.txmaContraIndicators,
+                      ci: ["CI1" as ContraIndicator],
+                      ciReasons:
+                        mockAuditDataWithBothFlagsAndCI.contraIndicatorReasons,
+                      checkDetails: [
+                        {
+                          checkMethod: "bvr",
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
+                        },
+                      ],
+                    },
+                  ],
+                  dcmawFlagsPassport: { doBUnknown: true },
+                },
+                restricted: {
+                  name: [
+                    {
+                      nameParts: [
+                        {
+                          type: "GivenName",
+                          value: "mockGivenName",
+                        },
+                        {
+                          type: "FamilyName",
+                          value: "mockFamilyName",
+                        },
+                      ],
+                    },
+                  ],
+                  birthDate: [
+                    {
+                      value: "mockBirthDate",
+                    },
+                  ],
+                  deviceId: [
+                    {
+                      value: "mockDeviceId",
+                    },
+                  ],
+                  address: [
+                    {
+                      addressCountry: null,
+                      addressLocality: null,
+                      buildingName: null,
+                      buildingNumber: null,
+                      dependentAddressLocality: null,
+                      dependentStreetName: null,
+                      doubleDependentAddressLocality: null,
+                      organisationName: null,
+                      postalCode: "mockPostalCode",
+                      streetName: null,
+                      subBuildingName: null,
+                      uprn: null,
+                    },
+                  ],
+                  drivingPermit: [
+                    {
+                      expiryDate: "mockExpiryDate",
+                      fullAddress: "mockFullAddress",
+                      issueDate: null,
+                      issueNumber: null,
+                      issuedBy: null,
+                      personalNumber: "mockPersonalNumber",
+                    },
+                  ],
+                  flaggedRecord: [
+                    {
+                      dateOfBirth: [
+                        {
+                          value: "mockValue",
+                          type: "mockType",
+                        },
+                      ],
+                    },
+                  ],
+                },
               },
-              flags: ["FLAG_1"],
-              evidence: [
-                expect.objectContaining({
-                  ci: ["CI_1"],
-                  ciReasons: ["CI Reason"],
-                  txmaContraIndicators: ["TxMA_CI_1"],
-                }),
-              ],
-            }),
+            },
           );
         });
       });
