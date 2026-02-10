@@ -1,5 +1,3 @@
-import { VcIssuedTxMAEvent } from "../../../asyncIssueBiometricCredential/getVcIssuedEvent";
-
 export interface VendorProcessingMessage {
   biometricSessionId: string;
   sessionId: string;
@@ -21,7 +19,6 @@ export interface VerifiableCredentialMessage {
 }
 
 export type SQSMessageBody =
-  | VcIssuedTxMAEvent
   | VendorProcessingMessage
   | OutboundQueueErrorMessage
   | VerifiableCredentialMessage;
