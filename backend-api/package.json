@@ -38,7 +38,7 @@
     "aws-sdk-client-mock-jest": "4.1.0",
     "aws4-axios": "3.4.0",
     "axios-retry": "4.5.0",
-    "dotenv": "16.5.0",
+    "dotenv": "17.2.4",
     "eslint": "9.39.2",
     "express": "4.22.1",
     "jest": "30.2.0",
