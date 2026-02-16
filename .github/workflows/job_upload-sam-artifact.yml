@@ -72,7 +72,7 @@ jobs:
         run: npm clean-install
 
       - name: Authenticate with AWS
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 #v6.0.0
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 #v5.1.1
         with:
           aws-region: ${{ inputs.AWS_REGION }}
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
@@ -89,7 +89,7 @@ jobs:
         run: sam build --cached --template ${{ inputs.TEMPLATE_NAME }}
 
       - name: Upload SAM Artifact into the Artifact Bucket
-        uses: govuk-one-login/devplatform-upload-action@v3.13.0
+        uses: govuk-one-login/devplatform-upload-action@v3.12.1
         with:
           artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
