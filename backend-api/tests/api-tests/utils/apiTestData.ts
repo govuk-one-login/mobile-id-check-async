@@ -12,3 +12,7 @@ export const expectedSecurityHeaders = {
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
 };
+
+export const generateRandomString = (): string => {
+  return Math.random().toString(36);
+};

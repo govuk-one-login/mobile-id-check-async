@@ -8,6 +8,7 @@ import {
   getActiveSessionIdFromSub,
   pollForEvents,
 } from "./utils/apiTestHelpers";
+import { generateRandomString } from "./utils/apiTestData";
 
 const getApisToTest = (): {
   apiName: string;
@@ -275,7 +276,7 @@ describe.each(apis)(
 
         beforeAll(async () => {
           randomSub = randomUUID();
-          govukSigninJourneyId = Math.random().toString(36);
+          govukSigninJourneyId = generateRandomString();
           const credentialRequestBody = getRequestBody(clientDetails, {
             sub: randomSub,
             govukSigninJourneyId,
