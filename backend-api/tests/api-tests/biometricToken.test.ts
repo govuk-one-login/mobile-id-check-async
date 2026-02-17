@@ -165,7 +165,7 @@ describe("POST /async/biometricToken", () => {
       );
     });
 
-    it("Writes an event with the correct event_name", async () => {
+    it("Writes DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event to TxMA", async () => {
       const eventsResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,

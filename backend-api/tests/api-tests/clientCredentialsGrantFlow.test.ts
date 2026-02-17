@@ -301,7 +301,7 @@ describe.each(apis)(
           });
         });
 
-        it("Writes an event with the correct event_name", async () => {
+        it("Writes DCMAW_ASYNC_CRI_START event to TxMA", async () => {
           const sessionId = await getActiveSessionIdFromSub(randomSub);
           const eventsResponse = await pollForEvents({
             partitionKey: `SESSION#${sessionId}`,

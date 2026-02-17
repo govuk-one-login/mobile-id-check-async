@@ -102,7 +102,7 @@ describe("POST /async/finishBiometricSession", () => {
       });
     }, 40000);
 
-    it("Writes DCMAW_ASYNC_APP_END TxMA event", () => {
+    it("Writes DCMAW_ASYNC_APP_END event to TxMA", () => {
       expect(eventsResponse[0].event).toStrictEqual({
         event_name: "DCMAW_ASYNC_APP_END",
         component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,

@@ -112,7 +112,7 @@ describe("POST /async/txmaEvent", () => {
         });
       }, 70000);
 
-      it("Writes a billing event", async () => {
+      it(`Writes ${eventName} event to TxMA`, async () => {
         expect(eventsResponse[0].event).toStrictEqual({
           event_name: eventName,
           component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,

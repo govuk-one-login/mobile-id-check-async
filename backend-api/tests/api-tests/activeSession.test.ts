@@ -153,7 +153,7 @@ describe("GET /async/activeSession", () => {
       });
     }, 40000);
 
-    it("Writes an event with the correct event_name", async () => {
+    it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", async () => {
       expect(eventsResponse[0].event).toStrictEqual({
         event_name: "DCMAW_ASYNC_CRI_APP_START",
         component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
