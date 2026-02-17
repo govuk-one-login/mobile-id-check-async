@@ -1,6 +1,10 @@
 import { AxiosResponse } from "axios";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
-import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
+import {
+  expectedSecurityHeaders,
+  generateRandomString,
+  mockSessionId,
+} from "./utils/apiTestData";
 import {
   createSessionForSub,
   EventResponse,
@@ -79,13 +83,16 @@ describe("POST /async/txmaEvent", () => {
   describe.each(txmaBillingEventNames)(
     "Given the request is valid - %s",
     (eventName) => {
+      let sub: string;
       let sessionId: string | null;
+      let govukSigninJourneyId: string;
       let response: AxiosResponse;
       let eventsResponse: EventResponse[];
 
       beforeAll(async () => {
-        const sub = randomUUID();
-        await createSessionForSub(sub);
+        sub = randomUUID();
+        govukSigninJourneyId = generateRandomString();
+        await createSessionForSub(sub, govukSigninJourneyId);
         sessionId = await getActiveSessionIdFromSub(sub);
         await issueBiometricToken(sessionId);
 
@@ -105,12 +112,23 @@ describe("POST /async/txmaEvent", () => {
         });
       }, 70000);
 
-      it("Writes an event with the correct event_name", async () => {
-        expect(eventsResponse[0].event).toEqual(
-          expect.objectContaining({
-            event_name: eventName,
-          }),
-        );
+      it("Writes a billing event", async () => {
+        expect(eventsResponse[0].event).toStrictEqual({
+          event_name: eventName,
+          component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+          timestamp: expect.any(Number),
+          event_timestamp_ms: expect.any(Number),
+          user: {
+            govuk_signin_journey_id: govukSigninJourneyId,
+            session_id: sessionId,
+            user_id: sub,
+            ip_address: expect.any(String),
+          },
+          extensions: {
+            redirect_uri: "https://mockRedirectUri.com",
+          },
+          restricted: { device_information: { encoded: expect.any(String) } },
+        });
       });
 
       it("Returns 200 OK response", () => {
