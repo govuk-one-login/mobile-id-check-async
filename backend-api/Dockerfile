@@ -15,7 +15,6 @@ RUN --mount=type=secret,id=NPM_TOKEN,env=NPM_TOKEN npm install --ignore-scripts
 RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
 
 # Copy the test files and the configuration files
-COPY tests/testUtils ./tests/testUtils
 COPY tests/api-tests ./tests/api-tests
 COPY jest.config.ts tsconfig.json ./
 
