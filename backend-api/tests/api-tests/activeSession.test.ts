@@ -8,6 +8,7 @@ import {
   getActiveSessionIdFromSub,
   pollForEvents,
 } from "./utils/apiTestHelpers";
+import { generateRandomString, mockClientState } from "./utils/apiTestData";
 
 jest.setTimeout(4 * 5000);
 
@@ -129,12 +130,15 @@ describe("GET /async/activeSession", () => {
   });
 
   describe("Given the request is valid and a session is found", () => {
+    let sub: string;
+    let govukSigninJourneyId: string;
     let response: AxiosResponse;
     let eventsResponse: EventResponse[];
 
     beforeAll(async () => {
-      const sub = randomUUID();
-      await createSessionForSub(sub);
+      sub = randomUUID();
+      govukSigninJourneyId = generateRandomString();
+      await createSessionForSub(sub, govukSigninJourneyId);
       const accessToken = await getAccessToken(sub);
       const sessionId = await getActiveSessionIdFromSub(sub);
 
@@ -150,18 +154,29 @@ describe("GET /async/activeSession", () => {
     }, 40000);
 
     it("Writes an event with the correct event_name", async () => {
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_CRI_APP_START",
-        }),
-      );
+      expect(eventsResponse[0].event).toStrictEqual({
+        event_name: "DCMAW_ASYNC_CRI_APP_START",
+        component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+        timestamp: expect.any(Number),
+        event_timestamp_ms: expect.any(Number),
+        user: {
+          govuk_signin_journey_id: govukSigninJourneyId,
+          session_id: response.data.sessionId,
+          user_id: sub,
+          ip_address: expect.any(String),
+        },
+        extensions: {
+          redirect_uri: "https://mockRedirectUri.com",
+        },
+        restricted: { device_information: { encoded: expect.any(String) } },
+      });
     });
 
     it("Returns 200 status code, sessionId, redirectUri and state", async () => {
       expect(response.status).toBe(200);
       expect(response.data["sessionId"]).toBeDefined();
-      expect(response.data["redirectUri"]).toBeDefined();
-      expect(response.data["state"]).toBeDefined();
+      expect(response.data["redirectUri"]).toBe("https://mockRedirectUri.com");
+      expect(response.data["state"]).toBe(mockClientState);
     });
   });
 
