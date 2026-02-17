@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import { AxiosResponse } from "axios";
-import "../../tests/testUtils/matchers";
+import "./utils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
