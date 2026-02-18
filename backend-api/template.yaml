@@ -139,6 +139,12 @@ Mappings:
       integration: 15
       production: 80
       staging: 15
+    DvlaDrivingLicenceExpiryGracePeriodInDays:
+      build: 0
+      dev: 90
+      integration: 0
+      production: 0
+      staging: 0
     DynatraceSecretArn:
       build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       dev: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
@@ -3723,6 +3729,10 @@ Resources:
           BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap
             - EnvironmentVariables
             - BiometricViewerAccessKey
+            - !Ref Environment
+          DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: !FindInMap
+            - EnvironmentVariables
+            - DvlaDrivingLicenceExpiryGracePeriodInDays
             - !Ref Environment
           ENABLE_BIOMETRIC_RESIDENCE_CARD: !FindInMap
             - EnvironmentVariables

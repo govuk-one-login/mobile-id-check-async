@@ -31,6 +31,7 @@ Resources:
           ENABLE_UTOPIA_TEST_DOCUMENT: !FindInMap [EnvironmentVariables, EnableUtopiaTestDocument, !Ref Environment]
           BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap [EnvironmentVariables, BiometricViewerAccessKey, !Ref Environment]
           BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [EnvironmentVariables, BiometricViewerAccessKeySecretCacheDurationInSeconds, !Ref Environment]
+          DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: !FindInMap [EnvironmentVariables, DvlaDrivingLicenceExpiryGracePeriodInDays, !Ref Environment]
           VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
