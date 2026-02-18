@@ -4,13 +4,13 @@ import { sqsClient } from "./sqsClient";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
-  CredentialTokenIssuedEvent,
+  ClientCredentialsTokenIssuedEvent,
   CredentialTokenIssuedEventConfig,
   GenericEventConfig,
-  GenericTxmaEvent,
   IEventService,
-  RestrictedData,
-  TxmaEvents,
+  Restricted_DeviceInformation,
+  TxmaEvents,ErrorEvent,
+  ErrorEventConfig
 } from "./types";
 
 export class EventService implements IEventService {
@@ -20,6 +20,32 @@ export class EventService implements IEventService {
     this.sqsQueue = sqsQueue;
   }
 
+  async writeErrorEvent(
+    eventConfig: GenericEventConfig,
+  ): Promise<Result<void, void>> {
+    const txmaEvent = this.buildGenericEvent(eventConfig);
+    return await this.writeToSqs(txmaEvent);
+  }
+
+  buildErrorEvent(eventConfig: ErrorEventConfig): ErrorEvent {
+    const timestampInMillis = eventConfig.getNowInMilliseconds();
+    const event: ErrorEvent = {
+      user: {
+        user_id: eventConfig.sub,
+        session_id: eventConfig.sessionId,
+        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+        ip_address: eventConfig.ipAddress,
+      },
+      timestamp: Math.floor(timestampInMillis / 1000),
+      event_timestamp_ms: timestampInMillis,
+      event_name: eventConfig.eventName,
+      component_id: eventConfig.componentId,
+      restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+      extensions: {redirect_uri: eventConfig.redirect_uri}
+    };
+
+    return event;
+  }
   async writeGenericEvent(
     eventConfig: GenericEventConfig,
   ): Promise<Result<void, void>> {
@@ -55,16 +81,14 @@ export class EventService implements IEventService {
     }
   }
 
-  private buildGenericEvent = (
-    eventConfig: GenericEventConfig,
-  ): GenericTxmaEvent => {
+  private buildGenericEvent = (eventConfig: GenericEventConfig): TxmaEvents => {
     const timestampInMillis = eventConfig.getNowInMilliseconds();
     const extensions = this.getExtensionsObject(
       eventConfig.redirect_uri,
       eventConfig.suspected_fraud_signal,
     );
 
-    const event: GenericTxmaEvent = {
+    const event = {
       user: {
         user_id: eventConfig.sub,
         session_id: eventConfig.sessionId,
@@ -99,7 +123,7 @@ export class EventService implements IEventService {
 
   private buildCredentialTokenIssuedEvent = (
     eventConfig: CredentialTokenIssuedEventConfig,
-  ): CredentialTokenIssuedEvent => {
+  ): ClientCredentialsTokenIssuedEvent => {
     const timestampInMillis = eventConfig.getNowInMilliseconds();
     return {
       event_name: eventConfig.eventName,
@@ -135,23 +159,10 @@ export class EventService implements IEventService {
 
   private readonly getRestrictedData = (
     txmaAuditEncoded: string | undefined,
-  ): RestrictedData | undefined => {
+  ): Restricted_DeviceInformation | undefined => {
     if (!txmaAuditEncoded) {
       return undefined;
     }
-
-    const result: RestrictedData = {};
-
-    if (txmaAuditEncoded) {
-      result.device_information = {
-        encoded: txmaAuditEncoded,
-      };
-    }
-
-    if (Object.keys(result).length === 0) {
-      return undefined;
-    }
-
-    return result;
+    return { device_information: { encoded: txmaAuditEncoded } };
   };
 }
