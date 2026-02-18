@@ -141,7 +141,7 @@ Mappings:
       staging: 15
     DvlaDrivingLicenceExpiryGracePeriodInDays:
       build: 0
-      dev: 90
+      dev: 0
       integration: 0
       production: 0
       staging: 0

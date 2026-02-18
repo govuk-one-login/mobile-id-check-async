@@ -120,7 +120,7 @@ EnvironmentVariables:
 
   # Feature Flags
   DvlaDrivingLicenceExpiryGracePeriodInDays:
-    dev: 90
+    dev: 0
     build: 0
     staging: 0
     integration: 0
