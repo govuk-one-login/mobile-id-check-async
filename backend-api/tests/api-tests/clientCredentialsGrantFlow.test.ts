@@ -157,18 +157,19 @@ describe.each(apis)(
         expect(tokenResponse.status).toBe(200);
       });
 
-      it("Writes an event with the correct event_name", async () => {
+      it("Writes DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to TxMA", async () => {
         const eventsResponse = await pollForEvents({
           partitionKey: `SESSION#UNKNOWN`,
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
           numberOfEvents: 1,
         });
 
-        expect(eventsResponse[0].event).toEqual(
-          expect.objectContaining({
-            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-          }),
-        );
+        expect(eventsResponse[0].event).toStrictEqual({
+          event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+          timestamp: expect.any(Number),
+          event_timestamp_ms: expect.any(Number),
+        });
       }, 40000);
     });
 
