@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   expectedSecurityHeaders,
+  generateRandomString,
   mockClientState,
   mockGovukSigninJourneyId,
   mockInvalidUUID,
@@ -64,13 +65,15 @@ describe("POST /async/abortSession", () => {
   describe("Given there is a valid request", () => {
     let sub: string;
     let sessionId: string;
+    let govukSigninJourneyId: string;
     let response: AxiosResponse;
     let credentialResultsResponse: CredentialResultResponse[];
     let eventsResponse: EventResponse[];
 
     beforeAll(async () => {
       sub = randomUUID();
-      await createSessionForSub(sub);
+      govukSigninJourneyId = generateRandomString();
+      await createSessionForSub(sub, govukSigninJourneyId);
       sessionId = await getActiveSessionIdFromSub(sub);
 
       response = await SESSIONS_API_INSTANCE.post("/async/abortSession", {
@@ -94,7 +97,7 @@ describe("POST /async/abortSession", () => {
         expect.objectContaining({
           sub,
           state: mockClientState,
-          govuk_signin_journey_id: mockGovukSigninJourneyId,
+          govuk_signin_journey_id: govukSigninJourneyId,
           error: "access_denied",
           error_description: "User aborted the session",
         }),
@@ -102,11 +105,22 @@ describe("POST /async/abortSession", () => {
     });
 
     it("Writes DCMAW_ASYNC_ABORT_APP event to TxMA", () => {
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_ABORT_APP",
-        }),
-      );
+      expect(eventsResponse[0].event).toStrictEqual({
+        event_name: "DCMAW_ASYNC_ABORT_APP",
+        component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+        timestamp: expect.any(Number),
+        event_timestamp_ms: expect.any(Number),
+        user: {
+          govuk_signin_journey_id: govukSigninJourneyId,
+          session_id: sessionId,
+          user_id: sub,
+          ip_address: expect.any(String),
+        },
+        extensions: {
+          redirect_uri: "https://mockRedirectUri.com",
+        },
+        restricted: { device_information: { encoded: expect.any(String) } },
+      });
     });
 
     it("Returns 200 Ok response", () => {

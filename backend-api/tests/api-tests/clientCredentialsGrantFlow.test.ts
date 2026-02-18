@@ -8,6 +8,7 @@ import {
   getActiveSessionIdFromSub,
   pollForEvents,
 } from "./utils/apiTestHelpers";
+import { generateRandomString } from "./utils/apiTestData";
 
 const getApisToTest = (): {
   apiName: string;
@@ -156,18 +157,19 @@ describe.each(apis)(
         expect(tokenResponse.status).toBe(200);
       });
 
-      it("Writes an event with the correct event_name", async () => {
+      it("Writes DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to TxMA", async () => {
         const eventsResponse = await pollForEvents({
           partitionKey: `SESSION#UNKNOWN`,
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
           numberOfEvents: 1,
         });
 
-        expect(eventsResponse[0].event).toEqual(
-          expect.objectContaining({
-            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-          }),
-        );
+        expect(eventsResponse[0].event).toStrictEqual({
+          event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+          timestamp: expect.any(Number),
+          event_timestamp_ms: expect.any(Number),
+        });
       }, 40000);
     });
 
@@ -270,14 +272,16 @@ describe.each(apis)(
 
       describe("Given the request is valid", () => {
         let randomSub: UUID;
+        let govukSigninJourneyId: string;
         let response: AxiosResponse;
 
         beforeAll(async () => {
           randomSub = randomUUID();
-          const credentialRequestBody = getRequestBody(
-            clientDetails,
-            randomSub,
-          );
+          govukSigninJourneyId = generateRandomString();
+          const credentialRequestBody = getRequestBody(clientDetails, {
+            sub: randomSub,
+            govukSigninJourneyId,
+          });
 
           response = await axiosInstance.post(
             `/async/credential`,
@@ -298,7 +302,7 @@ describe.each(apis)(
           });
         });
 
-        it("Writes an event with the correct event_name", async () => {
+        it("Writes DCMAW_ASYNC_CRI_START event to TxMA", async () => {
           const sessionId = await getActiveSessionIdFromSub(randomSub);
           const eventsResponse = await pollForEvents({
             partitionKey: `SESSION#${sessionId}`,
@@ -306,11 +310,18 @@ describe.each(apis)(
             numberOfEvents: 1,
           });
 
-          expect(eventsResponse[0].event).toEqual(
-            expect.objectContaining({
-              event_name: "DCMAW_ASYNC_CRI_START",
-            }),
-          );
+          expect(eventsResponse[0].event).toStrictEqual({
+            event_name: "DCMAW_ASYNC_CRI_START",
+            component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+            timestamp: expect.any(Number),
+            event_timestamp_ms: expect.any(Number),
+            extensions: { redirect_uri: "https://mockRedirectUri.com" },
+            user: {
+              govuk_signin_journey_id: govukSigninJourneyId,
+              session_id: sessionId,
+              user_id: randomSub,
+            },
+          });
         }, 40000);
       });
     });
@@ -353,12 +364,17 @@ interface CredentialRequestBody {
 
 function getRequestBody(
   clientDetails: ClientDetails,
-  sub?: UUID | undefined,
+  overrides: {
+    sub?: UUID;
+    govukSigninJourneyId?: string;
+  } = {},
 ): CredentialRequestBody {
   return <CredentialRequestBody>{
     sub:
-      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-    govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+      overrides.sub ??
+      "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+    govuk_signin_journey_id:
+      overrides.govukSigninJourneyId ?? "44444444-4444-4444-4444-444444444444",
     client_id: clientDetails.client_id,
     state: "testState",
     redirect_uri: clientDetails.redirect_uri,

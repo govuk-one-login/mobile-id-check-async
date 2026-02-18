@@ -4,6 +4,7 @@ import {
   mockBiometricSessionId,
   expectedSecurityHeaders,
   mockSessionId,
+  generateRandomString,
 } from "./utils/apiTestData";
 import {
   createSessionForSub,
@@ -72,20 +73,25 @@ describe("POST /async/finishBiometricSession", () => {
   });
 
   describe("Given there is a valid request", () => {
+    let sub: string;
+    let govukSigninJourneyId: string;
     let sessionId: string;
+    let biometricSessionId: string;
     let response: AxiosResponse;
     let eventsResponse: EventResponse[];
     beforeAll(async () => {
-      const sub = randomUUID();
-      await createSessionForSub(sub);
+      sub = randomUUID();
+      govukSigninJourneyId = generateRandomString();
+      await createSessionForSub(sub, govukSigninJourneyId);
       sessionId = await getActiveSessionIdFromSub(sub);
+      biometricSessionId = randomUUID();
       await issueBiometricToken(sessionId);
 
       response = await SESSIONS_API_INSTANCE.post(
         "/async/finishBiometricSession",
         {
           sessionId,
-          biometricSessionId: randomUUID(),
+          biometricSessionId,
         },
       );
 
@@ -96,12 +102,24 @@ describe("POST /async/finishBiometricSession", () => {
       });
     }, 40000);
 
-    it("Writes DCMAW_ASYNC_APP_END TxMA event", () => {
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_APP_END",
-        }),
-      );
+    it("Writes DCMAW_ASYNC_APP_END event to TxMA", () => {
+      expect(eventsResponse[0].event).toStrictEqual({
+        event_name: "DCMAW_ASYNC_APP_END",
+        component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
+        timestamp: expect.any(Number),
+        event_timestamp_ms: expect.any(Number),
+        user: {
+          govuk_signin_journey_id: govukSigninJourneyId,
+          session_id: sessionId,
+          user_id: sub,
+          ip_address: expect.any(String),
+          transaction_id: biometricSessionId,
+        },
+        extensions: {
+          redirect_uri: "https://mockRedirectUri.com",
+        },
+        restricted: { device_information: { encoded: expect.any(String) } },
+      });
     });
 
     it("Returns 200 OK response", () => {

@@ -42,7 +42,10 @@ export async function getFirstRegisteredClient(): Promise<ClientDetails> {
   return clientsDetails[0];
 }
 
-export async function createSessionForSub(sub: string) {
+export async function createSessionForSub(
+  sub: string,
+  govukSigninJourneyId: string = "44444444-4444-4444-4444-444444444444",
+) {
   const clientDetails = await getFirstRegisteredClient();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   const clientIdAndSecretB64 =
@@ -60,8 +63,8 @@ export async function createSessionForSub(sub: string) {
   const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
-      sub: sub ?? randomUUID(),
-      govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+      sub,
+      govuk_signin_journey_id: govukSigninJourneyId,
       client_id: clientDetails.client_id,
       state: mockClientState,
       redirect_uri: clientDetails.redirect_uri,
