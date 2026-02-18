@@ -63,7 +63,7 @@ export async function createSessionForSub(
   const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
-      sub: sub ?? randomUUID(),
+      sub,
       govuk_signin_journey_id: govukSigninJourneyId,
       client_id: clientDetails.client_id,
       state: mockClientState,
