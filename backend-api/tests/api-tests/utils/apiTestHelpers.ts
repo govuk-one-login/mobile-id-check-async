@@ -12,6 +12,12 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
+import {
+  createRemoteJWKSet,
+  jwtVerify,
+  JWTVerifyResult,
+  ResolvedKey,
+} from "jose";
 
 export interface ClientDetails {
   client_id: string;
@@ -36,7 +42,10 @@ export async function getFirstRegisteredClient(): Promise<ClientDetails> {
   return clientsDetails[0];
 }
 
-export async function createSessionForSub(sub: string) {
+export async function createSessionForSub(
+  sub: string,
+  govukSigninJourneyId: string = "44444444-4444-4444-4444-444444444444",
+) {
   const clientDetails = await getFirstRegisteredClient();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   const clientIdAndSecretB64 =
@@ -54,8 +63,8 @@ export async function createSessionForSub(sub: string) {
   const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
-      sub: sub ?? randomUUID(),
-      govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+      sub,
+      govuk_signin_journey_id: govukSigninJourneyId,
       client_id: clientDetails.client_id,
       state: mockClientState,
       redirect_uri: clientDetails.redirect_uri,
@@ -371,6 +380,32 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
   return credentialResults;
 }
 
+export function expectTxmaEventToHaveBeenWritten(
+  txmaEvents: EventResponse[],
+  eventName: string,
+) {
+  expect(
+    txmaEvents.some((item) => {
+      return "event_name" in item.event && item.event.event_name === eventName;
+    }),
+  ).toBe(true);
+}
+
+export function getVcIssuedEventObject(txmaEvents: EventResponse[]): object {
+  const eventResponse = txmaEvents.find(
+    (item) =>
+      item.event &&
+      "event_name" in item.event &&
+      item.event.event_name === "DCMAW_ASYNC_CRI_VC_ISSUED",
+  );
+
+  if (!eventResponse) {
+    throw Error("VC ISSUED event not found.");
+  }
+
+  return eventResponse.event;
+}
+
 export enum Scenario {
   DRIVING_LICENCE_SUCCESS = "DRIVING_LICENCE_SUCCESS",
   DRIVING_LICENCE_FAILURE_WITH_CIS = "DRIVING_LICENCE_FAILURE_WITH_CIS",
@@ -379,4 +414,58 @@ export enum Scenario {
   BRP_SUCCESS = "BRP_SUCCESS",
   BRC_SUCCESS = "BRC_SUCCESS",
   INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
+}
+
+export async function doAsyncJourney(
+  biometricSessionScenario: Scenario,
+  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
+): Promise<{
+  biometricSessionId: string;
+  sessionId: string;
+  subjectIdentifier: string;
+}> {
+  const subjectIdentifier = randomUUID();
+  await createSessionForSub(subjectIdentifier);
+
+  const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+  const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
+
+  const biometricSessionId = randomUUID();
+  const creationDate =
+    biometricSessionOverrides?.creationDate ?? new Date().toISOString();
+  const opaqueId =
+    biometricSessionOverrides?.opaqueId ??
+    issueBiometricTokenResponse.data.opaqueId;
+
+  await setupBiometricSessionByScenario(
+    biometricSessionId,
+    biometricSessionScenario,
+    opaqueId,
+    creationDate,
+  );
+
+  await finishBiometricSession(sessionId, biometricSessionId);
+
+  return {
+    biometricSessionId,
+    sessionId,
+    subjectIdentifier,
+  };
+}
+
+export async function getVerifiedJwt(
+  subjectIdentifier: string,
+): Promise<JWTVerifyResult & ResolvedKey> {
+  const credentialJwtFromQueue =
+    await getCredentialFromIpvOutboundQueue(subjectIdentifier);
+
+  const jwks = createRemoteJWKSet(
+    new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
+  );
+
+  const verifiedJwt = await jwtVerify(credentialJwtFromQueue, jwks, {
+    algorithms: ["ES256"],
+  });
+
+  return verifiedJwt;
 }

@@ -1,0 +1,32 @@
+name: Post-Merge Workflow Failure
+
+on:
+  workflow_run:
+    workflows:
+      - "Backend API Post Merge"
+      - "Test Resources Post Merge"
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  error-handler:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Notify on failure
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          webhook-type: webhook-trigger
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "author": "**Author:** ${{ github.actor }}",
+              "message": "A post-merge workflow has failed before getting to secure pipelines.",
+              "repo_name": "**Repo:** ${{ github.repository }}",
+              "workflow_name": "**Workflow:** ${{ github.event.workflow }}"
+            }

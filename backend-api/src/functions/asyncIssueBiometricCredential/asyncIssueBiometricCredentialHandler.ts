@@ -25,6 +25,7 @@ import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 
 import {
   OutboundQueueErrorMessage,
+  SQSMessageBody,
   VerifiableCredentialMessage,
 } from "../adapters/aws/sqs/types";
 
@@ -51,6 +52,7 @@ import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
+import { getVcIssuedEvent } from "./getVcIssuedEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -284,7 +286,8 @@ export async function lambdaHandlerConstructor(
   }
 
   const writeVCIssuedEventResult = await writeVcIssuedEvent(
-    eventService,
+    dependencies.sendMessageToSqs,
+    config.TXMA_SQS,
     sessionAttributes,
     credential,
     audit,
@@ -626,62 +629,26 @@ export const buildCredentialJwtPayload = (jwtData: {
 };
 
 const writeVcIssuedEvent = async (
-  eventService: IEventService,
+  sendMessageToSqs: (
+    sqsArn: string,
+    messageBody: SQSMessageBody,
+  ) => Promise<Result<string | undefined, void>>,
+  txmaSqsArn: string,
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
 ): Promise<Result<void, void>> => {
-  const {
-    biometricSessionId,
-    govukSigninJourneyId,
-    subjectIdentifier,
-    sessionId,
-    issuer,
-    redirectUri,
-  } = sessionAttributes;
-  const { credentialSubject } = credential;
-  const { contraIndicatorReasons, txmaContraIndicators, flags, flaggedRecord } =
-    audit;
-
-  const hasFlags = flags != null;
-
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-    sub: subjectIdentifier,
-    sessionId,
-    govukSigninJourneyId,
-    getNowInMilliseconds: Date.now,
-    transactionId: biometricSessionId,
-    componentId: issuer,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-    redirect_uri: redirectUri,
-    suspected_fraud_signal: undefined,
-    evidence: [
-      {
-        ...credential.evidence[0],
-        ...(hasContraIndicators(credential) && {
-          ciReasons: contraIndicatorReasons,
-        }),
-        txmaContraIndicators,
-      },
-    ],
-    flaggedRecord: hasFlags ? flaggedRecord : undefined,
-    credentialSubject,
-    flags: hasFlags ? flags : undefined,
-  });
-  if (writeEventResult.isError) {
+  const sendMessageToSqsResult = await sendMessageToSqs(
+    txmaSqsArn,
+    getVcIssuedEvent(credential, audit, sessionAttributes),
+  );
+  if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
     });
     return emptyFailure();
   }
   return emptySuccess();
-};
-
-const hasContraIndicators = (credential: BiometricCredential): boolean => {
-  const credentialEvidence = credential.evidence[0];
-  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
 };
 
 const writeCriEndEvent = async (

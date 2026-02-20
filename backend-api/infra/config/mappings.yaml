@@ -120,6 +120,12 @@ Mappings:
       production: 900
 
     # Feature Flags
+    DvlaDrivingLicenceExpiryGracePeriodInDays:
+      dev: 0
+      build: 0
+      staging: 0
+      integration: 0
+      production: 0
     EnableBiometricResidenceCard:
       dev: "true"
       build: "true"
