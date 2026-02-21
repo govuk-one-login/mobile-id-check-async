@@ -5,7 +5,7 @@ import {
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { IEventService, VcIssuedEvidence } from "../services/events/types";
+import { IEventService } from "../services/events/types";
 import {
   emptyFailure,
   emptySuccess,
@@ -81,22 +81,21 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockVcIssuedEvidence: VcIssuedEvidence[] = [
+export const mockVcIssuedEvidence = [
   {
-    type: "IdentityCheck",
+    type: "IdentityCheck" as const,
     txn: "mockTxn",
     strengthScore: 0,
     validityScore: 0,
     activityHistoryScore: 0,
     checkDetails: [
       {
-        checkMethod: "bvr",
-        identityCheckPolicy: "published",
+        checkMethod: "bvr" as const,
+        identityCheckPolicy: "published" as const,
         activityFrom: undefined,
         biometricVerificationProcessLevel: 0,
       },
     ],
-    txmaContraIndicators: [],
   },
 ];
 
