@@ -1,5 +1,6 @@
 import { VcIssuedTxMAEvent } from "../../../asyncIssueBiometricCredential/getVcIssuedEvent";
 import {
+  AppStartEvent,
   ClientCredentialsTokenIssuedEvent,
   StartEvent,
 } from "../../../services/events/types-to-be";
@@ -34,6 +35,7 @@ export interface VerifiableCredentialMessage {
 
 export type SQSMessageBody =
   | VcIssuedTxMAEvent
+  | AppStartEvent
   | ClientCredentialsTokenIssuedEvent
   | StartEvent
   | VendorProcessingMessage

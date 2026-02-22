@@ -5,15 +5,15 @@ import {
 import { TokenService } from "./TokenService/TokenService";
 import { IDecryptJwe, JweDecrypter } from "./jwe/jweDecrypter";
 import { ITokenService } from "./TokenService/types";
-import { IEventService } from "../services/events/types";
-import { EventService } from "../services/events/eventService";
+import { ISendMessageToSqs } from "../adapters/aws/sqs/types";
+import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   jweDecrypter: (encryptionKeyId: string) => IDecryptJwe;
   tokenService: () => ITokenService;
   sessionService: (tableName: string) => ISessionService;
-  eventService: (sqsQueue: string) => IEventService;
+  sendMessageToSqs: ISendMessageToSqs;
 }
 
 export const dependencies: IAsyncActiveSessionDependencies = {
@@ -21,5 +21,5 @@ export const dependencies: IAsyncActiveSessionDependencies = {
   jweDecrypter: (encryptionKeyId: string) => new JweDecrypter(encryptionKeyId),
   tokenService: () => new TokenService(),
   sessionService: (tableName: string) => new SessionService(tableName),
-  eventService: (sqsQueue) => new EventService(sqsQueue),
+  sendMessageToSqs,
 };
