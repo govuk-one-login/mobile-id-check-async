@@ -19,6 +19,7 @@ import {
   mockWriteGenericEventSuccessResult,
 } from "../testUtils/unitTestData";
 import { errorResult } from "../utils/result";
+import "aws-sdk-client-mock-jest";
 import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
 import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import {
@@ -31,6 +32,10 @@ import {
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
 } from "./mocks";
+import { mockClient } from "aws-sdk-client-mock";
+import { SendMessageCommand, SQS, SQSClient } from "@aws-sdk/client-sqs";
+import { EventService } from "../services/events/eventService";
+import { AppStartEvent } from "../services/events/types-to-be";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
@@ -478,28 +483,26 @@ describe("Async Active Session", () => {
     });
 
     describe("Given an active session is found", () => {
+      const sqsMock = mockClient(SQSClient);
+      const timestampInMillis = Date.now()
       beforeEach(async () => {
+        sqsMock.resolvesOnce({});
         const request = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetSuccessResult();
-        dependencies.eventService = () => mockSuccessfulEventService;
+        dependencies.eventService = (sqs: string) => new EventService(sqs);
 
+        jest.useFakeTimers()
+
+        jest.setSystemTime(timestampInMillis)
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
 
       describe("Given DCMAW_ASYNC_CRI_APP_START event fails to write to TxMA", () => {
         beforeEach(async () => {
-          dependencies.eventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
-              errorResult({
-                errorMessage: "mockError",
-              }),
-            ),
-          });
-
+          sqsMock.rejects({})
           result = await lambdaHandlerConstructor(
             dependencies,
             validRequest,
@@ -529,44 +532,50 @@ describe("Async Active Session", () => {
             }),
           });
         });
-      });
+      })
 
-      it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_APP_START",
-          sub: "mockSub",
-          sessionId: mockSessionId,
-          govukSigninJourneyId: mockGovukSigninJourneyId,
-          getNowInMilliseconds: Date.now,
-          componentId: "https://mockIssuer.com/",
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: undefined,
-          redirect_uri: "https://mockUrl.com/redirect",
-          suspected_fraud_signal: undefined,
+        it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", () => {
+          const appStart: AppStartEvent = {
+            user: {
+              user_id: "mockSub",
+              session_id: mockSessionId,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
+              ip_address: "1.1.1.1",
+            },
+            timestamp: Math.floor(timestampInMillis/1000),
+            event_timestamp_ms: timestampInMillis,
+            event_name: "DCMAW_ASYNC_CRI_APP_START",
+            component_id: "https://mockIssuer.com/",
+            extensions: {redirect_uri: "https://mockUrl.com/redirect"}
+          }
+          expect(sqsMock).toHaveReceivedNthCommandWith(1, SendMessageCommand, {
+            QueueUrl: "mockTxmaSqs",
+            MessageBody: JSON.stringify(appStart),
+          });
         });
-      });
 
-      it("Logs COMPLETED with persistent identifiers", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
-          activeSessionFound: true,
-          persistentIdentifiers: {
-            govukSigninJourneyId: mockGovukSigninJourneyId,
-          },
+        it("Logs COMPLETED with persistent identifiers", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+            activeSessionFound: true,
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
         });
-      });
 
-      it("Returns 200 and the session details", () => {
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 200,
-          body: JSON.stringify({
-            sessionId: mockSessionId,
-            redirectUri: "https://mockUrl.com/redirect",
-            state: "mockClientState",
-          }),
+        it("Returns 200 and the session details", () => {
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              sessionId: mockSessionId,
+              redirectUri: "https://mockUrl.com/redirect",
+              state: "mockClientState",
+            }),
+          });
         });
       });
     });
   });
-});
+

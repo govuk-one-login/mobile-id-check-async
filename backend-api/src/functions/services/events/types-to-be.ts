@@ -61,7 +61,7 @@ export type StartEvent = BaseEvent<"DCMAW_ASYNC_CRI_START"> & { user: User } & {
   extensions?: Extensions_RedirectUri;
 };
 
-type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
+export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
   user: Required<User>;
 } & {
   extensions?: Extensions_RedirectUri;
