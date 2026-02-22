@@ -432,11 +432,10 @@ describe("Async Token", () => {
     describe("Given the request is valid", () => {
       describe("Given there is an error writing the audit event", () => {
         it("Logs and returns a 500 server error", async () => {
-          const mockFailingEventService = new MockEventServiceFailToWrite(
-            "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-          );
-          dependencies.eventService = () => mockFailingEventService;
-
+          const eventService = (sqsQueue: string) => new EventService(sqsQueue);
+          const sqsMock = mockClient(SQSClient);
+          sqsMock.on(SendMessageCommand).rejects({});
+          dependencies.eventService = eventService;
           const result = await lambdaHandlerConstructor(
             dependencies,
             request,
