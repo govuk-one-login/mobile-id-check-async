@@ -1,10 +1,6 @@
 import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import {
-  MockEventServiceFailToWrite,
-  MockEventWriterSuccess,
-} from "../services/events/tests/mocks";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { buildRequest } from "../testUtils/mockRequest";
 import { Result, successResult } from "../utils/result";
@@ -33,16 +29,13 @@ import {
 } from "../services/session/tests/mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import { mockGovukSigninJourneyId, mockIssuer, mockSessionId } from "../testUtils/unitTestData";
-import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
-  SendMessageCommand,
-  ServiceInputTypes,
-  ServiceOutputTypes,
-  SQSClient,
-  SQSClientResolvedConfig,
-} from "@aws-sdk/client-sqs";
-import { EventService } from "../services/events/eventService";
+  mockGovukSigninJourneyId,
+  mockIssuer,
+  mockSendMessageToSqsFailure,
+  mockSendMessageToSqsSuccess,
+  mockSessionId,
+} from "../testUtils/unitTestData";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -63,7 +56,7 @@ describe("Async Credential", () => {
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
     dependencies = {
-      eventService: () => new MockEventWriterSuccess(),
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
@@ -880,10 +873,11 @@ describe("Async Credential", () => {
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
               }),
             });
-            dependencies.eventService = () =>
-              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
+
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
+
+            dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
 
             const result = await lambdaHandlerConstructor(
               dependencies,
@@ -931,18 +925,9 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
 
-            dependencies.eventService = (sqsArn) => new EventService(sqsArn);
-            let sqsMock: AwsStub<
-              ServiceInputTypes,
-              ServiceOutputTypes,
-              SQSClientResolvedConfig
-            >;
-            sqsMock = mockClient(SQSClient);
-            sqsMock.on(SendMessageCommand).resolves({});
-
-            const dateTime = Date.now()
-            jest.useFakeTimers()
-            jest.setSystemTime(dateTime)
+            const dateTime = Date.now();
+            jest.useFakeTimers();
+            jest.setSystemTime(dateTime);
 
             const result = await lambdaHandlerConstructor(
               dependencies,
@@ -950,21 +935,22 @@ describe("Async Credential", () => {
               context,
             );
 
-            expect(sqsMock).toHaveReceivedCommandWith(SendMessageCommand, {
-              QueueUrl: "mockSqsQueue",
-              MessageBody: JSON.stringify({
+            expect(
+              mockSendMessageToSqsSuccess,
+            ).toHaveBeenCalledNthWithSqsMessage(1, {
+              sqsArn: "mockSqsQueue",
+              expectedMessage: {
                 user: {
                   user_id: "mockSub",
                   session_id: mockSessionId,
                   govuk_signin_journey_id: mockGovukSigninJourneyId,
                 },
-                timestamp: Math.floor(dateTime/1000),
+                timestamp: Math.floor(dateTime / 1000),
                 event_timestamp_ms: dateTime,
                 event_name: "DCMAW_ASYNC_CRI_START",
-                  component_id: mockIssuer,
-                  extensions: { redirect_uri: "https://www.mockUrl.com" },
-                },
-              ),
+                component_id: mockIssuer,
+                extensions: { redirect_uri: "https://www.mockUrl.com" },
+              },
             });
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
