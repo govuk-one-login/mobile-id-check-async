@@ -1,10 +1,6 @@
 import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
-import {
-  MockEventServiceFailToWrite,
-  MockEventWriterSuccess,
-} from "../services/events/tests/mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import {
   buildRequest,
@@ -23,11 +19,12 @@ import {
 } from "./tokenService/tests/mocks";
 import { RequestService } from "./requestService/requestService";
 import { logger } from "../common/logging/logger";
-import { EventService } from "../services/events/eventService";
-import { mockClient } from "aws-sdk-client-mock";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import "aws-sdk-client-mock-jest";
-import { NOW_IN_MILLISECONDS } from "../testUtils/unitTestData";
+import {
+  mockSendMessageToSqsFailure,
+  mockSendMessageToSqsSuccess,
+  NOW_IN_MILLISECONDS,
+} from "../testUtils/unitTestData";
 
 describe("Async Token", () => {
   let request: APIGatewayProxyEvent;
@@ -57,11 +54,17 @@ describe("Async Token", () => {
     });
     dependencies = {
       env,
-      eventService: () => new MockEventWriterSuccess(),
       clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
       requestService: () => new RequestService(),
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
     };
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -432,10 +435,7 @@ describe("Async Token", () => {
     describe("Given the request is valid", () => {
       describe("Given there is an error writing the audit event", () => {
         it("Logs and returns a 500 server error", async () => {
-          const eventService = (sqsQueue: string) => new EventService(sqsQueue);
-          const sqsMock = mockClient(SQSClient);
-          sqsMock.on(SendMessageCommand).rejects({});
-          dependencies.eventService = eventService;
+          dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
           const result = await lambdaHandlerConstructor(
             dependencies,
             request,
@@ -458,28 +458,25 @@ describe("Async Token", () => {
 
       describe("Given the event is written successfully", () => {
         it("Logs and returns with 200 response with an access token in the response body", async () => {
-          jest.useFakeTimers();
-          jest.setSystemTime(NOW_IN_MILLISECONDS);
-
-          const eventService = (sqsQueue: string) => new EventService(sqsQueue);
-          const sqsMock = mockClient(SQSClient);
-          sqsMock.on(SendMessageCommand).resolves({});
-          dependencies.eventService = eventService;
-
           const result = await lambdaHandlerConstructor(
             dependencies,
             request,
             buildLambdaContext(),
           );
-          expect(sqsMock).toHaveReceivedCommandWith(SendMessageCommand, {
-            MessageBody: JSON.stringify({
-              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-              component_id: "mockIssuer",
-              timestamp: Math.floor(NOW_IN_MILLISECONDS / 1000),
-              event_timestamp_ms: NOW_IN_MILLISECONDS,
-            }),
-            QueueUrl: "mockSQSQueue",
-          });
+
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            1,
+            {
+              sqsArn: "mockSQSQueue",
+              expectedMessage: {
+                event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+                component_id: "mockIssuer",
+                timestamp: Math.floor(NOW_IN_MILLISECONDS / 1000),
+                event_timestamp_ms: NOW_IN_MILLISECONDS,
+              },
+            },
+          );
+
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TOKEN_COMPLETED",
           });
