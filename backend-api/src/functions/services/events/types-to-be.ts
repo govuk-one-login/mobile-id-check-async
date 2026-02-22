@@ -57,7 +57,7 @@ export type ErrorEvent = BaseEvent<
   extensions?: Extensions_FraudSignal & Extensions_RedirectUri;
 } & { restricted?: Restricted_DeviceInformation };
 
-type StartEvent = BaseEvent<"DCMAW_ASYNC_CRI_START"> & { user: User } & {
+export type StartEvent = BaseEvent<"DCMAW_ASYNC_CRI_START"> & { user: User } & {
   extensions?: Extensions_RedirectUri;
 };
 

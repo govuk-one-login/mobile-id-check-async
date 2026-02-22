@@ -1,5 +1,8 @@
 import { VcIssuedTxMAEvent } from "../../../asyncIssueBiometricCredential/getVcIssuedEvent";
-import { ClientCredentialsTokenIssuedEvent } from "../../../services/events/types-to-be";
+import {
+  ClientCredentialsTokenIssuedEvent,
+  StartEvent,
+} from "../../../services/events/types-to-be";
 import { Result } from "../../../utils/result";
 
 export interface ISendMessageToSqs {
@@ -32,6 +35,7 @@ export interface VerifiableCredentialMessage {
 export type SQSMessageBody =
   | VcIssuedTxMAEvent
   | ClientCredentialsTokenIssuedEvent
+  | StartEvent
   | VendorProcessingMessage
   | OutboundQueueErrorMessage
   | VerifiableCredentialMessage;

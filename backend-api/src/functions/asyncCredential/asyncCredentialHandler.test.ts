@@ -10,6 +10,7 @@ import { buildRequest } from "../testUtils/mockRequest";
 import { Result, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
 import { IAsyncCredentialDependencies } from "./handlerDependencies";
+import "aws-sdk-client-mock-jest";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -32,10 +33,16 @@ import {
 } from "../services/session/tests/mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
+import { mockGovukSigninJourneyId, mockIssuer, mockSessionId } from "../testUtils/unitTestData";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
-  mockGovukSigninJourneyId,
-  mockSessionId,
-} from "../testUtils/unitTestData";
+  SendMessageCommand,
+  ServiceInputTypes,
+  ServiceOutputTypes,
+  SQSClient,
+  SQSClientResolvedConfig,
+} from "@aws-sdk/client-sqs";
+import { EventService } from "../services/events/eventService";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -920,10 +927,22 @@ describe("Async Credential", () => {
                 redirect_uri: "https://www.mockUrl.com",
               }),
             });
-            const mockEventService = new MockEventWriterSuccess();
-            dependencies.eventService = () => mockEventService;
+
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
+
+            dependencies.eventService = (sqsArn) => new EventService(sqsArn);
+            let sqsMock: AwsStub<
+              ServiceInputTypes,
+              ServiceOutputTypes,
+              SQSClientResolvedConfig
+            >;
+            sqsMock = mockClient(SQSClient);
+            sqsMock.on(SendMessageCommand).resolves({});
+
+            const dateTime = Date.now()
+            jest.useFakeTimers()
+            jest.setSystemTime(dateTime)
 
             const result = await lambdaHandlerConstructor(
               dependencies,
@@ -931,20 +950,22 @@ describe("Async Credential", () => {
               context,
             );
 
-            expect(mockEventService.eventConfig).toEqual(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_START",
-                componentId: "mockIssuer",
-                getNowInMilliseconds: Date.now,
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
-                sub: "mockSub",
-                sessionId: mockSessionId,
-                ipAddress: undefined,
-                redirect_uri: "https://www.mockUrl.com",
-                suspected_fraud_signal: undefined,
-                txmaAuditEncoded: undefined,
-              }),
-            );
+            expect(sqsMock).toHaveReceivedCommandWith(SendMessageCommand, {
+              QueueUrl: "mockSqsQueue",
+              MessageBody: JSON.stringify({
+                user: {
+                  user_id: "mockSub",
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                },
+                timestamp: Math.floor(dateTime/1000),
+                event_timestamp_ms: dateTime,
+                event_name: "DCMAW_ASYNC_CRI_START",
+                  component_id: mockIssuer,
+                  extensions: { redirect_uri: "https://www.mockUrl.com" },
+                },
+              ),
+            });
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED",

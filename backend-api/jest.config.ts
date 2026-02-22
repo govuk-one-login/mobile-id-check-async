@@ -16,7 +16,6 @@ export default {
   testMatch: ["**/*.test.ts"],
   verbose: true,
   clearMocks: true,
-  clearTimeout: true,
 };
 
 process.env.POWERTOOLS_DEV = "true";
