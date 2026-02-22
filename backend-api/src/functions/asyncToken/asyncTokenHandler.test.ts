@@ -23,6 +23,11 @@ import {
 } from "./tokenService/tests/mocks";
 import { RequestService } from "./requestService/requestService";
 import { logger } from "../common/logging/logger";
+import { EventService } from "../services/events/eventService";
+import { mockClient } from "aws-sdk-client-mock";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import "aws-sdk-client-mock-jest";
+import { NOW_IN_MILLISECONDS } from "../testUtils/unitTestData";
 
 describe("Async Token", () => {
   let request: APIGatewayProxyEvent;
@@ -454,21 +459,31 @@ describe("Async Token", () => {
 
       describe("Given the event is written successfully", () => {
         it("Logs and returns with 200 response with an access token in the response body", async () => {
-          const mockEventWriter = new MockEventWriterSuccess();
-          dependencies.eventService = () => mockEventWriter;
+          jest.useFakeTimers();
+          jest.setSystemTime(NOW_IN_MILLISECONDS);
+
+          const eventService = (sqsQueue: string) => new EventService(sqsQueue);
+          const sqsMock = mockClient(SQSClient);
+          sqsMock.on(SendMessageCommand).resolves({});
+          dependencies.eventService = eventService;
+
           const result = await lambdaHandlerConstructor(
             dependencies,
             request,
             buildLambdaContext(),
           );
-
+          expect(sqsMock).toHaveReceivedCommandWith(SendMessageCommand, {
+            MessageBody: JSON.stringify({
+              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+              component_id: "mockIssuer",
+              timestamp: Math.floor(NOW_IN_MILLISECONDS / 1000),
+              event_timestamp_ms: NOW_IN_MILLISECONDS,
+            }),
+            QueueUrl: "mockSQSQueue",
+          });
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TOKEN_COMPLETED",
           });
-
-          expect(mockEventWriter.auditEvents[0]).toBe(
-            "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-          );
 
           expect(result.statusCode);
           expect(result.body).toEqual(
