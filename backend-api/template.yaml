@@ -4128,7 +4128,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
-        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See support manual: ${SupportManualUrl}'
+        - 'Alarms when 15 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
             - SupportManual
@@ -4145,6 +4145,38 @@ Resources:
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Period: 60
+      Statistic: Sum
+      Threshold: 15
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncIssueBiometricCredentialVendorLikenessDisabledLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - WarningAlarmsRunbook
+            - value
+      AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-vendor-likeness-disabled-low-threshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 60
       Statistic: Sum
       Threshold: 1

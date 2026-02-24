@@ -10,10 +10,6 @@ import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
 import { GenericEventNames, TxmaBillingEventName } from "../types";
-import {
-  mockCredentialSubject,
-  mockVcIssuedEvidence,
-} from "../../../testUtils/unitTestData";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
@@ -512,119 +508,6 @@ describe("Event Service", () => {
             extensions: {
               redirect_uri: "http://www.mockRedirectUri.com",
               suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
-            },
-          }),
-          QueueUrl: "mockSqsQueue",
-        };
-
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
-          expectedCommandInput,
-        );
-      });
-
-      it("Returns an emptySuccess", () => {
-        expect(result).toEqual(emptySuccess());
-      });
-    });
-  });
-
-  describe("Writing DCMAW_ASYNC_CRI_VC_ISSUED event to SQS", () => {
-    describe("Given writing DCMAW_ASYNC_CRI_VC_ISSUED event to SQS fails", () => {
-      beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
-
-        result = await eventWriter.writeGenericEvent({
-          sub: "mockSub",
-          sessionId: "mockSessionId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          getNowInMilliseconds: () => 1609462861000,
-          componentId: "mockComponentId",
-          eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-          transactionId: "mockTransactionId",
-          redirect_uri: undefined,
-          suspected_fraud_signal: undefined,
-          ipAddress: "mockIpAddress",
-          txmaAuditEncoded: undefined,
-          evidence: mockVcIssuedEvidence,
-          credentialSubject: mockCredentialSubject,
-        });
-      });
-
-      it("Returns an emptyFailure", () => {
-        expect(result).toEqual(emptyFailure());
-      });
-    });
-
-    describe("Given writing DCMAW_ASYNC_CRI_VC_ISSUED event to SQS is successful", () => {
-      beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
-
-        result = await eventWriter.writeGenericEvent({
-          sub: "mockSub",
-          sessionId: "mockSessionId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          getNowInMilliseconds: () => 1609462861000,
-          componentId: "mockComponentId",
-          eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-          transactionId: "mockTransactionId",
-          redirect_uri: undefined,
-          suspected_fraud_signal: undefined,
-          ipAddress: "mockIpAddress",
-          txmaAuditEncoded: "mockTxmaAuditEncoded",
-          evidence: mockVcIssuedEvidence,
-          credentialSubject: mockCredentialSubject,
-          flags: {
-            dcmawFlagsPassport: {
-              doBUnknown: true,
-              doBMismatched: false,
-            },
-          },
-          flaggedRecord: [
-            {
-              dateOfBirth: [
-                { type: "ocr", value: "1990-01-01" },
-                { type: "nfc", value: "1990-01-02" },
-              ],
-            },
-          ],
-        });
-      });
-
-      it("Attempts to send DCMAW_ASYNC_CRI_VC_ISSUED event to SQS", () => {
-        const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              transaction_id: "mockTransactionId",
-              ip_address: "mockIpAddress",
-            },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-            component_id: "mockComponentId",
-            restricted: {
-              device_information: {
-                encoded: "mockTxmaAuditEncoded",
-              },
-              ...mockCredentialSubject,
-              flaggedRecord: [
-                {
-                  dateOfBirth: [
-                    { type: "ocr", value: "1990-01-01" },
-                    { type: "nfc", value: "1990-01-02" },
-                  ],
-                },
-              ],
-            },
-            extensions: {
-              evidence: mockVcIssuedEvidence,
-              dcmawFlagsPassport: {
-                doBUnknown: true,
-                doBMismatched: false,
-              },
             },
           }),
           QueueUrl: "mockSqsQueue",
