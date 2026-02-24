@@ -63,6 +63,7 @@ export class MockSessionServiceCreateErrorResult implements ISessionService {
 
   createSession = async (): Promise<Result<string>> => {
     return errorResult({
+      error: new Error("create session error"),
       errorMessage: "Mock error when creating session",
       errorCategory: ErrorCategory.SERVER_ERROR,
     });

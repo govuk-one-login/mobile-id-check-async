@@ -29,12 +29,7 @@ export class SessionService implements ISessionService {
 
   async createSession(
     attributes: CreateSessionAttributes,
-  ): Promise<
-    Result<
-      string,
-      { error?: Error; errorMessage: string; errorCategory: ErrorCategory }
-    >
-  > {
+  ): Promise<Result<string>> {
     const sessionId = randomUUID();
 
     try {

@@ -838,6 +838,10 @@ describe("Async Credential", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_CREATE_SESSION_FAILURE",
             errorMessage: "Mock error when creating session",
+            error: {
+              name: "Error",
+              message: "create session error",
+            },
             persistentIdentifiers: {
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
