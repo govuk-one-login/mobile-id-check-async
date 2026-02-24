@@ -29,14 +29,20 @@ export class SessionService implements ISessionService {
 
   async createSession(
     attributes: CreateSessionAttributes,
-  ): Promise<Result<string>> {
+  ): Promise<
+    Result<
+      string,
+      { error?: Error; errorMessage: string; errorCategory: ErrorCategory }
+    >
+  > {
     const sessionId = randomUUID();
 
     try {
       await this.dynamoDbAdapter.createSession(attributes, sessionId);
     } catch (error) {
       return errorResult({
-        errorMessage: `Error creating session - ${error}`,
+        ...(error instanceof Error && { error }),
+        errorMessage: "Error creating session",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
