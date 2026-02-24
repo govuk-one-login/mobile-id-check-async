@@ -69,6 +69,13 @@ export async function lambdaHandlerConstructor(
   }
   const config = configResult.value;
 
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD, {
+    data: {
+      dvlaDrivingLicenceExpiryGracePeriod:
+        config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+    },
+  });
+
   const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
     return;

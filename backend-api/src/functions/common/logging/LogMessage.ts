@@ -350,7 +350,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
-
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
+      "Value of the expiry grace period for driving licence documents.",
+    );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE =
     new LogMessage(
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",

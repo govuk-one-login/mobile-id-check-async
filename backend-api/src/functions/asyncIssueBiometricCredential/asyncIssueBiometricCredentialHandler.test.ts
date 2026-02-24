@@ -191,6 +191,7 @@ describe("Async Issue Biometric Credential", () => {
         ENABLE_UTOPIA_TEST_DOCUMENT: "true",
         VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID:
           "mockVerifiableCredentialSigningKeyId",
+        DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: "0",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
@@ -245,6 +246,7 @@ describe("Async Issue Biometric Credential", () => {
       ["ENABLE_NFC_PASSPORT"],
       ["ENABLE_UTOPIA_TEST_DOCUMENT"],
       ["VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID"],
+      ["DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -268,6 +270,23 @@ describe("Async Issue Biometric Credential", () => {
         expect(lambdaError).toStrictEqual(
           new RetainMessageOnQueue("Invalid config"),
         );
+      });
+    });
+  });
+
+  describe("Expiry grace period log", () => {
+    beforeEach(async () => {
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+
+    it("Logs DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS", () => {
+      console.log(consoleInfoSpy.mock.calls);
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
+        data: {
+          dvlaDrivingLicenceExpiryGracePeriod: "0",
+        },
       });
     });
   });
