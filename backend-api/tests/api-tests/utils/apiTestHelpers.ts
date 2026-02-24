@@ -135,6 +135,7 @@ export async function setupBiometricSessionByScenario(
   scenario: Scenario,
   opaqueId: string,
   creationDate: string,
+  drivingLicence?: object,
 ) {
   const result = await READ_ID_MOCK_API_INSTANCE.post(
     `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
@@ -143,6 +144,7 @@ export async function setupBiometricSessionByScenario(
       overrides: {
         opaqueId,
         creationDate,
+        drivingLicence,
       },
     }),
   );
@@ -418,7 +420,11 @@ export enum Scenario {
 
 export async function doAsyncJourney(
   biometricSessionScenario: Scenario,
-  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
+  biometricSessionOverrides?: {
+    creationDate?: string;
+    opaqueId?: string;
+    drivingLicence?: object;
+  },
 ): Promise<{
   biometricSessionId: string;
   sessionId: string;
@@ -442,6 +448,7 @@ export async function doAsyncJourney(
     biometricSessionScenario,
     opaqueId,
     creationDate,
+    biometricSessionOverrides?.drivingLicence,
   );
 
   await finishBiometricSession(sessionId, biometricSessionId);
