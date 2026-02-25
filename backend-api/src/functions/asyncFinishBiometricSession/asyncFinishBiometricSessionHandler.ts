@@ -32,10 +32,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import {
-  appendPersistentIdentifiersToLogger,
-  PersistentIdentifiers,
-} from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -63,9 +60,6 @@ export async function lambdaHandlerConstructor(
   }
   const { biometricSessionId, sessionId } = validateResult.value;
 
-  const persistentIdentifiers: PersistentIdentifiers = {};
-
-  persistentIdentifiers.biometricSessionId = biometricSessionId;
   appendPersistentIdentifiersToLogger({ biometricSessionId });
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
@@ -92,9 +86,9 @@ export async function lambdaHandlerConstructor(
   const sessionAttributes = updateResult.value
     .attributes as BiometricSessionFinishedAttributes;
 
-  persistentIdentifiers.govukSigninJourneyId =
-    sessionAttributes.govukSigninJourneyId;
-  appendPersistentIdentifiersToLogger(persistentIdentifiers);
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+  });
 
   const sendMessageToSqs = dependencies.getSendMessageToSqs();
   const vendorProcessingMessage = {
