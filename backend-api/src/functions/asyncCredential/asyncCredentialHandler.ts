@@ -167,6 +167,7 @@ export async function lambdaHandlerConstructor(
   if (createSessionResult.isError) {
     logger.error(LogMessage.CREATE_SESSION_FAILURE, {
       errorMessage: createSessionResult.value.errorMessage,
+      error: createSessionResult.value.error,
     });
     return serverErrorResponse;
   }

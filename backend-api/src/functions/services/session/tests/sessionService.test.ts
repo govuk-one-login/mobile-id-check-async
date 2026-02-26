@@ -203,7 +203,8 @@ describe("Session Service", () => {
   describe("Creates a session", () => {
     describe("Given there is an unexpected error when creating a session", () => {
       it("Returns error response", async () => {
-        dynamoDbMockClient.on(PutItemCommand).rejectsOnce("Mock DB Error");
+        const mockError = new Error("generic error");
+        dynamoDbMockClient.on(PutItemCommand).rejectsOnce(mockError);
         const result = await sessionService.createSession({
           state: "mockValidState",
           sub: "mockSub",
@@ -216,13 +217,14 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage: "Error creating session - Error: Mock DB Error",
+          error: mockError,
+          errorMessage: "Error creating session",
           errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
 
-    describe("Given a session with the same session ID already exists", () => {
+    describe("Given there is a conditional check error creating a session", () => {
       it("Returns error response", async () => {
         const mockError = new ConditionalCheckFailedException({
           $metadata: {},
@@ -241,8 +243,8 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage:
-            "Error creating session - Error: Session already exists with this ID",
+          error: mockError,
+          errorMessage: "Error creating session",
           errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });

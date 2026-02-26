@@ -36,7 +36,8 @@ export class SessionService implements ISessionService {
       await this.dynamoDbAdapter.createSession(attributes, sessionId);
     } catch (error) {
       return errorResult({
-        errorMessage: `Error creating session - ${error}`,
+        ...(error instanceof Error && { error }),
+        errorMessage: "Error creating session",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
