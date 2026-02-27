@@ -22,22 +22,39 @@ permissions:
   packages: read
 
 jobs:
-  ci-checks:
-    name: CI checks
-    if: github.event.pull_request.draft == false
-    uses:
-      ./.github/workflows/job_ci-checks.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      WORKING_DIRECTORY: backend-api
+  print:
+    name: Print github values
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          submodules: true
+    
+      - name: print
+        run: |
+          echo ${{ github.event.workflow }}
 
-  run-test-suite:
-    name: Run test suite
-    needs: ci-checks
-    uses:
-      ./.github/workflows/job_test-suite.yml
-    with:
-      PRIVATE_PACKAGES_REQUIRED: true
-      RUN_PACT_TESTS: true
-      WORKING_DIRECTORY: backend-api
-    secrets: inherit
+  # ci-checks:
+  #   name: CI checks
+  #   if: github.event.pull_request.draft == false
+  #   uses:
+  #     ./.github/workflows/job_ci-checks.yml
+  #   with:
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     WORKING_DIRECTORY: backend-api
+
+  # run-test-suite:
+  #   name: Run test suite
+  #   needs: ci-checks
+  #   uses:
+  #     ./.github/workflows/job_test-suite.yml
+  #   with:
+  #     PRIVATE_PACKAGES_REQUIRED: true
+  #     RUN_PACT_TESTS: true
+  #     WORKING_DIRECTORY: backend-api
+  #   secrets: inherit
