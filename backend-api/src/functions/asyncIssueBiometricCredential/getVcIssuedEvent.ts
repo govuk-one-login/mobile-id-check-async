@@ -1,4 +1,5 @@
 import {
+  Advisory,
   AuditData,
   BiometricCredential,
   ContraIndicatorReason,
@@ -11,6 +12,8 @@ import {
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
@@ -44,6 +47,7 @@ export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
+  advisories: Advisory[] | [],
 ): VcIssuedTxMAEvent => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
@@ -82,6 +86,9 @@ export const getVcIssuedEvent = (
           txmaContraIndicators,
         },
       ],
+      ...(advisories &&
+        hasAdvisory(advisories) &&
+        handleDocumentExpiryEvaluation(advisories)),
     },
   };
 };
@@ -110,4 +117,36 @@ const isMobileAppMobileJourney = (session: {
   redirectUri?: string;
 }): boolean => {
   return session.redirectUri != null;
+};
+
+const handleDocumentExpiryEvaluation = (advisories: Advisory[]) => {
+  console.log("ADVISORIES: ", advisories);
+
+  const allowedAdvisories = [
+    Advisory.DRIVING_LICENCE_NOT_EXPIRED,
+    Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+  ];
+
+  console.log(
+    "GERVCISSUEDEVENT ADVISORY: ",
+    advisories.filter((advisory) => allowedAdvisories.includes(advisory)).pop(),
+  );
+
+  const advisory = advisories
+    .filter((advisory) => allowedAdvisories.includes(advisory))
+    .pop();
+
+  logger.info(
+    LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_DOCUMENT_EXPIRY_EVALUATION,
+    {
+      data: { evaluation_result_code: advisory },
+    },
+  );
+
+  return { document_expiry: { evaluation_result_code: advisory } };
+};
+
+const hasAdvisory = (advisories: Advisory[]) => {
+  return advisories.length > 0;
 };

@@ -280,7 +280,6 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     it("Logs DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS", () => {
-      console.log(consoleInfoSpy.mock.calls);
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode:
           "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
@@ -2190,6 +2189,7 @@ describe("Async Issue Biometric Credential", () => {
 
             const mockAdvisoriesWithExpiredDrivingLicense = [
               Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+              Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
             ];
 
             const mockGetCredentialWithExpiredDrivingLicense = jest
@@ -2236,6 +2236,17 @@ describe("Async Issue Biometric Credential", () => {
                 },
                 outboundSqsMessageResponseProperties: {
                   messageId: mockSqsResponseMessageId,
+                },
+              });
+            });
+
+            it("Logs document expiry evalutation", () => {
+              expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_DOCUMENT_EXPIRY_EVALUATION",
+                data: {
+                  evaluation_result_code:
+                    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
                 },
               });
             });

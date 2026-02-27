@@ -355,6 +355,11 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
       "Value of the expiry grace period for driving licence documents.",
     );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_DOCUMENT_EXPIRY_EVALUATION =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_DOCUMENT_EXPIRY_EVALUATION",
+      "Value of the advisory used for the document expiry evaluation.",
+    );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE =
     new LogMessage(
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",

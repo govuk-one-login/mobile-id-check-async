@@ -196,10 +196,9 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const fraudCheckData: FraudCheckData = {
-    userSessionCreatedAt: sessionAttributes.createdAt,
-    opaqueId: sessionAttributes.opaqueId,
-  };
+  const dvlaDrivingLicenceExpiryGracePeriodInDays = Number(
+    config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  );
   const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
     enableBiometricResidenceCard:
       config.ENABLE_BIOMETRIC_RESIDENCE_CARD === "true",
@@ -208,9 +207,14 @@ export async function lambdaHandlerConstructor(
     enableDrivingLicence: config.ENABLE_DRIVING_LICENCE === "true",
     enableNfcPassport: config.ENABLE_NFC_PASSPORT === "true",
     enableUtopiaTestDocument: config.ENABLE_UTOPIA_TEST_DOCUMENT === "true",
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
   };
 
   let getCredentialFromBiometricSessionResult;
+  const fraudCheckData: FraudCheckData = {
+    userSessionCreatedAt: sessionAttributes.createdAt,
+    opaqueId: sessionAttributes.opaqueId,
+  };
   try {
     getCredentialFromBiometricSessionResult =
       dependencies.getCredentialFromBiometricSession(
@@ -292,12 +296,15 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
+  console.log("ASYNCISSUEBIOMETRICCREDENTIAL ADVISORIES: ", advisories);
+
   const writeVCIssuedEventResult = await writeVcIssuedEvent(
     dependencies.sendMessageToSqs,
     config.TXMA_SQS,
     sessionAttributes,
     credential,
     audit,
+    advisories,
   );
   if (writeVCIssuedEventResult.isError) {
     return;
@@ -644,10 +651,11 @@ const writeVcIssuedEvent = async (
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
+  advisories: Advisory[] | [],
 ): Promise<Result<void, void>> => {
   const sendMessageToSqsResult = await sendMessageToSqs(
     txmaSqsArn,
-    getVcIssuedEvent(credential, audit, sessionAttributes),
+    getVcIssuedEvent(credential, audit, sessionAttributes, advisories),
   );
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {

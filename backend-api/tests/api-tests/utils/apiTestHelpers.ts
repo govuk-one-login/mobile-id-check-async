@@ -476,3 +476,7 @@ export async function getVerifiedJwt(
 
   return verifiedJwt;
 }
+
+export function getIsoStringDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
