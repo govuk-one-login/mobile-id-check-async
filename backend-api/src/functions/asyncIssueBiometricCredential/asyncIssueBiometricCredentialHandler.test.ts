@@ -163,7 +163,7 @@ describe("Async Issue Biometric Credential", () => {
         credential: mockBiometricCredential,
         analytics: mockAnalyticsData,
         audit: mockAuditData,
-        advisories: "mockAdvisories",
+        advisories: [Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE],
       }),
     );
 
@@ -1248,6 +1248,20 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
       let mockFailedToSendVCIssuedMessage: jest.Mock;
+      const mockAdvisoriesWithExpiredDrivingLicense = [
+        Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+        Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+      ];
+      const mockSuccessfulGetCredentialFromBiometricSession = jest
+        .fn()
+        .mockReturnValue(
+          successResult({
+            credential: mockBiometricCredential,
+            analytics: mockAnalyticsData,
+            audit: mockAuditData,
+            advisories: mockAdvisoriesWithExpiredDrivingLicense,
+          }),
+        );
 
       beforeEach(async () => {
         mockFailedToSendVCIssuedMessage = jest
@@ -1257,6 +1271,8 @@ describe("Async Issue Biometric Credential", () => {
         dependencies = {
           ...dependencies,
           sendMessageToSqs: mockFailedToSendVCIssuedMessage,
+          getCredentialFromBiometricSession:
+            mockSuccessfulGetCredentialFromBiometricSession,
         };
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
@@ -1297,6 +1313,10 @@ describe("Async Issue Biometric Credential", () => {
                   txmaContraIndicators: [],
                 },
               ],
+              document_expiry: {
+                evaluation_result_code:
+                  Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+              },
             },
             restricted: {
               name: [
@@ -1513,7 +1533,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockBiometricCredential,
               analytics: mockAnalyticsData,
               audit: mockAuditData,
-              advisories: "mockAdvisories",
+              advisories: [],
             }),
           );
 
@@ -1553,6 +1573,7 @@ describe("Async Issue Biometric Credential", () => {
               enableNfcPassport: true,
               enableBiometricResidencePermit: true,
               enableBiometricResidenceCard: true,
+              dvlaDrivingLicenceExpiryGracePeriodInDays: 0,
             },
             getCredentialFromBiometricSessionLogger,
           );
@@ -1745,7 +1766,10 @@ describe("Async Issue Biometric Credential", () => {
             },
           ],
         };
-
+        const mockAdvisoriesWithExpiredDrivingLicense = [
+          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+        ];
         const mockGetCredentialFromBiometricSessionWithFlags = jest
           .fn()
           .mockReturnValue(
@@ -1753,7 +1777,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockBiometricCredential,
               analytics: mockAnalyticsData,
               audit: mockAuditDataWithFlags,
-              advisories: "mockAdvisories",
+              advisories: mockAdvisoriesWithExpiredDrivingLicense,
             }),
           );
 
@@ -1802,6 +1826,10 @@ describe("Async Issue Biometric Credential", () => {
                       ],
                     },
                   ],
+                  document_expiry: {
+                    evaluation_result_code:
+                      Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                  },
                 },
                 restricted: {
                   name: [
@@ -1895,7 +1923,10 @@ describe("Async Issue Biometric Credential", () => {
             "TxMACI2" as TxmaContraIndicator,
           ],
         };
-
+        const mockAdvisoriesWithExpiredDrivingLicense = [
+          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+        ];
         const mockGetCredentialFromBiometricSessionWithCI = jest
           .fn()
           .mockReturnValue(
@@ -1903,7 +1934,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockCredentialWithContraIndicators,
               analytics: "mockAnalytics",
               audit: mockAuditDataWithContraIndicatorReasons,
-              advisories: "mockAdvisories",
+              advisories: mockAdvisoriesWithExpiredDrivingLicense,
             }),
           );
 
@@ -1952,6 +1983,10 @@ describe("Async Issue Biometric Credential", () => {
                       ],
                     },
                   ],
+                  document_expiry: {
+                    evaluation_result_code:
+                      Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                  },
                 },
                 restricted: {
                   name: [
@@ -2049,7 +2084,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockCredentialWithContraIndicators,
               analytics: "mockAnalytics",
               audit: mockAuditDataWithBothFlagsAndCI,
-              advisories: "mockAdvisories",
+              advisories: ["mockAdvisory"],
             }),
           );
 
@@ -2236,17 +2271,6 @@ describe("Async Issue Biometric Credential", () => {
                 },
                 outboundSqsMessageResponseProperties: {
                   messageId: mockSqsResponseMessageId,
-                },
-              });
-            });
-
-            it("Logs document expiry evalutation", () => {
-              expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-                messageCode:
-                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_DOCUMENT_EXPIRY_EVALUATION",
-                data: {
-                  evaluation_result_code:
-                    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
                 },
               });
             });

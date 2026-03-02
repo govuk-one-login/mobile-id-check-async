@@ -12,8 +12,6 @@ import {
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
@@ -40,6 +38,12 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsPassport?: Flags;
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
+    document_expiry?: {
+      evaluation_result_code?: Omit<
+        Advisory,
+        Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE
+      >;
+    };
   };
 };
 
@@ -87,8 +91,8 @@ export const getVcIssuedEvent = (
         },
       ],
       ...(advisories &&
-        hasAdvisory(advisories) &&
-        handleDocumentExpiryEvaluation(advisories)),
+        hasAuditAdvisory(advisories) &&
+        getDocumentExpiryEvaluation(advisories)),
     },
   };
 };
@@ -119,34 +123,26 @@ const isMobileAppMobileJourney = (session: {
   return session.redirectUri != null;
 };
 
-const handleDocumentExpiryEvaluation = (advisories: Advisory[]) => {
-  console.log("ADVISORIES: ", advisories);
-
-  const allowedAdvisories = [
-    Advisory.DRIVING_LICENCE_NOT_EXPIRED,
-    Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
-  ];
-
-  console.log(
-    "GERVCISSUEDEVENT ADVISORY: ",
-    advisories.filter((advisory) => allowedAdvisories.includes(advisory)).pop(),
-  );
-
-  const advisory = advisories
-    .filter((advisory) => allowedAdvisories.includes(advisory))
-    .pop();
-
-  logger.info(
-    LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_DOCUMENT_EXPIRY_EVALUATION,
-    {
-      data: { evaluation_result_code: advisory },
-    },
-  );
-
+const getDocumentExpiryEvaluation = (advisories: Advisory[]) => {
+  const advisory = getAuditAdvisory(advisories);
   return { document_expiry: { evaluation_result_code: advisory } };
 };
 
-const hasAdvisory = (advisories: Advisory[]) => {
-  return advisories.length > 0;
+const hasAuditAdvisory = (advisories: Advisory[]) => {
+  return (
+    advisories.length > 1 &&
+    allowedAdvisories.includes(getAuditAdvisory(advisories))
+  );
 };
+
+const getAuditAdvisory = (advisories: Advisory[]): Advisory => {
+  return advisories
+    .filter((advisory) => allowedAdvisories.includes(advisory))
+    .pop() as Advisory;
+};
+
+const allowedAdvisories = [
+  Advisory.DRIVING_LICENCE_NOT_EXPIRED,
+  Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+  Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+];
