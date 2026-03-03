@@ -238,9 +238,6 @@ describe("Driving licence failed credential result", () => {
           );
         });
       });
-
-      // describe("Given document has expired beyond the grace period", () => {
-      // })
     });
   });
 });

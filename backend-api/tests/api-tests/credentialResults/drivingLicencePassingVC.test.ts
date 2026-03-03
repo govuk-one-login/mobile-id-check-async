@@ -240,9 +240,6 @@ describe("Driving licence passed credential result", () => {
           );
         });
       });
-
-      // describe("Given document has expired within the grace period", () => {
-      // })
     });
   });
 });
