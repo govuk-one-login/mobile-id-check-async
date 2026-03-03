@@ -296,8 +296,6 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  console.log("ASYNCISSUEBIOMETRICCREDENTIAL ADVISORIES: ", advisories);
-
   const writeVCIssuedEventResult = await writeVcIssuedEvent(
     dependencies.sendMessageToSqs,
     config.TXMA_SQS,

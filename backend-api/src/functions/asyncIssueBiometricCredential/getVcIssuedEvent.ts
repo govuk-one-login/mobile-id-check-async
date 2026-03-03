@@ -59,7 +59,7 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  return {
+  const result: VcIssuedTxMAEvent = {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
       user_id: session.subjectIdentifier,
@@ -91,10 +91,12 @@ export const getVcIssuedEvent = (
         },
       ],
       ...(advisories &&
-        hasAuditAdvisory(advisories) &&
-        getDocumentExpiryEvaluation(advisories)),
+        advisories.length > 0 &&
+        getDocumentExpiryEvaluationResultCode(advisories)),
     },
   };
+
+  return result;
 };
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
@@ -123,26 +125,13 @@ const isMobileAppMobileJourney = (session: {
   return session.redirectUri != null;
 };
 
-const getDocumentExpiryEvaluation = (advisories: Advisory[]) => {
-  const advisory = getAuditAdvisory(advisories);
+const getDocumentExpiryEvaluationResultCode = (advisories: Advisory[]) => {
+  const advisory = advisories
+    .filter(
+      (advisory) =>
+        advisory !== Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+    )
+    .pop();
+
   return { document_expiry: { evaluation_result_code: advisory } };
 };
-
-const hasAuditAdvisory = (advisories: Advisory[]) => {
-  return (
-    advisories.length > 1 &&
-    allowedAdvisories.includes(getAuditAdvisory(advisories))
-  );
-};
-
-const getAuditAdvisory = (advisories: Advisory[]): Advisory => {
-  return advisories
-    .filter((advisory) => allowedAdvisories.includes(advisory))
-    .pop() as Advisory;
-};
-
-const allowedAdvisories = [
-  Advisory.DRIVING_LICENCE_NOT_EXPIRED,
-  Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-  Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
-];

@@ -81,7 +81,7 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockVcIssuedEvidence = [
+export const mockVcFailEvidence = [
   {
     type: "IdentityCheck" as const,
     txn: "mockTxn",
@@ -99,14 +99,40 @@ export const mockVcIssuedEvidence = [
   },
 ];
 
-export const mockBiometricCredential: BiometricCredential = {
+export const mockVcPassEvidence = [
+  {
+    type: "IdentityCheck" as const,
+    strengthScore: 3,
+    validityScore: 2,
+    activityHistoryScore: 1,
+    txn: "mockTxn",
+    checkDetails: [
+      {
+        checkMethod: "bvr" as const,
+        biometricVerificationProcessLevel: 3,
+      },
+    ],
+  },
+];
+
+export const mockBiometricCredentialWithFailEvidence: BiometricCredential = {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
     "https://identity.gov.uk/credentials/v1",
   ],
   type: ["mockCredentialType"],
   credentialSubject: mockCredentialSubject,
-  evidence: mockVcIssuedEvidence,
+  evidence: mockVcFailEvidence,
+};
+
+export const mockBiometricCredentialWithPassEvidence: BiometricCredential = {
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://identity.gov.uk/credentials/v1",
+  ],
+  type: ["mockCredentialType"],
+  credentialSubject: mockCredentialSubject,
+  evidence: mockVcPassEvidence,
 };
 
 export const mockAuditWithFlags = {
@@ -122,7 +148,7 @@ export const mockGetCredentialFromBiometricSessionWithFlags = jest
   .fn()
   .mockReturnValue(
     successResult({
-      credential: mockBiometricCredential,
+      credential: mockBiometricCredentialWithFailEvidence,
       analytics: "mockAnalytics",
       audit: mockAuditWithFlags,
       advisories: "mockAdvisories",

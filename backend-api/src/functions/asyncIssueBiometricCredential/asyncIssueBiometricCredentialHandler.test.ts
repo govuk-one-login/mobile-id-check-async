@@ -2,6 +2,7 @@ import {
   Advisory,
   AuditData,
   ContraIndicator,
+  DrivingPermit,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { expect } from "@jest/globals";
@@ -17,7 +18,8 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import {
   mockAnalyticsData,
   mockAuditData,
-  mockBiometricCredential,
+  mockBiometricCredentialWithFailEvidence,
+  mockBiometricCredentialWithPassEvidence,
   mockBiometricSessionId,
   mockClientState,
   mockCredentialSubject,
@@ -160,10 +162,10 @@ describe("Async Issue Biometric Credential", () => {
     .fn()
     .mockReturnValue(
       successResult({
-        credential: mockBiometricCredential,
+        credential: mockBiometricCredentialWithFailEvidence,
         analytics: mockAnalyticsData,
         audit: mockAuditData,
-        advisories: [Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE],
+        advisories: ["mockAdvisory"],
       }),
     );
 
@@ -1249,14 +1251,14 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
       let mockFailedToSendVCIssuedMessage: jest.Mock;
       const mockAdvisoriesWithExpiredDrivingLicense = [
-        Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-        Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+        "mockAdvisory1",
+        "mockAdvisory2",
       ];
       const mockSuccessfulGetCredentialFromBiometricSession = jest
         .fn()
         .mockReturnValue(
           successResult({
-            credential: mockBiometricCredential,
+            credential: mockBiometricCredentialWithFailEvidence,
             analytics: mockAnalyticsData,
             audit: mockAuditData,
             advisories: mockAdvisoriesWithExpiredDrivingLicense,
@@ -1314,8 +1316,7 @@ describe("Async Issue Biometric Credential", () => {
                 },
               ],
               document_expiry: {
-                evaluation_result_code:
-                  Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                evaluation_result_code: "mockAdvisory2",
               },
             },
             restricted: {
@@ -1466,6 +1467,9 @@ describe("Async Issue Biometric Credential", () => {
                       ],
                     },
                   ],
+                  document_expiry: {
+                    evaluation_result_code: "mockAdvisory",
+                  },
                 },
                 restricted: {
                   name: [
@@ -1530,7 +1534,7 @@ describe("Async Issue Biometric Credential", () => {
           .fn()
           .mockReturnValue(
             successResult({
-              credential: mockBiometricCredential,
+              credential: mockBiometricCredentialWithFailEvidence,
               analytics: mockAnalyticsData,
               audit: mockAuditData,
               advisories: [],
@@ -1588,7 +1592,7 @@ describe("Async Issue Biometric Credential", () => {
               jti: "urn:uuid:mock_random_uuid",
               nbf: 1704110400,
               sub: "mockSubjectIdentifier",
-              vc: mockBiometricCredential,
+              vc: mockBiometricCredentialWithFailEvidence,
             },
           );
         });
@@ -1767,14 +1771,14 @@ describe("Async Issue Biometric Credential", () => {
           ],
         };
         const mockAdvisoriesWithExpiredDrivingLicense = [
-          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+          "mockAdvisory1",
+          "mockAdvisory2",
         ];
         const mockGetCredentialFromBiometricSessionWithFlags = jest
           .fn()
           .mockReturnValue(
             successResult({
-              credential: mockBiometricCredential,
+              credential: mockBiometricCredentialWithFailEvidence,
               analytics: mockAnalyticsData,
               audit: mockAuditDataWithFlags,
               advisories: mockAdvisoriesWithExpiredDrivingLicense,
@@ -1827,8 +1831,7 @@ describe("Async Issue Biometric Credential", () => {
                     },
                   ],
                   document_expiry: {
-                    evaluation_result_code:
-                      Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                    evaluation_result_code: "mockAdvisory2",
                   },
                 },
                 restricted: {
@@ -1901,10 +1904,10 @@ describe("Async Issue Biometric Credential", () => {
 
       describe("Given generated biometric credential has contraindicators", () => {
         const mockCredentialWithContraIndicators = {
-          ...mockBiometricCredential,
+          ...mockBiometricCredentialWithFailEvidence,
           evidence: [
             {
-              ...mockBiometricCredential.evidence[0],
+              ...mockBiometricCredentialWithFailEvidence.evidence[0],
               ci: ["CI1"],
             },
           ],
@@ -1924,8 +1927,8 @@ describe("Async Issue Biometric Credential", () => {
           ],
         };
         const mockAdvisoriesWithExpiredDrivingLicense = [
-          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+          "mockAdvisory1",
+          "mockAdvisory2",
         ];
         const mockGetCredentialFromBiometricSessionWithCI = jest
           .fn()
@@ -1984,8 +1987,7 @@ describe("Async Issue Biometric Credential", () => {
                     },
                   ],
                   document_expiry: {
-                    evaluation_result_code:
-                      Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                    evaluation_result_code: "mockAdvisory2",
                   },
                 },
                 restricted: {
@@ -2048,10 +2050,10 @@ describe("Async Issue Biometric Credential", () => {
 
       describe("With both flags and contraIndicators", () => {
         const mockCredentialWithContraIndicators = {
-          ...mockBiometricCredential,
+          ...mockBiometricCredentialWithFailEvidence,
           evidence: [
             {
-              ...mockBiometricCredential.evidence[0],
+              ...mockBiometricCredentialWithFailEvidence.evidence[0],
               ci: ["CI1"],
             },
           ],
@@ -2134,6 +2136,9 @@ describe("Async Issue Biometric Credential", () => {
                     },
                   ],
                   dcmawFlagsPassport: { doBUnknown: true },
+                  document_expiry: {
+                    evaluation_result_code: "mockAdvisory",
+                  },
                 },
                 restricted: {
                   name: [
@@ -2211,11 +2216,14 @@ describe("Async Issue Biometric Credential", () => {
           "Given driving licence expiry date in credential is %s",
           (expiryDate: string | null, expectedExpiryDateLogData: string) => {
             const mockCredentialWithExpiredDrivingLicense = {
-              ...mockBiometricCredential,
+              ...mockBiometricCredentialWithPassEvidence,
               credentialSubject: {
                 ...mockCredentialSubject,
                 drivingPermit: [
                   {
+                    ...(
+                      mockCredentialSubject.drivingPermit as DrivingPermit[]
+                    )[0],
                     expiryDate,
                   },
                 ],
@@ -2224,7 +2232,7 @@ describe("Async Issue Biometric Credential", () => {
 
             const mockAdvisoriesWithExpiredDrivingLicense = [
               Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-              Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+              "mockAdvisory2",
             ];
 
             const mockGetCredentialWithExpiredDrivingLicense = jest
@@ -2271,6 +2279,99 @@ describe("Async Issue Biometric Credential", () => {
                 },
                 outboundSqsMessageResponseProperties: {
                   messageId: mockSqsResponseMessageId,
+                },
+              });
+            });
+
+            it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event", () => {
+              expect(
+                mockSendMessageToSqsSuccess,
+              ).toHaveBeenCalledNthWithSqsMessage(2, {
+                sqsArn: "mockTxmaSqs",
+                expectedMessage: {
+                  event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+                  user: {
+                    user_id: mockSubjectIdentifier,
+                    session_id: mockSessionId,
+                    govuk_signin_journey_id: mockGovukSigninJourneyId,
+                    transaction_id: mockBiometricSessionId,
+                  },
+                  event_timestamp_ms: 1704110400000,
+                  timestamp: 1704110400,
+                  component_id: "mockIssuer",
+                  extensions: {
+                    evidence: [
+                      {
+                        type: "IdentityCheck",
+                        strengthScore: 3,
+                        validityScore: 2,
+                        activityHistoryScore: 1,
+                        txn: "mockTxn",
+                        checkDetails: [
+                          {
+                            checkMethod: "bvr",
+                            biometricVerificationProcessLevel: 3,
+                          },
+                        ],
+                        txmaContraIndicators: [],
+                      },
+                    ],
+                    document_expiry: {
+                      evaluation_result_code: "mockAdvisory2",
+                    },
+                  },
+                  restricted: {
+                    name: [
+                      {
+                        nameParts: [
+                          {
+                            type: "GivenName",
+                            value: "mockGivenName",
+                          },
+                          {
+                            type: "FamilyName",
+                            value: "mockFamilyName",
+                          },
+                        ],
+                      },
+                    ],
+                    birthDate: [
+                      {
+                        value: "mockBirthDate",
+                      },
+                    ],
+                    deviceId: [
+                      {
+                        value: "mockDeviceId",
+                      },
+                    ],
+                    address: [
+                      {
+                        addressCountry: null,
+                        addressLocality: null,
+                        buildingName: null,
+                        buildingNumber: null,
+                        dependentAddressLocality: null,
+                        dependentStreetName: null,
+                        doubleDependentAddressLocality: null,
+                        organisationName: null,
+                        postalCode: "mockPostalCode",
+                        streetName: null,
+                        subBuildingName: null,
+                        uprn: null,
+                      },
+                    ],
+                    drivingPermit: [
+                      {
+                        expiryDate,
+                        fullAddress: "mockFullAddress",
+                        issueDate: null,
+                        issueNumber: null,
+                        issuedBy: null,
+                        personalNumber: "mockPersonalNumber",
+                      },
+                    ],
+                  },
                 },
               });
             });
