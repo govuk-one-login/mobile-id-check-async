@@ -16,12 +16,12 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "3.996.0",
+    "@aws-sdk/client-cloudformation": "3.1000.0",
     "inquirer": "13.3.0",
     "zx": "8.8.5"
   },
   "devDependencies": {
-    "@types/node": "22.19.11",
+    "@types/node": "22.19.13",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "prettier": "3.8.1",
