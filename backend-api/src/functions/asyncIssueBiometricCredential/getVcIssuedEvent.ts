@@ -126,12 +126,27 @@ const isMobileAppMobileJourney = (session: {
 };
 
 const getDocumentExpiryEvaluationResultCode = (advisories: Advisory[]) => {
-  const advisory = advisories
-    .filter(
-      (advisory) =>
-        advisory !== Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-    )
-    .pop();
+  const advisory = getAuditAdvisory(advisories);
+  if (!advisory || advisory.length < 1) {
+    return;
+  }
 
   return { document_expiry: { evaluation_result_code: advisory } };
+};
+
+const getAuditAdvisory = (advisories: Advisory[]) => {
+  const allowedAuditAdvisories = [
+    Advisory.DRIVING_LICENCE_NOT_EXPIRED,
+    Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+  ];
+  const advisory = advisories
+    .filter((advisory) => allowedAuditAdvisories.includes(advisory))
+    .pop();
+
+  if (advisory === Advisory.DRIVING_LICENCE_NOT_EXPIRED) {
+    return "DOCUMENT_NOT_EXPIRED";
+  }
+
+  return advisory;
 };
