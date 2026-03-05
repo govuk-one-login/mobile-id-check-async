@@ -1,4 +1,3 @@
-import { Result } from "../../utils/result";
 import { DocumentType } from "../../types/document";
 
 type AsyncPrefix = "DCMAW_ASYNC";
@@ -18,8 +17,6 @@ type EventNameShortHand =
   | "READID_NFC_BILLING_STARTED";
 
 export type EventNames = `${AsyncPrefix}_${EventNameShortHand}`;
-
-type GenericEventNames = GenericEvents["event_name"];
 
 interface BaseEvent<T extends EventNames> {
   timestamp: number;
@@ -67,30 +64,10 @@ export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
   extensions?: Extensions_RedirectUri;
 } & { restricted?: Restricted_DeviceInformation };
 
-type AppEndEventEvent = BaseEvent<"DCMAW_ASYNC_APP_END"> & {
-  user: Required<User>;
-} & {
-  extensions?: Extensions_RedirectUri;
-} & { restricted?: Restricted_DeviceInformation };
-
 export type EndEvent = BaseEvent<"DCMAW_ASYNC_CRI_END"> &
   User & {
     extensions?: Extensions_RedirectUri;
   };
-
-type AbortAppEvent = BaseEvent<"DCMAW_ASYNC_ABORT_APP"> & {
-  user: Required<User>;
-} & {
-  extensions?: Extensions_RedirectUri;
-} & { restricted?: Restricted_DeviceInformation };
-
-type BillingEvents = BaseEvent<
-  | "DCMAW_ASYNC_HYBRID_BILLING_STARTED"
-  | "DCMAW_ASYNC_READID_NFC_BILLING_STARTED"
-  | "DCMAW_ASYNC_IPROOV_BILLING_STARTED"
-> & { user: Required<User> } & { extensions?: Extensions_RedirectUri } & {
-  restricted: Restricted_DeviceInformation;
-};
 
 export type BiometricTokenIssuedEvent =
   BaseEvent<"DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED"> & {
@@ -102,83 +79,22 @@ export type BiometricTokenIssuedEvent =
     };
   } & { restricted: Restricted_DeviceInformation };
 
-export type GenericEvents = StartEvent;
-// | AppStartEvent
-// | AppEndEventEvent
-// | AbortAppEvent
-// | EndEvent
+// type AbortAppEvent = BaseEvent<"DCMAW_ASYNC_ABORT_APP"> & {
+//   user: Required<User>;
+// } & {
+//   extensions?: Extensions_RedirectUri;
+// } & { restricted?: Restricted_DeviceInformation };
 
-export type TxmaEvents =
-  | ErrorEvent
-  | StartEvent
-  | AppStartEvent
-  | AppEndEventEvent
-  | EndEvent
-  | AbortAppEvent
-  | BillingEvents
-  | ClientCredentialsTokenIssuedEvent
-  | BiometricTokenIssuedEvent;
+// type AppEndEventEvent = BaseEvent<"DCMAW_ASYNC_APP_END"> & {
+//   user: Required<User>;
+// } & {
+//   extensions?: Extensions_RedirectUri;
+// } & { restricted?: Restricted_DeviceInformation };
 
-export type TxmaBillingEventNames = Pick<BillingEvents, "event_name">;
-
-//types for function parameters used in EventService.ts
-
-interface BaseEventConfig {
-  getNowInMilliseconds: () => number;
-  componentId: string;
-}
-
-export interface ErrorEventConfig {
-  getNowInMilliseconds: () => number;
-  componentId: string;
-  sub: string;
-  sessionId: string;
-  govukSigninJourneyId: string;
-  ipAddress: string | undefined;
-  txmaAuditEncoded: string;
-  eventName: ErrorEvent["event_name"];
-  redirect_uri: string | undefined;
-}
-
-export interface BaseUserEventConfig extends BaseEventConfig {
-  sub: string;
-  sessionId: string;
-  govukSigninJourneyId: string;
-  ipAddress: string;
-  txmaAuditEncoded: string;
-  transactionId?: string;
-}
-
-export interface GenericEventConfig extends BaseUserEventConfig {
-  eventName: GenericEventNames;
-  redirect_uri: string | undefined;
-  suspected_fraud_signal: string | undefined;
-}
-
-export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
-  eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-}
-
-export type BiometricTokenIssuedEventConfig = Required<BaseUserEventConfig> & {
-  documentType: DocumentType;
-  redirect_uri: string | undefined;
-  opaqueId: string;
-  sub: string;
-  sessionId: string;
-  govukSigninJourneyId: string;
-  ipAddress: string;
-  txmaAuditEncoded: string;
-  transactionId: string;
-};
-
-export interface IEventService {
-  writeCredentialTokenIssuedEvent: (
-    eventConfig: CredentialTokenIssuedEventConfig,
-  ) => Promise<Result<void, void>>;
-  writeGenericEvent: (
-    eventConfig: GenericEventConfig,
-  ) => Promise<Result<void, void>>;
-  writeBiometricTokenIssuedEvent: (
-    eventConfig: BiometricTokenIssuedEventConfig,
-  ) => Promise<Result<void, void>>;
-}
+// type BillingEvents = BaseEvent<
+//   | "DCMAW_ASYNC_HYBRID_BILLING_STARTED"
+//   | "DCMAW_ASYNC_READID_NFC_BILLING_STARTED"
+//   | "DCMAW_ASYNC_IPROOV_BILLING_STARTED"
+// > & { user: Required<User> } & { extensions?: Extensions_RedirectUri } & {
+//   restricted: Restricted_DeviceInformation;
+// };
