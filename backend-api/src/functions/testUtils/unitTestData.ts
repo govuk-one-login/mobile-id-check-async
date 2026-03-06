@@ -2,6 +2,8 @@ import {
   AnalyticsData,
   BiometricCredential,
   CredentialSubject,
+  FailEvidence,
+  PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
@@ -115,25 +117,29 @@ export const mockVcPassEvidence = [
   },
 ];
 
-export const mockBiometricCredentialWithFailEvidence: BiometricCredential = {
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://identity.gov.uk/credentials/v1",
-  ],
-  type: ["mockCredentialType"],
-  credentialSubject: mockCredentialSubject,
-  evidence: mockVcFailEvidence,
-};
+export function getMockBiometricCredential(
+  evidence: PassEvidence[] | FailEvidence[],
+): BiometricCredential {
+  return {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://identity.gov.uk/credentials/v1",
+    ],
+    type: ["mockCredentialType"],
+    credentialSubject: mockCredentialSubject,
+    evidence,
+  };
+}
 
-export const mockBiometricCredentialWithPassEvidence: BiometricCredential = {
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://identity.gov.uk/credentials/v1",
-  ],
-  type: ["mockCredentialType"],
-  credentialSubject: mockCredentialSubject,
-  evidence: mockVcPassEvidence,
-};
+// export const mockBiometricCredentialWithPassEvidence: BiometricCredential = {
+//   "@context": [
+//     "https://www.w3.org/2018/credentials/v1",
+//     "https://identity.gov.uk/credentials/v1",
+//   ],
+//   type: ["mockCredentialType"],
+//   credentialSubject: mockCredentialSubject,
+//   evidence: mockVcPassEvidence,
+// };
 
 export const mockAuditWithFlags = {
   contraIndicatorReasons: [],
@@ -148,7 +154,7 @@ export const mockGetCredentialFromBiometricSessionWithFlags = jest
   .fn()
   .mockReturnValue(
     successResult({
-      credential: mockBiometricCredentialWithFailEvidence,
+      credential: getMockBiometricCredential(mockVcFailEvidence),
       analytics: "mockAnalytics",
       audit: mockAuditWithFlags,
       advisories: "mockAdvisories",

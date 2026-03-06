@@ -39,19 +39,23 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
     document_expiry?: {
-      evaluation_result_code?: Omit<
-        Advisory,
-        Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE
-      >;
+      evaluation_result_code?: AuditAdvisory;
     };
   };
 };
+
+export enum AuditAdvisory {
+  DRIVING_LICENCE_NOT_EXPIRED = "DOCUMENT_NOT_EXPIRED",
+  DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+  DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+}
 
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
-  advisories: Advisory[] | [],
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
 ): VcIssuedTxMAEvent => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
@@ -91,8 +95,10 @@ export const getVcIssuedEvent = (
         },
       ],
       ...(advisories &&
-        advisories.length > 0 &&
-        getDocumentExpiryEvaluationResultCode(advisories)),
+        getDocumentExpiryEvaluationResultCode(
+          dvlaDrivingLicenceExpiryGracePeriodInDays,
+          advisories,
+        )),
     },
   };
 
@@ -125,28 +131,43 @@ const isMobileAppMobileJourney = (session: {
   return session.redirectUri != null;
 };
 
-const getDocumentExpiryEvaluationResultCode = (advisories: Advisory[]) => {
-  const advisory = getAuditAdvisory(advisories);
-  if (!advisory || advisory.length < 1) {
-    return;
-  }
+const getDocumentExpiryEvaluationResultCode = (
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
+) => {
+  console.log("ADVISORIES 1; ", advisories);
+  console.log(
+    "dvlaDrivingLicenceExpiryGracePeriodInDays; ",
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+  );
 
-  return { document_expiry: { evaluation_result_code: advisory } };
+  // const dlAdvisory = [Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD, Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD]
+  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
+    console.log("ADVISORIES 2; ", advisories);
+
+    console.log("Audit advisories: ", Object.keys(AuditAdvisory));
+    const advisory = advisories
+      .filter((advisory) =>
+        Object.keys(AuditAdvisory).includes(
+          advisory as unknown as AuditAdvisory,
+        ),
+      )
+      .pop();
+
+    console.log("advisory: ", advisory);
+
+    if (!advisory) return;
+
+    return (
+      isAuditAdvisory(advisory) && {
+        document_expiry: { evaluation_result_code: AuditAdvisory[advisory] },
+      }
+    );
+  }
 };
 
-const getAuditAdvisory = (advisories: Advisory[]) => {
-  const allowedAuditAdvisories = [
-    Advisory.DRIVING_LICENCE_NOT_EXPIRED,
-    Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
-  ];
-  const advisory = advisories
-    .filter((advisory) => allowedAuditAdvisories.includes(advisory))
-    .pop();
-
-  if (advisory === Advisory.DRIVING_LICENCE_NOT_EXPIRED) {
-    return "DOCUMENT_NOT_EXPIRED";
-  }
-
-  return advisory;
+const isAuditAdvisory = (advisory: unknown): advisory is AuditAdvisory => {
+  return Object.keys(AuditAdvisory).includes(
+    advisory as unknown as AuditAdvisory,
+  );
 };

@@ -50,9 +50,9 @@ import { ResultSent } from "../common/session/updateOperations/ResultSent/Result
 import { GenericEventNames, IEventService } from "../services/events/types";
 import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
-import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 import { getVcIssuedEvent } from "./getVcIssuedEvent";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -302,6 +302,7 @@ export async function lambdaHandlerConstructor(
     sessionAttributes,
     credential,
     audit,
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
     advisories,
   );
   if (writeVCIssuedEventResult.isError) {
@@ -649,11 +650,18 @@ const writeVcIssuedEvent = async (
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
-  advisories: Advisory[] | [],
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
 ): Promise<Result<void, void>> => {
   const sendMessageToSqsResult = await sendMessageToSqs(
     txmaSqsArn,
-    getVcIssuedEvent(credential, audit, sessionAttributes, advisories),
+    getVcIssuedEvent(
+      credential,
+      audit,
+      sessionAttributes,
+      dvlaDrivingLicenceExpiryGracePeriodInDays,
+      advisories,
+    ),
   );
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
