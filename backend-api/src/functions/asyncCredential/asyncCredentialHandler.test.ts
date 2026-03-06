@@ -1,15 +1,12 @@
 import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import {
-  MockEventServiceFailToWrite,
-  MockEventWriterSuccess,
-} from "../services/events/tests/mocks";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { buildRequest } from "../testUtils/mockRequest";
 import { Result, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
 import { IAsyncCredentialDependencies } from "./handlerDependencies";
+import "aws-sdk-client-mock-jest";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -34,6 +31,9 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
 import {
   mockGovukSigninJourneyId,
+  mockIssuer,
+  mockSendMessageToSqsFailure,
+  mockSendMessageToSqsSuccess,
   mockSessionId,
 } from "../testUtils/unitTestData";
 
@@ -56,7 +56,7 @@ describe("Async Credential", () => {
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
     dependencies = {
-      eventService: () => new MockEventWriterSuccess(),
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
@@ -873,10 +873,11 @@ describe("Async Credential", () => {
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
               }),
             });
-            dependencies.eventService = () =>
-              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
+
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
+
+            dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
 
             const result = await lambdaHandlerConstructor(
               dependencies,
@@ -920,10 +921,13 @@ describe("Async Credential", () => {
                 redirect_uri: "https://www.mockUrl.com",
               }),
             });
-            const mockEventService = new MockEventWriterSuccess();
-            dependencies.eventService = () => mockEventService;
+
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
+
+            const dateTime = Date.now();
+            jest.useFakeTimers();
+            jest.setSystemTime(dateTime);
 
             const result = await lambdaHandlerConstructor(
               dependencies,
@@ -931,20 +935,23 @@ describe("Async Credential", () => {
               context,
             );
 
-            expect(mockEventService.eventConfig).toEqual(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_START",
-                componentId: "mockIssuer",
-                getNowInMilliseconds: Date.now,
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
-                sub: "mockSub",
-                sessionId: mockSessionId,
-                ipAddress: undefined,
-                redirect_uri: "https://www.mockUrl.com",
-                suspected_fraud_signal: undefined,
-                txmaAuditEncoded: undefined,
-              }),
-            );
+            expect(
+              mockSendMessageToSqsSuccess,
+            ).toHaveBeenCalledNthWithSqsMessage(1, {
+              sqsArn: "mockSqsQueue",
+              expectedMessage: {
+                user: {
+                  user_id: "mockSub",
+                  session_id: mockSessionId,
+                  govuk_signin_journey_id: mockGovukSigninJourneyId,
+                },
+                timestamp: Math.floor(dateTime / 1000),
+                event_timestamp_ms: dateTime,
+                event_name: "DCMAW_ASYNC_CRI_START",
+                component_id: mockIssuer,
+                extensions: { redirect_uri: "https://www.mockUrl.com" },
+              },
+            });
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED",
