@@ -1,16 +1,12 @@
 import {
   Advisory,
   AuditData,
-  BiometricCredential,
   ContraIndicator,
   DrivingPermit,
-  FailEvidence,
-  PassEvidence,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { expect } from "@jest/globals";
 import { Context, SQSEvent } from "aws-lambda";
-import { getIsoStringDate } from "../../../tests/api-tests/utils/apiTestHelpers";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
@@ -20,9 +16,9 @@ import {
 } from "../common/session/SessionRegistry/types";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import {
-  getMockBiometricCredential,
   mockAnalyticsData,
   mockAuditData,
+  mockBiometricCredential,
   mockBiometricSessionId,
   mockClientState,
   mockCredentialSubject,
@@ -40,8 +36,6 @@ import {
   mockSqsResponseMessageId,
   mockSubjectIdentifier,
   mockSuccessfulEventService,
-  mockVcFailEvidence,
-  mockVcPassEvidence,
   mockWriteGenericEventSuccessResult,
   NOW_IN_MILLISECONDS,
   ONE_HOUR_AGO_IN_MILLISECONDS,
@@ -64,7 +58,6 @@ jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
   randomUUID: () => "mock_random_uuid",
 }));
-const ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
@@ -169,7 +162,7 @@ describe("Async Issue Biometric Credential", () => {
     .fn()
     .mockReturnValue(
       successResult({
-        credential: getMockBiometricCredential(mockVcPassEvidence),
+        credential: mockBiometricCredential,
         analytics: mockAnalyticsData,
         audit: mockAuditData,
         advisories: ["mockAdvisory"],
@@ -1262,7 +1255,7 @@ describe("Async Issue Biometric Credential", () => {
         .fn()
         .mockReturnValue(
           successResult({
-            credential: getMockBiometricCredential(mockVcFailEvidence),
+            credential: mockBiometricCredential,
             analytics: mockAnalyticsData,
             audit: mockAuditData,
             advisories: mockAdvisoriesWithExpiredDrivingLicense,
@@ -1457,14 +1450,16 @@ describe("Async Issue Biometric Credential", () => {
                   evidence: [
                     {
                       type: "IdentityCheck",
-                      strengthScore: 3,
-                      validityScore: 2,
-                      activityHistoryScore: 1,
                       txn: "mockTxn",
+                      strengthScore: 0,
+                      validityScore: 0,
+                      activityHistoryScore: 0,
                       checkDetails: [
                         {
                           checkMethod: "bvr",
-                          biometricVerificationProcessLevel: 3,
+                          identityCheckPolicy: "published",
+                          activityFrom: undefined,
+                          biometricVerificationProcessLevel: 0,
                         },
                       ],
                       txmaContraIndicators: [],
@@ -1534,7 +1529,7 @@ describe("Async Issue Biometric Credential", () => {
           .fn()
           .mockReturnValue(
             successResult({
-              credential: getMockBiometricCredential(mockVcFailEvidence),
+              credential: mockBiometricCredential,
               analytics: mockAnalyticsData,
               audit: mockAuditData,
               advisories: [],
@@ -1592,7 +1587,7 @@ describe("Async Issue Biometric Credential", () => {
               jti: "urn:uuid:mock_random_uuid",
               nbf: 1704110400,
               sub: "mockSubjectIdentifier",
-              vc: getMockBiometricCredential(mockVcFailEvidence),
+              vc: mockBiometricCredential,
             },
           );
         });
@@ -1779,7 +1774,7 @@ describe("Async Issue Biometric Credential", () => {
           .fn()
           .mockReturnValue(
             successResult({
-              credential: getMockBiometricCredential(mockVcFailEvidence),
+              credential: mockBiometricCredential,
               analytics: mockAnalyticsData,
               audit: mockAuditDataWithFlags,
               advisories: mockAdvisoriesWithExpiredDrivingLicense,
@@ -1902,10 +1897,10 @@ describe("Async Issue Biometric Credential", () => {
 
       describe("Given generated biometric credential has contraindicators", () => {
         const mockCredentialWithContraIndicators = {
-          ...getMockBiometricCredential(mockVcFailEvidence),
+          ...mockBiometricCredential,
           evidence: [
             {
-              ...getMockBiometricCredential(mockVcFailEvidence).evidence[0],
+              ...mockBiometricCredential.evidence[0],
               ci: ["CI1"],
             },
           ],
@@ -2045,10 +2040,10 @@ describe("Async Issue Biometric Credential", () => {
 
       describe("With both flags and contraIndicators", () => {
         const mockCredentialWithContraIndicators = {
-          ...getMockBiometricCredential(mockVcFailEvidence),
+          ...mockBiometricCredential,
           evidence: [
             {
-              ...getMockBiometricCredential(mockVcFailEvidence).evidence[0],
+              ...mockBiometricCredential.evidence[0],
               ci: ["CI1"],
             },
           ],
@@ -2208,7 +2203,7 @@ describe("Async Issue Biometric Credential", () => {
           "Given driving licence expiry date in credential is %s",
           (expiryDate: string | null, expectedExpiryDateLogData: string) => {
             const mockCredentialWithExpiredDrivingLicense = {
-              ...getMockBiometricCredential(mockVcPassEvidence),
+              ...mockBiometricCredential,
               credentialSubject: {
                 ...mockCredentialSubject,
                 drivingPermit: [
@@ -2295,14 +2290,16 @@ describe("Async Issue Biometric Credential", () => {
                     evidence: [
                       {
                         type: "IdentityCheck",
-                        strengthScore: 3,
-                        validityScore: 2,
-                        activityHistoryScore: 1,
                         txn: "mockTxn",
+                        strengthScore: 0,
+                        validityScore: 0,
+                        activityHistoryScore: 0,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
-                            biometricVerificationProcessLevel: 3,
+                            identityCheckPolicy: "published",
+                            activityFrom: undefined,
+                            biometricVerificationProcessLevel: 0,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2376,21 +2373,13 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given document has not expired", () => {
-            let expiryDate: string;
-
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(1);
-              const mockCredential: BiometricCredential =
-                getCredentialWithCustomDrivingLicenceExpiryDate(
-                  mockVcPassEvidence,
-                  expiryDate,
-                );
               const mockAdvisories: Advisory[] = [];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockCredential,
+                    credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: mockAdvisories,
@@ -2426,14 +2415,16 @@ describe("Async Issue Biometric Credential", () => {
                     evidence: [
                       {
                         type: "IdentityCheck",
-                        strengthScore: 3,
-                        validityScore: 2,
-                        activityHistoryScore: 1,
                         txn: "mockTxn",
+                        strengthScore: 0,
+                        validityScore: 0,
+                        activityHistoryScore: 0,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
-                            biometricVerificationProcessLevel: 3,
+                            identityCheckPolicy: "published",
+                            activityFrom: undefined,
+                            biometricVerificationProcessLevel: 0,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2483,7 +2474,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     drivingPermit: [
                       {
-                        expiryDate,
+                        expiryDate: "mockExpiryDate",
                         fullAddress: "mockFullAddress",
                         issueDate: null,
                         issueNumber: null,
@@ -2498,21 +2489,13 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given document has expired", () => {
-            let expiryDate: string;
-
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-1);
-              const mockCredential: BiometricCredential =
-                getCredentialWithCustomDrivingLicenceExpiryDate(
-                  mockVcFailEvidence,
-                  expiryDate,
-                );
               const mockAdvisories = ["mockAdvisory1"];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockCredential,
+                    credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: mockAdvisories,
@@ -2607,7 +2590,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     drivingPermit: [
                       {
-                        expiryDate,
+                        expiryDate: "mockExpiryDate",
                         fullAddress: "mockFullAddress",
                         issueDate: null,
                         issueNumber: null,
@@ -2629,21 +2612,13 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given document has not expired", () => {
-            let expiryDate: string;
-
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(1);
-              const mockCredential: BiometricCredential =
-                getCredentialWithCustomDrivingLicenceExpiryDate(
-                  mockVcPassEvidence,
-                  expiryDate,
-                );
               const mockAdvisories = [Advisory.DRIVING_LICENCE_NOT_EXPIRED];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockCredential,
+                    credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: mockAdvisories,
@@ -2679,14 +2654,16 @@ describe("Async Issue Biometric Credential", () => {
                     evidence: [
                       {
                         type: "IdentityCheck",
-                        strengthScore: 3,
-                        validityScore: 2,
-                        activityHistoryScore: 1,
                         txn: "mockTxn",
+                        strengthScore: 0,
+                        validityScore: 0,
+                        activityHistoryScore: 0,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
-                            biometricVerificationProcessLevel: 3,
+                            identityCheckPolicy: "published",
+                            activityFrom: undefined,
+                            biometricVerificationProcessLevel: 0,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2740,7 +2717,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     drivingPermit: [
                       {
-                        expiryDate,
+                        expiryDate: "mockExpiryDate",
                         fullAddress: "mockFullAddress",
                         issueDate: null,
                         issueNumber: null,
@@ -2755,15 +2732,7 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given document has expired and is within the grace period", () => {
-            let expiryDate: string;
-
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-1);
-              const mockCredential: BiometricCredential =
-                getCredentialWithCustomDrivingLicenceExpiryDate(
-                  mockVcPassEvidence,
-                  expiryDate,
-                );
               const mockAdvisories = [
                 "mockAdvisory1",
                 Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
@@ -2772,7 +2741,7 @@ describe("Async Issue Biometric Credential", () => {
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockCredential,
+                    credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: mockAdvisories,
@@ -2808,14 +2777,16 @@ describe("Async Issue Biometric Credential", () => {
                     evidence: [
                       {
                         type: "IdentityCheck",
-                        strengthScore: 3,
-                        validityScore: 2,
-                        activityHistoryScore: 1,
                         txn: "mockTxn",
+                        strengthScore: 0,
+                        validityScore: 0,
+                        activityHistoryScore: 0,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
-                            biometricVerificationProcessLevel: 3,
+                            identityCheckPolicy: "published",
+                            activityFrom: undefined,
+                            biometricVerificationProcessLevel: 0,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2869,7 +2840,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     drivingPermit: [
                       {
-                        expiryDate,
+                        expiryDate: "mockExpiryDate",
                         fullAddress: "mockFullAddress",
                         issueDate: null,
                         issueNumber: null,
@@ -2884,15 +2855,7 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given document has expired and is beyond the grace period", () => {
-            let expiryDate: string;
-
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-4);
-              const mockCredential: BiometricCredential =
-                getCredentialWithCustomDrivingLicenceExpiryDate(
-                  mockVcFailEvidence,
-                  expiryDate,
-                );
               const mockAdvisories = [
                 "mockAdvisory1",
                 Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
@@ -2901,7 +2864,7 @@ describe("Async Issue Biometric Credential", () => {
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockCredential,
+                    credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: mockAdvisories,
@@ -3000,7 +2963,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     drivingPermit: [
                       {
-                        expiryDate,
+                        expiryDate: "mockExpiryDate",
                         fullAddress: "mockFullAddress",
                         issueDate: null,
                         issueNumber: null,
@@ -3018,34 +2981,3 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 });
-
-function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
-  const NOW_IN_MILLISECONDS = Date.now();
-  const numberOfDaysInMillis = ONE_DAY_IN_MILLIS * numberOfDaysFromToday;
-
-  if (numberOfDaysFromToday < 0) {
-    return getIsoStringDate(
-      new Date(NOW_IN_MILLISECONDS - numberOfDaysInMillis),
-    );
-  }
-
-  return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
-}
-
-function getCredentialWithCustomDrivingLicenceExpiryDate(
-  evidence: PassEvidence[] | FailEvidence[],
-  isoStringDate: string,
-): BiometricCredential {
-  return {
-    ...getMockBiometricCredential(evidence),
-    credentialSubject: {
-      ...mockCredentialSubject,
-      drivingPermit: [
-        {
-          ...(mockCredentialSubject.drivingPermit as DrivingPermit[])[0],
-          expiryDate: isoStringDate,
-        },
-      ],
-    },
-  };
-}

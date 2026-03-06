@@ -2,8 +2,6 @@ import {
   AnalyticsData,
   BiometricCredential,
   CredentialSubject,
-  FailEvidence,
-  PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
@@ -83,7 +81,7 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockVcFailEvidence = [
+export const mockVcEvidence = [
   {
     type: "IdentityCheck" as const,
     txn: "mockTxn",
@@ -101,45 +99,15 @@ export const mockVcFailEvidence = [
   },
 ];
 
-export const mockVcPassEvidence = [
-  {
-    type: "IdentityCheck" as const,
-    strengthScore: 3,
-    validityScore: 2,
-    activityHistoryScore: 1,
-    txn: "mockTxn",
-    checkDetails: [
-      {
-        checkMethod: "bvr" as const,
-        biometricVerificationProcessLevel: 3,
-      },
-    ],
-  },
-];
-
-export function getMockBiometricCredential(
-  evidence: PassEvidence[] | FailEvidence[],
-): BiometricCredential {
-  return {
-    "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      "https://identity.gov.uk/credentials/v1",
-    ],
-    type: ["mockCredentialType"],
-    credentialSubject: mockCredentialSubject,
-    evidence,
-  };
-}
-
-// export const mockBiometricCredentialWithPassEvidence: BiometricCredential = {
-//   "@context": [
-//     "https://www.w3.org/2018/credentials/v1",
-//     "https://identity.gov.uk/credentials/v1",
-//   ],
-//   type: ["mockCredentialType"],
-//   credentialSubject: mockCredentialSubject,
-//   evidence: mockVcPassEvidence,
-// };
+export const mockBiometricCredential: BiometricCredential = {
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://identity.gov.uk/credentials/v1",
+  ],
+  type: ["mockCredentialType"],
+  credentialSubject: mockCredentialSubject,
+  evidence: mockVcEvidence,
+};
 
 export const mockAuditWithFlags = {
   contraIndicatorReasons: [],
@@ -154,7 +122,7 @@ export const mockGetCredentialFromBiometricSessionWithFlags = jest
   .fn()
   .mockReturnValue(
     successResult({
-      credential: getMockBiometricCredential(mockVcFailEvidence),
+      credential: mockBiometricCredential,
       analytics: "mockAnalytics",
       audit: mockAuditWithFlags,
       advisories: "mockAdvisories",
