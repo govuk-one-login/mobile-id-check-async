@@ -135,6 +135,7 @@ export async function setupBiometricSessionByScenario(
   scenario: Scenario,
   opaqueId: string,
   creationDate: string,
+  drivingLicence?: object,
 ) {
   const result = await READ_ID_MOCK_API_INSTANCE.post(
     `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
@@ -143,6 +144,7 @@ export async function setupBiometricSessionByScenario(
       overrides: {
         opaqueId,
         creationDate,
+        drivingLicence,
       },
     }),
   );
@@ -418,7 +420,11 @@ export enum Scenario {
 
 export async function doAsyncJourney(
   biometricSessionScenario: Scenario,
-  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
+  biometricSessionOverrides?: {
+    creationDate?: string;
+    opaqueId?: string;
+    drivingLicence?: object;
+  },
 ): Promise<{
   biometricSessionId: string;
   sessionId: string;
@@ -442,6 +448,7 @@ export async function doAsyncJourney(
     biometricSessionScenario,
     opaqueId,
     creationDate,
+    biometricSessionOverrides?.drivingLicence,
   );
 
   await finishBiometricSession(sessionId, biometricSessionId);
@@ -468,4 +475,69 @@ export async function getVerifiedJwt(
   });
 
   return verifiedJwt;
+}
+
+export function getIsoStringDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+export class ValidUntilIsoString {
+  private readonly now: Date;
+  private readonly expiryGracePeriod: number;
+  ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+
+  constructor({
+    now,
+    expiryGracePeriod = 0,
+  }: {
+    now?: Date;
+    expiryGracePeriod?: number;
+  }) {
+    this.now = now ?? new Date(Date.now());
+    this.expiryGracePeriod = expiryGracePeriod;
+  }
+
+  getValidUntilToday() {
+    return this.getIsoStringDate(this.now);
+  }
+
+  getValidUntilYesterday() {
+    return this.getIsoStringDate(
+      new Date(this.now.getTime() - this.ONE_DAY_IN_MILLIS),
+    );
+  }
+
+  getValidUntilTomorrow() {
+    return this.getIsoStringDate(
+      new Date(this.now.getTime() + this.ONE_DAY_IN_MILLIS),
+    );
+  }
+
+  getValidUntilForFirstDayOfExpiryGracePeriodToday() {
+    let subractionValue: number =
+      this.expiryGracePeriod === 0 ? 0 : -this.ONE_DAY_IN_MILLIS;
+    return this.getIsoStringDate(
+      new Date(this.now.getTime() - subractionValue),
+    );
+  }
+
+  getValidUntilForLastDayOfExpiryGracePeriodToday() {
+    let subractionValue: number =
+      this.expiryGracePeriod === 0 ? 0 : this.expiryGracePeriod;
+    return this.getIsoStringDate(
+      new Date(this.now.getTime() - subractionValue),
+    );
+  }
+
+  getValidUntilForLastDayOfExpiryGracePeriodYesterday() {
+    let subtractionValue: number =
+      this.expiryGracePeriod === 0 ? 0 : this.expiryGracePeriod;
+    return this.getIsoStringDate(
+      new Date(this.now.getTime() - subtractionValue - this.ONE_DAY_IN_MILLIS),
+    );
+  }
+
+  private getIsoStringDate(date: Date) {
+    return date.toISOString().slice(0, 10);
+  }
 }

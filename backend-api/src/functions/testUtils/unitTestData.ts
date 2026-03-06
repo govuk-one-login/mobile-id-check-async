@@ -81,7 +81,7 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockVcIssuedEvidence = [
+export const mockVcEvidence = [
   {
     type: "IdentityCheck" as const,
     txn: "mockTxn",
@@ -106,7 +106,7 @@ export const mockBiometricCredential: BiometricCredential = {
   ],
   type: ["mockCredentialType"],
   credentialSubject: mockCredentialSubject,
-  evidence: mockVcIssuedEvidence,
+  evidence: mockVcEvidence,
 };
 
 export const mockAuditWithFlags = {

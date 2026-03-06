@@ -1,4 +1,5 @@
 import {
+  Advisory,
   AuditData,
   BiometricCredential,
   ContraIndicatorReason,
@@ -37,13 +38,24 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsPassport?: Flags;
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
+    document_expiry?: {
+      evaluation_result_code?: AuditAdvisory;
+    };
   };
 };
+
+export enum AuditAdvisory {
+  DRIVING_LICENCE_NOT_EXPIRED = "DOCUMENT_NOT_EXPIRED",
+  DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+  DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+}
 
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
 ): VcIssuedTxMAEvent => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
@@ -51,7 +63,7 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  return {
+  const result: VcIssuedTxMAEvent = {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
       user_id: session.subjectIdentifier,
@@ -82,8 +94,15 @@ export const getVcIssuedEvent = (
           txmaContraIndicators,
         },
       ],
+      ...(advisories &&
+        getDocumentExpiryEvaluationResultCode(
+          dvlaDrivingLicenceExpiryGracePeriodInDays,
+          advisories,
+        )),
     },
   };
+
+  return result;
 };
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
@@ -110,4 +129,45 @@ const isMobileAppMobileJourney = (session: {
   redirectUri?: string;
 }): boolean => {
   return session.redirectUri != null;
+};
+
+const getDocumentExpiryEvaluationResultCode = (
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
+) => {
+  console.log("ADVISORIES 1; ", advisories);
+  console.log(
+    "dvlaDrivingLicenceExpiryGracePeriodInDays; ",
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+  );
+
+  // const dlAdvisory = [Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD, Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD]
+  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
+    console.log("ADVISORIES 2; ", advisories);
+
+    console.log("Audit advisories: ", Object.keys(AuditAdvisory));
+    const advisory = advisories
+      .filter((advisory) =>
+        Object.keys(AuditAdvisory).includes(
+          advisory as unknown as AuditAdvisory,
+        ),
+      )
+      .pop();
+
+    console.log("advisory: ", advisory);
+
+    if (!advisory) return;
+
+    return (
+      isAuditAdvisory(advisory) && {
+        document_expiry: { evaluation_result_code: AuditAdvisory[advisory] },
+      }
+    );
+  }
+};
+
+const isAuditAdvisory = (advisory: unknown): advisory is AuditAdvisory => {
+  return Object.keys(AuditAdvisory).includes(
+    advisory as unknown as AuditAdvisory,
+  );
 };

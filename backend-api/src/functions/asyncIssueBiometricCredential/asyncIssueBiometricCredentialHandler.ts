@@ -50,9 +50,9 @@ import { ResultSent } from "../common/session/updateOperations/ResultSent/Result
 import { GenericEventNames, IEventService } from "../services/events/types";
 import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
-import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 import { getVcIssuedEvent } from "./getVcIssuedEvent";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -68,6 +68,13 @@ export async function lambdaHandlerConstructor(
     throw new RetainMessageOnQueue("Invalid config");
   }
   const config = configResult.value;
+
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD, {
+    data: {
+      dvlaDrivingLicenceExpiryGracePeriod:
+        config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+    },
+  });
 
   const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
@@ -189,10 +196,9 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const fraudCheckData: FraudCheckData = {
-    userSessionCreatedAt: sessionAttributes.createdAt,
-    opaqueId: sessionAttributes.opaqueId,
-  };
+  const dvlaDrivingLicenceExpiryGracePeriodInDays = Number(
+    config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  );
   const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
     enableBiometricResidenceCard:
       config.ENABLE_BIOMETRIC_RESIDENCE_CARD === "true",
@@ -201,9 +207,14 @@ export async function lambdaHandlerConstructor(
     enableDrivingLicence: config.ENABLE_DRIVING_LICENCE === "true",
     enableNfcPassport: config.ENABLE_NFC_PASSPORT === "true",
     enableUtopiaTestDocument: config.ENABLE_UTOPIA_TEST_DOCUMENT === "true",
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
   };
 
   let getCredentialFromBiometricSessionResult;
+  const fraudCheckData: FraudCheckData = {
+    userSessionCreatedAt: sessionAttributes.createdAt,
+    opaqueId: sessionAttributes.opaqueId,
+  };
   try {
     getCredentialFromBiometricSessionResult =
       dependencies.getCredentialFromBiometricSession(
@@ -291,6 +302,8 @@ export async function lambdaHandlerConstructor(
     sessionAttributes,
     credential,
     audit,
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+    advisories,
   );
   if (writeVCIssuedEventResult.isError) {
     return;
@@ -637,10 +650,18 @@ const writeVcIssuedEvent = async (
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
 ): Promise<Result<void, void>> => {
   const sendMessageToSqsResult = await sendMessageToSqs(
     txmaSqsArn,
-    getVcIssuedEvent(credential, audit, sessionAttributes),
+    getVcIssuedEvent(
+      credential,
+      audit,
+      sessionAttributes,
+      dvlaDrivingLicenceExpiryGracePeriodInDays,
+      advisories,
+    ),
   );
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
