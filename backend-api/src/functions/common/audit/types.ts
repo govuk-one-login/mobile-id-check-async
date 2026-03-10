@@ -22,13 +22,13 @@ interface User {
 
 type UserWithIpAddress = Required<User>;
 
-export interface Restricted_DeviceInformation {
+interface DeviceInformation {
   device_information: {
     encoded: string;
   };
 }
 
-interface Extensions_RedirectUri {
+interface RedirectUri {
   redirect_uri: string;
 }
 
@@ -36,11 +36,11 @@ export type ClientCredentialsTokenIssuedEvent =
   BaseEvent<"DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED">;
 
 export type StartEvent = BaseEvent<"DCMAW_ASYNC_CRI_START"> & { user: User } & {
-  extensions?: Extensions_RedirectUri;
+  extensions?: RedirectUri;
 };
 
 export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
   user: UserWithIpAddress;
 } & {
-  extensions?: Extensions_RedirectUri;
-} & { restricted?: Restricted_DeviceInformation };
+  extensions?: RedirectUri;
+} & { restricted?: DeviceInformation };

@@ -6,12 +6,10 @@ import {
 } from "../../../common/audit/types";
 import { Result } from "../../../utils/result";
 
-export interface ISendMessageToSqs {
-  (
-    sqsArn: string,
-    messageBody: SQSMessageBody,
-  ): Promise<Result<string | undefined, void>>;
-}
+export type ISendMessageToSqs = (
+  sqsArn: string,
+  messageBody: SQSMessageBody,
+) => Promise<Result<string | undefined, void>>;
 
 export interface VendorProcessingMessage {
   biometricSessionId: string;
