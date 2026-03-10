@@ -1,4 +1,4 @@
-import { ClientCredentialsTokenIssuedEvent } from "../services/events/types-to-be";
+import { ClientCredentialsTokenIssuedEvent } from "../common/audit/types";
 
 export const getClientCredentialsTokenIssuedTxmaEvent = (
   componentId: string,

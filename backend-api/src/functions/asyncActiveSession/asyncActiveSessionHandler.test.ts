@@ -30,7 +30,7 @@ import {
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
 } from "./mocks";
-import { AppStartEvent } from "../services/events/types-to-be";
+import { AppStartEvent } from "../common/audit/types";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",

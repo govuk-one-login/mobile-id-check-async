@@ -1,4 +1,4 @@
-import { AppStartEvent } from "../services/events/types-to-be";
+import { AppStartEvent } from "../common/audit/types";
 
 export const getAppStartEvent = (inputs: {
   sessionId: string;
@@ -21,7 +21,11 @@ export const getAppStartEvent = (inputs: {
     event_timestamp_ms: timestampInMillis,
     timestamp: Math.floor(timestampInMillis / 1000),
     component_id: inputs.issuer,
-    extensions: { redirect_uri: inputs.redirectUri },
-    restricted: { device_information: { encoded: inputs.txmaAuditEncoded } },
+    ...(inputs.redirectUri && {
+      extensions: { redirect_uri: inputs.redirectUri },
+    }),
+    ...(inputs.txmaAuditEncoded && {
+      restricted: { device_information: { encoded: inputs.txmaAuditEncoded } },
+    }),
   };
 };

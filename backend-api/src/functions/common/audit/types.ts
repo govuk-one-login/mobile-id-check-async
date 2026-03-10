@@ -22,12 +22,12 @@ interface User {
 
 export interface Restricted_DeviceInformation {
   device_information: {
-    encoded: string | undefined;
+    encoded: string;
   };
 }
 
 interface Extensions_RedirectUri {
-  redirect_uri?: string;
+  redirect_uri: string;
 }
 
 export type ClientCredentialsTokenIssuedEvent =
@@ -41,4 +41,4 @@ export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
   user: Required<User>;
 } & {
   extensions?: Extensions_RedirectUri;
-} & { restricted: Restricted_DeviceInformation };
+} & { restricted?: Restricted_DeviceInformation };

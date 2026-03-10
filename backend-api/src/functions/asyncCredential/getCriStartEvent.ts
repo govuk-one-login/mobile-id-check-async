@@ -1,6 +1,6 @@
-import { StartEvent } from "../services/events/types-to-be";
+import { StartEvent } from "../common/audit/types";
 
-export const getCriStartTxmaEvent = (inputs: {
+export const getCriStartEvent = (inputs: {
   sessionId: string;
   userId: string;
   issuer: string;
@@ -18,6 +18,8 @@ export const getCriStartTxmaEvent = (inputs: {
     },
     timestamp: Math.floor(timeInMillis / 1000),
     event_timestamp_ms: timeInMillis,
-    extensions: { redirect_uri: inputs.redirectUri },
+    ...(inputs.redirectUri && {
+      extensions: { redirect_uri: inputs.redirectUri },
+    }),
   };
 };

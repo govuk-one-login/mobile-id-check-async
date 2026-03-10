@@ -16,7 +16,7 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { getHeader } from "../common/request/getHeader/getHeader";
 import { getCredentialConfig } from "./credentialConfig";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
-import { getCriStartTxmaEvent } from "./getCriStartTxmaEvent";
+import { getCriStartEvent } from "./getCriStartEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -176,7 +176,7 @@ export async function lambdaHandlerConstructor(
 
   const sendMessageToSqsResult = await dependencies.sendMessageToSqs(
     config.TXMA_SQS,
-    getCriStartTxmaEvent({
+    getCriStartEvent({
       sessionId,
       userId: requestBody.sub,
       issuer: configResult.value.ISSUER,
