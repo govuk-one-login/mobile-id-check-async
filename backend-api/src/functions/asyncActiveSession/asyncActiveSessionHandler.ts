@@ -21,7 +21,7 @@ import {
 } from "../common/request/getAuditData/getAuditData";
 import { Session } from "../services/session/types";
 import { ISendMessageToSqs } from "../adapters/aws/sqs/types";
-import { AppStartEvent } from "../services/events/types-to-be";
+import { getAppStartEvent } from "./getAppStartEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
@@ -169,31 +169,21 @@ async function handleOkResponse(
   sendMessageToSqs: ISendMessageToSqs,
   { session, auditData, sub, issuer }: HandleOkResponseData,
 ) {
-  const { ipAddress, txmaAuditEncoded } = auditData;
   const { govukSigninJourneyId, redirectUri, sessionId, state } = session;
-  const eventName = "DCMAW_ASYNC_CRI_APP_START";
 
-  const timestampInMillis = Date.now();
-
-  const appStartEvent: AppStartEvent = {
-    event_name: "DCMAW_ASYNC_CRI_APP_START",
-    user: {
-      user_id: sub,
-      session_id: sessionId,
-      ip_address: ipAddress,
-      govuk_signin_journey_id: govukSigninJourneyId,
-    },
-    event_timestamp_ms: timestampInMillis,
-    timestamp: Math.floor(timestampInMillis / 1000),
-    component_id: issuer,
-    extensions: { redirect_uri: redirectUri },
-    restricted: { device_information: { encoded: txmaAuditEncoded } },
-  };
+  const appStartEvent = getAppStartEvent({
+    sessionId,
+    govukSigninJourneyId,
+    redirectUri,
+    userId: sub,
+    issuer,
+    ...auditData,
+  });
   const sendMessageToSqsResult = await sendMessageToSqs(sqsArn, appStartEvent);
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
-        auditEventName: eventName,
+        auditEventName: appStartEvent.event_name,
       },
     });
 

@@ -13,7 +13,7 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getHeader } from "../common/request/getHeader/getHeader";
 import { ErrorCategory } from "../utils/result";
-import { getTokenIssuedTxmaEvent } from "./getTokenIssuedTxMAEvent";
+import { getClientCredentialsTokenIssuedTxmaEvent } from "./getClientCredentialsTokenIssuedEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -99,7 +99,7 @@ export async function lambdaHandlerConstructor(
 
   const sendMessageToSqsResult = await dependencies.sendMessageToSqs(
     config.TXMA_SQS,
-    getTokenIssuedTxmaEvent(config.ISSUER),
+    getClientCredentialsTokenIssuedTxmaEvent(config.ISSUER),
   );
 
   if (sendMessageToSqsResult.isError) {

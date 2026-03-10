@@ -19,7 +19,6 @@ import {
 } from "./tokenService/tests/mocks";
 import { RequestService } from "./requestService/requestService";
 import { logger } from "../common/logging/logger";
-import "aws-sdk-client-mock-jest";
 import {
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,

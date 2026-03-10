@@ -1,6 +1,6 @@
 import { ClientCredentialsTokenIssuedEvent } from "../services/events/types-to-be";
 
-export const getTokenIssuedTxmaEvent = (
+export const getClientCredentialsTokenIssuedTxmaEvent = (
   componentId: string,
 ): ClientCredentialsTokenIssuedEvent => {
   const timeInMillis = Date.now();
