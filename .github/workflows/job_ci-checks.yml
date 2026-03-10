@@ -112,7 +112,7 @@ jobs:
       - name: Validate SAM template
         if: inputs.RUN_SAM_VALIDATE == 'true'
         run: |
-          TEMPLATES="$(find . -name "template*.yaml")"
+          TEMPLATES="$(find . -name "template.yaml")"
           for template in $TEMPLATES ; do
             sam validate --lint --template-file $template
           done
@@ -121,7 +121,7 @@ jobs:
         if: inputs.RUN_CHECKOV == 'true'
         uses: bridgecrewio/checkov-action@f9b0a2206b0401cad02ac0a66be2a7934a5be838 # v12
         with:
-          directory: ${{ inputs.WORKING_DIRECTORY }}
+          file: ${{ inputs.WORKING_DIRECTORY }}/**/template.yaml
           quiet: true
           soft_fail: true
           framework: cloudformation
