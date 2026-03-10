@@ -174,20 +174,22 @@ export async function lambdaHandlerConstructor(
   }
   const sessionId = createSessionResult.value;
 
+  const criStartEvent = getCriStartEvent({
+    sessionId,
+    userId: requestBody.sub,
+    issuer: configResult.value.ISSUER,
+    govukSigninJourneyId: requestBody.govuk_signin_journey_id,
+    redirectUri: requestBody.redirect_uri,
+  });
+
   const sendMessageToSqsResult = await dependencies.sendMessageToSqs(
     config.TXMA_SQS,
-    getCriStartEvent({
-      sessionId,
-      userId: requestBody.sub,
-      issuer: configResult.value.ISSUER,
-      govukSigninJourneyId: requestBody.govuk_signin_journey_id,
-      redirectUri: requestBody.redirect_uri,
-    }),
+    criStartEvent,
   );
 
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName: "DCMAW_ASYNC_CRI_START" },
+      data: { auditEventName: criStartEvent.event_name },
     });
     return serverErrorResponse;
   }
