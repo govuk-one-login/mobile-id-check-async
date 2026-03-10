@@ -1,20 +1,8 @@
-import { DocumentType } from "../../types/document";
-
 type AsyncPrefix = "DCMAW_ASYNC";
 type EventNameShortHand =
   | "CLIENT_CREDENTIALS_TOKEN_ISSUED"
   | "CRI_START"
-  | "CRI_4XXERROR"
-  | "CRI_5XXERROR"
-  | "CRI_ERROR"
-  | "CRI_END"
-  | "CRI_APP_START"
-  | "BIOMETRIC_TOKEN_ISSUED"
-  | "APP_END" // inconsistently named when designing the event. Changing this requires updating the event catalogue and likely changes to event consumers
-  | "ABORT_APP" // inconsistently named when designing the event. Changing this requires updating the event catalogue and likely changes to event consumers
-  | "HYBRID_BILLING_STARTED"
-  | "IPROOV_BILLING_STARTED"
-  | "READID_NFC_BILLING_STARTED";
+  | "CRI_APP_START";
 
 export type EventNames = `${AsyncPrefix}_${EventNameShortHand}`;
 
@@ -37,9 +25,6 @@ export interface Restricted_DeviceInformation {
     encoded: string;
   };
 }
-interface Extensions_FraudSignal {
-  suspected_fraud_signal?: string;
-}
 
 interface Extensions_RedirectUri {
   redirect_uri?: string;
@@ -47,12 +32,6 @@ interface Extensions_RedirectUri {
 
 export type ClientCredentialsTokenIssuedEvent =
   BaseEvent<"DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED">;
-
-export type ErrorEvent = BaseEvent<
-  "DCMAW_ASYNC_CRI_4XXERROR" | "DCMAW_ASYNC_CRI_5XXERROR"
-> & { user: User } & {
-  extensions?: Extensions_FraudSignal & Extensions_RedirectUri;
-} & { restricted?: Restricted_DeviceInformation };
 
 export type StartEvent = BaseEvent<"DCMAW_ASYNC_CRI_START"> & { user: User } & {
   extensions?: Extensions_RedirectUri;
@@ -63,38 +42,3 @@ export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
 } & {
   extensions?: Extensions_RedirectUri;
 } & { restricted?: Restricted_DeviceInformation };
-
-export type EndEvent = BaseEvent<"DCMAW_ASYNC_CRI_END"> &
-  User & {
-    extensions?: Extensions_RedirectUri;
-  };
-
-export type BiometricTokenIssuedEvent =
-  BaseEvent<"DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED"> & {
-    user: Required<User>;
-  } & {
-    extensions: Extensions_RedirectUri & {
-      opaque_id: string;
-      documentType: DocumentType;
-    };
-  } & { restricted: Restricted_DeviceInformation };
-
-// type AbortAppEvent = BaseEvent<"DCMAW_ASYNC_ABORT_APP"> & {
-//   user: Required<User>;
-// } & {
-//   extensions?: Extensions_RedirectUri;
-// } & { restricted?: Restricted_DeviceInformation };
-
-// type AppEndEventEvent = BaseEvent<"DCMAW_ASYNC_APP_END"> & {
-//   user: Required<User>;
-// } & {
-//   extensions?: Extensions_RedirectUri;
-// } & { restricted?: Restricted_DeviceInformation };
-
-// type BillingEvents = BaseEvent<
-//   | "DCMAW_ASYNC_HYBRID_BILLING_STARTED"
-//   | "DCMAW_ASYNC_READID_NFC_BILLING_STARTED"
-//   | "DCMAW_ASYNC_IPROOV_BILLING_STARTED"
-// > & { user: Required<User> } & { extensions?: Extensions_RedirectUri } & {
-//   restricted: Restricted_DeviceInformation;
-// };
