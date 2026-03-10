@@ -5,6 +5,10 @@ Resources:
     DependsOn:
       - AsyncBiometricTokenLogGroup
     Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_116"
+            comment: "Lambda is triggered by TxMASqsqueue, which has TxMASqsDlq attached as the DLQ."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

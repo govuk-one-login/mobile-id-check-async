@@ -5,6 +5,10 @@ Resources:
     DependsOn:
       - ProxyLambdaLogGroup
     Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_116"
+            comment: "Cannot have a DLQ for a function invoked by an API."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

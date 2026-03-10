@@ -6,6 +6,13 @@ Globals:
   Function:
     AutoPublishAlias: live
     AutoPublishAliasAllProperties: true
+    ReservedConcurrentExecutions: !If
+      - isDev
+      - !Ref AWS::NoValue
+      - !FindInMap
+        - DefaultReservedConcurrentExecutions
+        - !Ref Environment
+        - ReservedConcurrentExecutions
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -61,6 +68,12 @@ Parameters:
     Default: unused
 
 Mappings:
+  DefaultReservedConcurrentExecutions:
+    dev:
+      ReservedConcurrentExecutions: 10
+    build:
+      ReservedConcurrentExecutions: 60
+
   StsMockApiGateway:
     dev:
       ApiBurstLimit: 10

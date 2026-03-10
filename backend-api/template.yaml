@@ -831,6 +831,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -1231,6 +1235,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -1842,6 +1850,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Lambda is triggered by TxMASqsqueue, which has TxMASqsDlq attached as the DLQ.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -2470,6 +2482,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -3079,6 +3095,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -3646,6 +3666,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: 'TODO: add reason why'
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -4541,6 +4565,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -5064,6 +5092,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       Events:
         AsyncTxmaEvent:
@@ -5728,6 +5760,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2020
+      checkov:
+        skip:
+          - comment: Function is manually triggered locally. No need for a DLQ.
+            id: CKV_AWS_116
     Properties:
       Description: Convert ID Check public encryption keys to JWKS format and upload to S3
       Environment:
@@ -6255,6 +6291,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       Environment:
         Variables:

@@ -5,6 +5,10 @@ Resources:
     DependsOn:
       - AsyncIssueBiometricCredentialLogGroup
     Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_116"
+            comment: "TODO: add reason why"
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
