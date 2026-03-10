@@ -25,8 +25,8 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           payload: |
             {
-              "author": "**Author:** ${{ github.actor }}",
+              "author": "${{ github.actor }}",
               "message": "A post-merge workflow has failed before getting to secure pipelines.",
-              "repo_name": "**Repo:** ${{ github.repository }}",
-              "workflow_name": "**Workflow:** ${{ github.event.workflow }}"
+              "repo_name": "${{ github.repository }}",
+              "workflow_name": "${{ github.event.workflow }}"
             }
