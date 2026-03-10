@@ -1,11 +1,13 @@
+import { IAsyncCredentialDependencies } from "../../../asyncCredential/handlerDependencies";
 import {
   MockTokenServiceGetDecodedTokenErrorResult,
   MockTokenServiceSuccessIPV,
 } from "../../../asyncCredential/tokenService/tests/mocks";
 import { MockClientRegistryServiceGetPartialClientSuccessResultIPV } from "../../../services/clientRegistryService/tests/mocks";
 import { MockSessionServiceCreateSuccessResult } from "../../../services/session/tests/mocks";
+import { mockSendMessageToSqsSuccess } from "../../../testUtils/unitTestData";
 
-const defaultPassingDependencies = {
+const defaultPassingDependencies: IAsyncCredentialDependencies = {
   env: {
     SIGNING_KEY_ID: "mockKid",
     ISSUER: "mockIssuer",
@@ -19,6 +21,7 @@ const defaultPassingDependencies = {
     new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
   tokenService: () => new MockTokenServiceSuccessIPV(),
   sessionService: () => new MockSessionServiceCreateSuccessResult(),
+  sendMessageToSqs: mockSendMessageToSqsSuccess,
 };
 
 export class AsyncCredentialDependencies {
