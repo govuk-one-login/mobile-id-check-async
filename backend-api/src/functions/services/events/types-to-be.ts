@@ -22,7 +22,7 @@ interface User {
 
 export interface Restricted_DeviceInformation {
   device_information: {
-    encoded: string;
+    encoded: string | undefined;
   };
 }
 
@@ -41,4 +41,4 @@ export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
   user: Required<User>;
 } & {
   extensions?: Extensions_RedirectUri;
-} & { restricted?: Restricted_DeviceInformation };
+} & { restricted: Restricted_DeviceInformation };

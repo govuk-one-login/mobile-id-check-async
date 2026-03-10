@@ -71,7 +71,14 @@ describe("Async Active Session", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        { ...validRequest, ...{ headers: { "User-Agent": androidUserAgent } } },
+        {
+          ...validRequest,
+          ...{
+            headers: {
+              "User-Agent": androidUserAgent,
+            },
+          },
+        },
         context,
       );
     });
@@ -479,7 +486,10 @@ describe("Async Active Session", () => {
       const timestampInMillis = Date.now();
       beforeEach(async () => {
         const request = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          headers: {
+            Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+            "Txma-Audit-Encoded": "mockTxmaAuditEncoded",
+          },
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetSuccessResult();
@@ -536,8 +546,9 @@ describe("Async Active Session", () => {
           event_name: "DCMAW_ASYNC_CRI_APP_START",
           component_id: "https://mockIssuer.com/",
           extensions: { redirect_uri: "https://mockUrl.com/redirect" },
-          // TODO
-          restricted: { device_information: { encoded: undefined! } },
+          restricted: {
+            device_information: { encoded: "mockTxmaAuditEncoded" },
+          },
         };
         expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
           1,

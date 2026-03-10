@@ -187,7 +187,7 @@ async function handleOkResponse(
     timestamp: Math.floor(timestampInMillis / 1000),
     component_id: issuer,
     extensions: { redirect_uri: redirectUri },
-    restricted: { device_information: { encoded: txmaAuditEncoded! } }, //TODO
+    restricted: { device_information: { encoded: txmaAuditEncoded } },
   };
   const sendMessageToSqsResult = await sendMessageToSqs(sqsArn, appStartEvent);
   if (sendMessageToSqsResult.isError) {
