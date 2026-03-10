@@ -9,7 +9,7 @@ Resources:
       checkov:
         skip:
           - id: "CKV_AWS_116"
-            comment: "Lambda is triggered by mob-async-backend-txma queues, which has DLQ attached."
+            comment: "Lambda is triggered by txma queues, which has DLQ attached."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

@@ -8,7 +8,7 @@ Resources:
       checkov:
         skip:
           - id: "CKV_AWS_116"
-            comment: "Lambda is triggered by TxMASqsqueue, which has TxMASqsDlq attached as the DLQ."
+            comment: "Cannot have a DLQ for a function invoked by an API."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

@@ -9,7 +9,7 @@ Resources:
       checkov:
         skip:
           - id: "CKV_AWS_116"
-            comment: "Lambda is triggered by mob-async-backend-ipv-core-outbound queue, which has DLQ attached."
+            comment: "Lambda is triggered by ipv-core-outbound queue, which has DLQ attached."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
@@ -21,13 +21,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Runtime: nodejs20.x
       Handler: dequeueCredentialResultHandler.lambdaHandler
-      ReservedConcurrentExecutions: !If
-        - isDev
-        - !Ref AWS::NoValue
-        - !FindInMap
-          - StsMockTokenLambda
-          - !Ref Environment
-          - ReservedConcurrentExecutions
       Role: !GetAtt DequeueCredentialResultRole.Arn
       Environment:
         Variables:

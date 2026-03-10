@@ -9,7 +9,7 @@ Resources:
       checkov:
         skip:
           - id: "CKV_AWS_116"
-            comment: "TODO: add reason why"
+            comment: "Not needed for test resources."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

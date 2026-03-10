@@ -133,13 +133,10 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
-    ReservedConcurrentExecutions: !If
-      - isDev
-      - !Ref AWS::NoValue
-      - !FindInMap
-        - DefaultReservedConcurrentExecutions
-        - !Ref Environment
-        - ReservedConcurrentExecutions
+    ReservedConcurrentExecutions: !FindInMap
+      - DefaultReservedConcurrentExecutions
+      - !Ref Environment
+      - ReservedConcurrentExecutions
     Runtime: nodejs22.x
 
 Resources:
@@ -189,7 +186,7 @@ Resources:
         Target: es2022
       checkov:
         skip:
-          - comment: Lambda is triggered by mob-async-backend-ipv-core-outbound queue, which has DLQ attached.
+          - comment: Lambda is triggered by ipv-core-outbound queue, which has DLQ attached.
             id: CKV_AWS_116
     Properties:
       Environment:
@@ -198,13 +195,6 @@ Resources:
           CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Handler: dequeueCredentialResultHandler.lambdaHandler
-      ReservedConcurrentExecutions: !If
-        - isDev
-        - !Ref AWS::NoValue
-        - !FindInMap
-          - StsMockTokenLambda
-          - !Ref Environment
-          - ReservedConcurrentExecutions
       Role: !GetAtt DequeueCredentialResultRole.Arn
       Runtime: nodejs20.x
       Timeout: 10
@@ -312,7 +302,7 @@ Resources:
         Target: es2022
       checkov:
         skip:
-          - comment: Lambda is triggered by mob-async-backend-txma queues, which has DLQ attached.
+          - comment: Lambda is triggered by txma queues, which has DLQ attached.
             id: CKV_AWS_116
     Properties:
       Environment:
@@ -554,7 +544,7 @@ Resources:
         Target: es2022
       checkov:
         skip:
-          - comment: 'TODO: add reason why'
+          - comment: Not needed for test resources.
             id: CKV_AWS_116
     Properties:
       Description: Lambda for putting items into the Sessions table

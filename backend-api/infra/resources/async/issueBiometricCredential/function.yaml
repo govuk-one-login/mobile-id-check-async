@@ -8,7 +8,7 @@ Resources:
       checkov:
         skip:
           - id: "CKV_AWS_116"
-            comment: "TODO: add reason why"
+            comment: "Lambda is triggered by vendor-processing queue, which has DLQ attached."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

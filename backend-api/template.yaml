@@ -1852,7 +1852,7 @@ Resources:
         Target: es2022
       checkov:
         skip:
-          - comment: Lambda is triggered by TxMASqsqueue, which has TxMASqsDlq attached as the DLQ.
+          - comment: Cannot have a DLQ for a function invoked by an API.
             id: CKV_AWS_116
     Properties:
       DeploymentPreference:
@@ -3668,7 +3668,7 @@ Resources:
         Target: es2022
       checkov:
         skip:
-          - comment: 'TODO: add reason why'
+          - comment: Lambda is triggered by vendor-processing queue, which has DLQ attached.
             id: CKV_AWS_116
     Properties:
       DeploymentPreference:
