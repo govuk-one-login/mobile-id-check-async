@@ -20,6 +20,8 @@ interface User {
   ip_address?: string;
 }
 
+type UserWithIpAddress = Required<User>;
+
 export interface Restricted_DeviceInformation {
   device_information: {
     encoded: string;
@@ -38,7 +40,7 @@ export type StartEvent = BaseEvent<"DCMAW_ASYNC_CRI_START"> & { user: User } & {
 };
 
 export type AppStartEvent = BaseEvent<"DCMAW_ASYNC_CRI_APP_START"> & {
-  user: Required<User>;
+  user: UserWithIpAddress;
 } & {
   extensions?: Extensions_RedirectUri;
 } & { restricted?: Restricted_DeviceInformation };
