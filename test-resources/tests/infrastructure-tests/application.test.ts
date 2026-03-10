@@ -154,20 +154,12 @@ describe("STS mock infrastructure", () => {
         template.toJSON().Globals.Function.ReservedConcurrentExecutions;
 
       expect(reservedConcurrentExecutions).toStrictEqual({
-        "Fn::If": [
-          "isDev",
+        "Fn::FindInMap": [
+          "DefaultReservedConcurrentExecutions",
           {
-            Ref: "AWS::NoValue",
+            Ref: "Environment",
           },
-          {
-            "Fn::FindInMap": [
-              "DefaultReservedConcurrentExecutions",
-              {
-                Ref: "Environment",
-              },
-              "ReservedConcurrentExecutions",
-            ],
-          },
+          "ReservedConcurrentExecutions",
         ],
       });
     });
