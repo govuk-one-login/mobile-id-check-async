@@ -6,7 +6,6 @@ import {
   getVerifiedJwt,
   pollForEvents,
   Scenario,
-  ValidUntilIsoString,
 } from "../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";

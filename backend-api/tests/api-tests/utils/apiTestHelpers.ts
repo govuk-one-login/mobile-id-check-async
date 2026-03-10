@@ -11,13 +11,20 @@ import {
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
-import { mockClientState } from "./apiTestData";
+import { mockClientState, ONE_DAY_IN_MILLIS } from "./apiTestData";
 import {
   createRemoteJWKSet,
   jwtVerify,
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
+import {
+  PassEvidence,
+  FailEvidence,
+  BiometricCredential,
+  DrivingPermit,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { mockCredentialSubject } from "../../../src/functions/testUtils/unitTestData";
 
 export interface ClientDetails {
   client_id: string;
@@ -481,63 +488,99 @@ export function getIsoStringDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-export class ValidUntilIsoString {
-  private readonly now: Date;
-  private readonly expiryGracePeriod: number;
-  ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+// export class ValidUntilIsoString {
+//   private readonly now: Date;
+//   private readonly expiryGracePeriod: number;
+//   ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
-  constructor({
-    now,
-    expiryGracePeriod = 0,
-  }: {
-    now?: Date;
-    expiryGracePeriod?: number;
-  }) {
-    this.now = now ?? new Date(Date.now());
-    this.expiryGracePeriod = expiryGracePeriod;
-  }
+//   constructor({
+//     now,
+//     expiryGracePeriod = 0,
+//   }: {
+//     now?: Date;
+//     expiryGracePeriod?: number;
+//   }) {
+//     this.now = now ?? new Date(Date.now());
+//     this.expiryGracePeriod = expiryGracePeriod;
+//   }
 
-  getValidUntilToday() {
-    return this.getIsoStringDate(this.now);
-  }
+//   getValidUntilToday() {
+//     return this.getIsoStringDate(this.now);
+//   }
 
-  getValidUntilYesterday() {
-    return this.getIsoStringDate(
-      new Date(this.now.getTime() - this.ONE_DAY_IN_MILLIS),
+//   getValidUntilYesterday() {
+//     return this.getIsoStringDate(
+//       new Date(this.now.getTime() - this.ONE_DAY_IN_MILLIS),
+//     );
+//   }
+
+//   getValidUntilTomorrow() {
+//     return this.getIsoStringDate(
+//       new Date(this.now.getTime() + this.ONE_DAY_IN_MILLIS),
+//     );
+//   }
+
+//   getValidUntilForFirstDayOfExpiryGracePeriodToday() {
+//     let subractionValue: number =
+//       this.expiryGracePeriod === 0 ? 0 : -this.ONE_DAY_IN_MILLIS;
+//     return this.getIsoStringDate(
+//       new Date(this.now.getTime() - subractionValue),
+//     );
+//   }
+
+//   getValidUntilForLastDayOfExpiryGracePeriodToday() {
+//     let subractionValue: number =
+//       this.expiryGracePeriod === 0 ? 0 : this.expiryGracePeriod;
+//     return this.getIsoStringDate(
+//       new Date(this.now.getTime() - subractionValue),
+//     );
+//   }
+
+//   getValidUntilForLastDayOfExpiryGracePeriodYesterday() {
+//     let subtractionValue: number =
+//       this.expiryGracePeriod === 0 ? 0 : this.expiryGracePeriod;
+//     return this.getIsoStringDate(
+//       new Date(this.now.getTime() - subtractionValue - this.ONE_DAY_IN_MILLIS),
+//     );
+//   }
+
+//   private getIsoStringDate(date: Date) {
+//     return date.toISOString().slice(0, 10);
+//   }
+// }
+
+export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
+  const NOW_IN_MILLISECONDS = Date.now();
+  const numberOfDaysInMillis = ONE_DAY_IN_MILLIS * numberOfDaysFromToday;
+
+  if (numberOfDaysFromToday < 0) {
+    return getIsoStringDate(
+      new Date(NOW_IN_MILLISECONDS - numberOfDaysInMillis),
     );
   }
 
-  getValidUntilTomorrow() {
-    return this.getIsoStringDate(
-      new Date(this.now.getTime() + this.ONE_DAY_IN_MILLIS),
-    );
-  }
+  return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
+}
 
-  getValidUntilForFirstDayOfExpiryGracePeriodToday() {
-    let subractionValue: number =
-      this.expiryGracePeriod === 0 ? 0 : -this.ONE_DAY_IN_MILLIS;
-    return this.getIsoStringDate(
-      new Date(this.now.getTime() - subractionValue),
-    );
-  }
-
-  getValidUntilForLastDayOfExpiryGracePeriodToday() {
-    let subractionValue: number =
-      this.expiryGracePeriod === 0 ? 0 : this.expiryGracePeriod;
-    return this.getIsoStringDate(
-      new Date(this.now.getTime() - subractionValue),
-    );
-  }
-
-  getValidUntilForLastDayOfExpiryGracePeriodYesterday() {
-    let subtractionValue: number =
-      this.expiryGracePeriod === 0 ? 0 : this.expiryGracePeriod;
-    return this.getIsoStringDate(
-      new Date(this.now.getTime() - subtractionValue - this.ONE_DAY_IN_MILLIS),
-    );
-  }
-
-  private getIsoStringDate(date: Date) {
-    return date.toISOString().slice(0, 10);
-  }
+export function getMockCredentialWithCustomDrivingLicenceExpiryDate(
+  evidence: PassEvidence[] | FailEvidence[],
+  isoStringDate: string,
+): BiometricCredential {
+  return {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://identity.gov.uk/credentials/v1",
+    ],
+    type: ["mockCredentialType"],
+    credentialSubject: {
+      ...mockCredentialSubject,
+      drivingPermit: [
+        {
+          ...(mockCredentialSubject.drivingPermit as DrivingPermit[])[0],
+          expiryDate: isoStringDate,
+        },
+      ],
+    },
+    evidence,
+  };
 }
