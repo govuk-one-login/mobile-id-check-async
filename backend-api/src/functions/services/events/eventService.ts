@@ -4,8 +4,6 @@ import { sqsClient } from "./sqsClient";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
-  CredentialTokenIssuedEvent,
-  CredentialTokenIssuedEventConfig,
   GenericEventConfig,
   GenericTxmaEvent,
   IEventService,
@@ -24,13 +22,6 @@ export class EventService implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildGenericEvent(eventConfig);
-    return await this.writeToSqs(txmaEvent);
-  }
-
-  async writeCredentialTokenIssuedEvent(
-    eventConfig: CredentialTokenIssuedEventConfig,
-  ): Promise<Result<void, void>> {
-    const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
@@ -96,18 +87,6 @@ export class EventService implements IEventService {
       suspected_fraud_signal,
     };
   }
-
-  private buildCredentialTokenIssuedEvent = (
-    eventConfig: CredentialTokenIssuedEventConfig,
-  ): CredentialTokenIssuedEvent => {
-    const timestampInMillis = eventConfig.getNowInMilliseconds();
-    return {
-      event_name: eventConfig.eventName,
-      component_id: eventConfig.componentId,
-      timestamp: Math.floor(timestampInMillis / 1000),
-      event_timestamp_ms: timestampInMillis,
-    };
-  };
 
   private readonly buildBiometricTokenEvent = (
     eventConfig: BiometricTokenIssuedEventConfig,
