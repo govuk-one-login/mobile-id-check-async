@@ -3,7 +3,7 @@ import {
   AppStartEvent,
   ClientCredentialsTokenIssuedEvent,
   StartEvent,
-} from "../../../services/events/types-to-be";
+} from "../../../common/audit/types";
 import { Result } from "../../../utils/result";
 
 export interface ISendMessageToSqs {
