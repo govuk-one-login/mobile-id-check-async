@@ -24,6 +24,7 @@ import {
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   NOW_IN_MILLISECONDS,
+  NOW_IN_SECONDS,
 } from "../testUtils/unitTestData";
 
 describe("Async Token", () => {
@@ -471,7 +472,7 @@ describe("Async Token", () => {
               expectedMessage: {
                 event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
                 component_id: "mockIssuer",
-                timestamp: Math.floor(NOW_IN_MILLISECONDS / 1000),
+                timestamp: NOW_IN_SECONDS,
                 event_timestamp_ms: NOW_IN_MILLISECONDS,
               },
             },

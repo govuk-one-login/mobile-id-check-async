@@ -35,6 +35,8 @@ import {
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
+  NOW_IN_MILLISECONDS,
+  NOW_IN_SECONDS,
 } from "../testUtils/unitTestData";
 
 const env = {
@@ -64,6 +66,13 @@ describe("Async Credential", () => {
       env,
     };
     context = buildLambdaContext();
+
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -925,10 +934,6 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
 
-            const dateTime = Date.now();
-            jest.useFakeTimers();
-            jest.setSystemTime(dateTime);
-
             const result = await lambdaHandlerConstructor(
               dependencies,
               event,
@@ -945,8 +950,8 @@ describe("Async Credential", () => {
                   session_id: mockSessionId,
                   govuk_signin_journey_id: mockGovukSigninJourneyId,
                 },
-                timestamp: Math.floor(dateTime / 1000),
-                event_timestamp_ms: dateTime,
+                timestamp: NOW_IN_SECONDS,
+                event_timestamp_ms: NOW_IN_MILLISECONDS,
                 event_name: "DCMAW_ASYNC_CRI_START",
                 component_id: mockIssuer,
                 extensions: { redirect_uri: "https://www.mockUrl.com" },

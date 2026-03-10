@@ -15,6 +15,8 @@ import {
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
+  NOW_IN_MILLISECONDS,
+  NOW_IN_SECONDS,
 } from "../testUtils/unitTestData";
 import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
 import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
@@ -62,6 +64,12 @@ describe("Async Active Session", () => {
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -483,7 +491,6 @@ describe("Async Active Session", () => {
     });
 
     describe("Given an active session is found", () => {
-      const timestampInMillis = Date.now();
       beforeEach(async () => {
         const request = buildRequest({
           headers: {
@@ -494,8 +501,6 @@ describe("Async Active Session", () => {
         dependencies.sessionService = () =>
           new MockSessionServiceGetSuccessResult();
 
-        jest.useFakeTimers();
-        jest.setSystemTime(timestampInMillis);
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
 
@@ -541,8 +546,8 @@ describe("Async Active Session", () => {
             govuk_signin_journey_id: mockGovukSigninJourneyId,
             ip_address: "1.1.1.1",
           },
-          timestamp: Math.floor(timestampInMillis / 1000),
-          event_timestamp_ms: timestampInMillis,
+          timestamp: NOW_IN_SECONDS,
+          event_timestamp_ms: NOW_IN_MILLISECONDS,
           event_name: "DCMAW_ASYNC_CRI_APP_START",
           component_id: "https://mockIssuer.com/",
           extensions: { redirect_uri: "https://mockUrl.com/redirect" },
