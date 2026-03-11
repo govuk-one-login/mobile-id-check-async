@@ -6,6 +6,10 @@ Resources:
     DependsOn:
       - DequeueCredentialResultLogGroup
     Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_116"
+            comment: "Lambda is triggered by ipv-core-outbound queue, which has DLQ attached."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

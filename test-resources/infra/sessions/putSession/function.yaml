@@ -6,6 +6,10 @@ Resources:
       - PutSessionFunctionLogGroup
     Type: AWS::Serverless::Function
     Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_116"
+            comment: "Not needed for test resources."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

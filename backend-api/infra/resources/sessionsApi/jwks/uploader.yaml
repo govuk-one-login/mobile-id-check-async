@@ -5,6 +5,10 @@ Resources:
     DependsOn:
       - JsonWebKeysFunctionLogGroup
     Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_116"
+            comment: "Function is manually triggered locally. No need for a DLQ."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
