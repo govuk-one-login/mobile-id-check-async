@@ -147,7 +147,7 @@ Resources:
         skip:
           - comment: Backups not required for test tables.
             id: CKV_AWS_28
-          - comment: Encryption not required for test tables.
+          - comment: Encryption with customer managed key not required for test tables.
             id: CKV_AWS_119
     Properties:
       AttributeDefinitions:
@@ -406,7 +406,7 @@ Resources:
         skip:
           - comment: Backups not required for test tables.
             id: CKV_AWS_28
-          - comment: Encryption not required for test tables.
+          - comment: Encryption with customer managed key not required for test tables.
             id: CKV_AWS_119
     Properties:
       AttributeDefinitions:

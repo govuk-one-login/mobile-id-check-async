@@ -6590,7 +6590,7 @@ Resources:
         skip:
           - comment: Table only storing session data. Backups not required.
             id: CKV_AWS_28
-          - comment: Table only storing session data, no PII included. Encryption not required.
+          - comment: Table only storing session data, no PII included. Encryption with customer managed key not required.
             id: CKV_AWS_119
     Properties:
       AttributeDefinitions:

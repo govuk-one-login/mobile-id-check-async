@@ -9,7 +9,7 @@ Resources:
           - id: "CKV_AWS_28"
             comment: "Backups not required for test tables."
           - id: "CKV_AWS_119"
-            comment: "Encryption not required for test tables."
+            comment: "Encryption with customer managed key not required for test tables."
     Properties:
       TableName: !Sub ${AWS::StackName}-events-table-${Environment}
       KeySchema:
