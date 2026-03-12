@@ -1720,11 +1720,6 @@ describe("Driving licence expiry", () => {
             });
 
             it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-              const evaluationResultCode =
-                dvlaDrivingLicenceExpiryGracePeriodInDays === 0
-                  ? undefined
-                  : "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD";
-
               const actualEvent = getVcIssuedEventObject(criTxmaEvents);
               expect(actualEvent).toStrictEqual({
                 timestamp: expect.any(Number),
@@ -1772,9 +1767,10 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(evaluationResultCode && {
+                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
                     document_expiry: {
-                      evaluation_result_code: evaluationResultCode,
+                      evaluation_result_code:
+                        "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
                     },
                   }),
                 },
@@ -1840,11 +1836,6 @@ describe("Driving licence expiry", () => {
             });
 
             it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-              const evaluationResultCode =
-                dvlaDrivingLicenceExpiryGracePeriodInDays === 0
-                  ? undefined
-                  : "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD";
-
               const actualEvent = getVcIssuedEventObject(criTxmaEvents);
               expect(actualEvent).toStrictEqual({
                 timestamp: expect.any(Number),
@@ -1892,9 +1883,10 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(evaluationResultCode && {
+                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
                     document_expiry: {
-                      evaluation_result_code: evaluationResultCode,
+                      evaluation_result_code:
+                        "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
                     },
                   }),
                 },
@@ -1960,11 +1952,6 @@ describe("Driving licence expiry", () => {
             });
 
             it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-              const evaluationResultCode =
-                dvlaDrivingLicenceExpiryGracePeriodInDays === 0
-                  ? undefined
-                  : "DOCUMENT_NOT_EXPIRED";
-
               const actualEvent = getVcIssuedEventObject(criTxmaEvents);
               expect(actualEvent).toStrictEqual({
                 timestamp: expect.any(Number),
@@ -2012,9 +1999,9 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(evaluationResultCode && {
+                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
                     document_expiry: {
-                      evaluation_result_code: evaluationResultCode,
+                      evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
                     },
                   }),
                 },
@@ -2218,11 +2205,6 @@ describe("Driving licence expiry", () => {
             });
 
             it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-              // const evaluationResultCode =
-              //   dvlaDrivingLicenceExpiryGracePeriodInDays === 0
-              //     ? undefined
-              //     : "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD";
-
               const actualEvent = getVcIssuedEventObject(criTxmaEvents);
               expect(actualEvent).toStrictEqual({
                 timestamp: expect.any(Number),
@@ -2343,18 +2325,6 @@ describe("Driving licence expiry", () => {
             });
 
             it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-              // const extensions =
-              //   dvlaDrivingLicenceExpiryGracePeriodInDays === 0
-              //     ? { ...expectedFailEvidence }
-              //     : {
-              //         ...expectedPassEvidence,
-              //         ...{
-              //           document_expiry: {
-              //             evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
-              //           },
-              //         },
-              //       };
-
               const actualEvent = getVcIssuedEventObject(criTxmaEvents);
               expect(actualEvent).toStrictEqual({
                 timestamp: expect.any(Number),
@@ -2427,48 +2397,6 @@ describe("Driving licence expiry", () => {
     });
   });
 });
-
-// const expectedFailEvidence = [
-//   {
-//     type: "IdentityCheck",
-//     txn: expect.any(String),
-//     strengthScore: 3,
-//     validityScore: 0,
-//     activityHistoryScore: 0,
-//     ci: [expect.arrayContaining([expect.any(String)])],
-//     ciReasons: [expect.arrayContaining([expect.any(Object)])],
-//     failedCheckDetails: expect.arrayContaining([
-//       expect.objectContaining({
-//         biometricVerificationProcessLevel: 3,
-//         checkMethod: "bvr",
-//       }),
-//     ]),
-//     txmaContraIndicators: expect.any(Array),
-//   },
-// ];
-
-// const expectedPassEvidence = [
-//   {
-//     type: "IdentityCheck",
-//     txn: expect.any(String),
-//     strengthScore: 3,
-//     validityScore: 2,
-//     activityHistoryScore: 1,
-//     checkDetails: expect.arrayContaining([
-//       expect.objectContaining({
-//         biometricVerificationProcessLevel: 3,
-//         checkMethod: "bvr",
-//       }),
-//     ]),
-//     txmaContraIndicators: expect.any(Array),
-//   },
-// ];
-
-// enum TestAuditAdvisory {
-//   DOCUMENT_NOT_EXPIRED = "DOCUMENT_NOT_EXPIRED",
-//   DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
-//   DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
-// }
 
 const withinExpiryGracePeriodEvidenceProperties = (
   expiryGracePeriodInDays: number,
