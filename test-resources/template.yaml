@@ -53,6 +53,12 @@ Mappings:
     dev:
       BaseDns: review-b-async.dev.account.gov.uk
 
+  DefaultReservedConcurrentExecutions:
+    build:
+      ReservedConcurrentExecutions: 60
+    dev:
+      ReservedConcurrentExecutions: 10
+
   StsMockApiGateway:
     build:
       ApiBurstLimit: 400
@@ -127,6 +133,10 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    ReservedConcurrentExecutions: !FindInMap
+      - DefaultReservedConcurrentExecutions
+      - !Ref Environment
+      - ReservedConcurrentExecutions
     Runtime: nodejs22.x
 
 Resources:

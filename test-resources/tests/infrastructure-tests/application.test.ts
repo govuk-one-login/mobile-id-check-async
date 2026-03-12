@@ -149,6 +149,21 @@ describe("STS mock infrastructure", () => {
   });
 
   describe("Lambda", () => {
+    test("Global reserved concurrency is set", () => {
+      const reservedConcurrentExecutions =
+        template.toJSON().Globals.Function.ReservedConcurrentExecutions;
+
+      expect(reservedConcurrentExecutions).toStrictEqual({
+        "Fn::FindInMap": [
+          "DefaultReservedConcurrentExecutions",
+          {
+            Ref: "Environment",
+          },
+          "ReservedConcurrentExecutions",
+        ],
+      });
+    });
+
     test("all lambdas have a name", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambdaList = Object.keys(lambdas);
