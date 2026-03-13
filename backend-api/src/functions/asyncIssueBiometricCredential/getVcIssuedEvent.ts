@@ -134,13 +134,9 @@ const getDocumentExpiryEvaluationResultCode = (
   advisories: Advisory[],
 ) => {
   if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
-    const advisory = advisories
-      .filter((advisory) =>
-        Object.keys(AuditAdvisory).includes(
-          advisory as unknown as AuditAdvisory,
-        ),
-      )
-      .pop();
+    const advisory = advisories.find((advisory) =>
+      Object.keys(AuditAdvisory).includes(advisory as unknown as AuditAdvisory),
+    );
 
     if (!advisory) return;
 
