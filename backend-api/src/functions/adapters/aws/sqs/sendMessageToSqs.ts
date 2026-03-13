@@ -7,9 +7,9 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { logger } from "../../../common/logging/logger";
 import { emptyFailure, Result, successResult } from "../../../utils/result";
-import { SQSMessageBody } from "./types";
+import { ISendMessageToSqs, SQSMessageBody } from "./types";
 
-export const sendMessageToSqs = async (
+export const sendMessageToSqs: ISendMessageToSqs = async (
   sqsArn: string,
   messageBody: SQSMessageBody,
 ): Promise<Result<string | undefined, void>> => {
