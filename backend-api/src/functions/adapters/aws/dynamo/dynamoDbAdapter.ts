@@ -137,15 +137,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       ConditionExpression: "attribute_not_exists(sessionId)",
     };
 
-    try {
-      await this.dynamoDbClient.send(new PutItemCommand(input));
-    } catch (error) {
-      if (error instanceof ConditionalCheckFailedException) {
-        throw new Error("Session already exists with this ID");
-      } else {
-        throw error;
-      }
-    }
+    await this.dynamoDbClient.send(new PutItemCommand(input));
   }
 
   private getTimeToLive(

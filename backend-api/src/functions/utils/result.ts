@@ -56,4 +56,8 @@ export enum ErrorCategory {
   CLIENT_ERROR = "CLIENT_ERROR",
 }
 
-type BaseError = { errorMessage: string; errorCategory?: ErrorCategory };
+type BaseError = {
+  errorMessage: string;
+  errorCategory?: ErrorCategory;
+  error?: Error;
+};

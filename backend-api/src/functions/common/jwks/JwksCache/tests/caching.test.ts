@@ -1,9 +1,12 @@
 import { expect } from "@jest/globals";
 import "../../../../../../tests/testUtils/matchers";
-import { Result } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { InMemoryJwksCache } from "../JwksCache";
 import { GetKeysResponse, JwksCacheDependencies } from "../types";
-import { successResult, SuccessWithValue } from "../../../../utils/result";
+import {
+  Result,
+  successResult,
+  SuccessWithValue,
+} from "../../../../utils/result";
 import { NOW_IN_MILLISECONDS } from "../../../../testUtils/unitTestData";
 import {
   ISendHttpRequest,

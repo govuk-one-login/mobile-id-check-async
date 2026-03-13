@@ -583,72 +583,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncAbortSession4XXLowThresholdAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: !Sub
-        - '50% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
-            - StaticVariables
-            - WarningAlarmsRunbook
-            - value
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-abort-session-4xx-api-gw
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 3
-      EvaluationPeriods: 5
-      Metrics:
-        - Expression: IF(errorSum4XX>=4,errorPercentage4XX,0)
-          Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-        - Id: invocations
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-sessions-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/abortSession
-              MetricName: Count
-              Namespace: AWS/ApiGateway
-            Period: 60
-            Stat: Sum
-          ReturnData: false
-        - Id: errorSum4XX
-          Label: Number of 4XX errors
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-sessions-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/abortSession
-              MetricName: 4XXError
-              Namespace: AWS/ApiGateway
-            Period: 60
-            Stat: Sum
-          ReturnData: false
-        - Expression: (errorSum4XX/invocations) * 100
-          Id: errorPercentage4XX
-          Label: Number of 4XX errors returned as a percentage
-          ReturnData: false
-      OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Threshold: 50
-      TreatMissingData: notBreaching
-    Condition: DeployAlarms
-
   AsyncAbortSession5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -897,6 +831,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -1297,6 +1235,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -1908,6 +1850,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -2536,6 +2482,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -3145,6 +3095,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -3712,6 +3666,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Lambda is triggered by vendor-processing queue, which has DLQ attached.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -4607,6 +4565,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       DeploymentPreference:
         Alarms: !If
@@ -5130,6 +5092,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       Events:
         AsyncTxmaEvent:
@@ -5525,6 +5491,7 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: A KMS Key for encrypting the SQS for IPVCore messages
+      EnableKeyRotation: true
       Enabled: true
       KeyPolicy: !If
         - isNotDevOrBuild
@@ -5794,6 +5761,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2020
+      checkov:
+        skip:
+          - comment: Function is manually triggered locally. No need for a DLQ.
+            id: CKV_AWS_116
     Properties:
       Description: Convert ID Check public encryption keys to JWKS format and upload to S3
       Environment:
@@ -6321,6 +6292,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       Environment:
         Variables:
@@ -6611,6 +6586,13 @@ Resources:
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
+    Metadata:
+      checkov:
+        skip:
+          - comment: Table only storing session data. Backups not required.
+            id: CKV_AWS_28
+          - comment: Table only storing session data, no PII included. Encryption with customer managed key not required.
+            id: CKV_AWS_119
     Properties:
       AttributeDefinitions:
         - AttributeName: sessionId
@@ -6662,6 +6644,7 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: A KMS Key for encrypting the SQS Queue for TxMA
+      EnableKeyRotation: true
       Enabled: true
       KeyPolicy:
         Statement:

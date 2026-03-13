@@ -3,6 +3,13 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   CredentialResultsTable:
     Type: AWS::DynamoDB::Table
+    Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_28"
+            comment: "Backups not required for test tables."
+          - id: "CKV_AWS_119"
+            comment: "Encryption with customer managed key not required for test tables."
     Properties:
       TableName: !Sub ${AWS::StackName}-credential-results-${Environment}
       KeySchema:

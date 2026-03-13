@@ -53,6 +53,12 @@ Mappings:
     dev:
       BaseDns: review-b-async.dev.account.gov.uk
 
+  DefaultReservedConcurrentExecutions:
+    build:
+      ReservedConcurrentExecutions: 60
+    dev:
+      ReservedConcurrentExecutions: 10
+
   StsMockApiGateway:
     build:
       ApiBurstLimit: 400
@@ -127,11 +133,22 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    ReservedConcurrentExecutions: !FindInMap
+      - DefaultReservedConcurrentExecutions
+      - !Ref Environment
+      - ReservedConcurrentExecutions
     Runtime: nodejs22.x
 
 Resources:
   CredentialResultsTable:
     Type: AWS::DynamoDB::Table
+    Metadata:
+      checkov:
+        skip:
+          - comment: Backups not required for test tables.
+            id: CKV_AWS_28
+          - comment: Encryption with customer managed key not required for test tables.
+            id: CKV_AWS_119
     Properties:
       AttributeDefinitions:
         - AttributeName: pk
@@ -174,6 +191,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Lambda is triggered by ipv-core-outbound queue, which has DLQ attached.
+            id: CKV_AWS_116
     Properties:
       Environment:
         Variables:
@@ -286,6 +307,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Lambda is triggered by txma queues, which has DLQ attached.
+            id: CKV_AWS_116
     Properties:
       Environment:
         Variables:
@@ -376,6 +401,13 @@ Resources:
 
   EventsTable:
     Type: AWS::DynamoDB::Table
+    Metadata:
+      checkov:
+        skip:
+          - comment: Backups not required for test tables.
+            id: CKV_AWS_28
+          - comment: Encryption with customer managed key not required for test tables.
+            id: CKV_AWS_119
     Properties:
       AttributeDefinitions:
         - AttributeName: pk
@@ -524,6 +556,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Not needed for test resources.
+            id: CKV_AWS_116
     Properties:
       Description: Lambda for putting items into the Sessions table
       Events:
@@ -813,6 +849,10 @@ Resources:
         Minify: true
         Sourcemap: false
         Target: es2022
+      checkov:
+        skip:
+          - comment: Cannot have a DLQ for a function invoked by an API.
+            id: CKV_AWS_116
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       Environment:

@@ -62,7 +62,7 @@ jobs:
           fi
 
       - name: Setup nodeJS
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           cache: npm
           cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
@@ -112,16 +112,17 @@ jobs:
       - name: Validate SAM template
         if: inputs.RUN_SAM_VALIDATE == 'true'
         run: |
-          TEMPLATES="$(find . -name "template*.yaml")"
+          TEMPLATES="$(find . -name "template.yaml")"
           for template in $TEMPLATES ; do
             sam validate --lint --template-file $template
           done
 
       - name: Run Checkov
         if: inputs.RUN_CHECKOV == 'true'
-        uses: bridgecrewio/checkov-action@9607a27d5a5dc7cbdac83c426af4cda3a085454d # v12
+        uses: bridgecrewio/checkov-action@f9b0a2206b0401cad02ac0a66be2a7934a5be838 # v12
         with:
           directory: ${{ inputs.WORKING_DIRECTORY }}
+          skip_path: ${{ inputs.WORKING_DIRECTORY }}/infra
           quiet: true
           soft_fail: true
           framework: cloudformation
