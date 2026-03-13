@@ -10,7 +10,9 @@ import {
   pollForEvents,
 } from "../utils/apiTestHelpers";
 
-const dvlaDrivingLicenceExpiryGracePeriodInDays: number = 0;
+const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
+const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;
@@ -607,7 +609,9 @@ describe("Driving licence expiry", () => {
 
           describe("Given document has expired and is beyond the grace period", () => {
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-4);
+              expiryDate = getIsoStringDateNDaysFromToday(
+                -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+              );
               ({ biometricSessionId, sessionId, subjectIdentifier } =
                 await doAsyncJourney(
                   Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
@@ -831,7 +835,9 @@ describe("Driving licence expiry", () => {
         describe("Given vendor checks pass", () => {
           describe("Given document has expired and is beyond the grace period", () => {
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-4);
+              expiryDate = getIsoStringDateNDaysFromToday(
+                -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+              );
               ({ biometricSessionId, sessionId, subjectIdentifier } =
                 await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
                   drivingLicence: {
@@ -1671,7 +1677,9 @@ describe("Driving licence expiry", () => {
         describe("Given vendor checks fail", () => {
           describe("Given document has expired and is beyond the grace period", () => {
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-4);
+              expiryDate = getIsoStringDateNDaysFromToday(
+                -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+              );
               ({ biometricSessionId, sessionId, subjectIdentifier } =
                 await doAsyncJourney(
                   Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
@@ -1767,7 +1775,7 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
+                  ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code:
                         "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
@@ -1883,7 +1891,7 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
+                  ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code:
                         "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
@@ -1903,7 +1911,7 @@ describe("Driving licence expiry", () => {
 
           describe("Given document has not expired", () => {
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-1);
+              expiryDate = getIsoStringDateNDaysFromToday(1);
               ({ biometricSessionId, sessionId, subjectIdentifier } =
                 await doAsyncJourney(
                   Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS,
@@ -1999,7 +2007,7 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
+                  ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
                     },
@@ -2020,7 +2028,9 @@ describe("Driving licence expiry", () => {
         describe("Given vendor checks pass", () => {
           describe("Given document has expired and is beyond the grace period", () => {
             beforeEach(async () => {
-              expiryDate = getIsoStringDateNDaysFromToday(-4);
+              expiryDate = getIsoStringDateNDaysFromToday(
+                -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+              );
               ({ biometricSessionId, sessionId, subjectIdentifier } =
                 await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
                   drivingLicence: {
@@ -2127,7 +2137,7 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
+                  ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code:
                         "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
@@ -2176,7 +2186,7 @@ describe("Driving licence expiry", () => {
 
               const { validityScore, activityHistoryScore } =
                 withinExpiryGracePeriodEvidenceProperties(
-                  dvlaDrivingLicenceExpiryGracePeriodInDays,
+                  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
                 );
               expect(payload).toEqual({
                 iat: expect.any(Number),
@@ -2246,12 +2256,12 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                       strengthScore: 3,
                       ...withinExpiryGracePeriodEvidenceProperties(
-                        dvlaDrivingLicenceExpiryGracePeriodInDays,
+                        EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
                       ),
                       txmaContraIndicators: expect.any(Array),
                     },
                   ],
-                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
+                  ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code:
                         "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
@@ -2376,7 +2386,7 @@ describe("Driving licence expiry", () => {
                       txmaContraIndicators: expect.any(Array),
                     },
                   ],
-                  ...(dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && {
+                  ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
                     },
@@ -2397,6 +2407,10 @@ describe("Driving licence expiry", () => {
     });
   });
 });
+
+function expiryGracePeriodEnabled() {
+  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
+}
 
 const withinExpiryGracePeriodEvidenceProperties = (
   expiryGracePeriodInDays: number,

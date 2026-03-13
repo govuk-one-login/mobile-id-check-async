@@ -135,17 +135,7 @@ const getDocumentExpiryEvaluationResultCode = (
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
 ) => {
-  console.log("ADVISORIES 1; ", advisories);
-  console.log(
-    "dvlaDrivingLicenceExpiryGracePeriodInDays; ",
-    dvlaDrivingLicenceExpiryGracePeriodInDays,
-  );
-
-  // const dlAdvisory = [Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD, Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD]
   if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
-    console.log("ADVISORIES 2; ", advisories);
-
-    console.log("Audit advisories: ", Object.keys(AuditAdvisory));
     const advisory = advisories
       .filter((advisory) =>
         Object.keys(AuditAdvisory).includes(
@@ -153,8 +143,6 @@ const getDocumentExpiryEvaluationResultCode = (
         ),
       )
       .pop();
-
-    console.log("advisory: ", advisory);
 
     if (!advisory) return;
 
