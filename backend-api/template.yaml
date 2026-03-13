@@ -5491,6 +5491,7 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: A KMS Key for encrypting the SQS for IPVCore messages
+      EnableKeyRotation: true
       Enabled: true
       KeyPolicy: !If
         - isNotDevOrBuild
@@ -6643,6 +6644,7 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: A KMS Key for encrypting the SQS Queue for TxMA
+      EnableKeyRotation: true
       Enabled: true
       KeyPolicy:
         Statement:
