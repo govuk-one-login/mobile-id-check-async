@@ -485,7 +485,7 @@ export async function getVerifiedJwt(
 }
 
 export function getIsoStringDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  return date.toISOString().split("T")[0];
 }
 
 export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
