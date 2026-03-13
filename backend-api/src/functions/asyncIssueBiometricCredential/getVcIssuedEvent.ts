@@ -63,7 +63,7 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  const result: VcIssuedTxMAEvent = {
+  return {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
       user_id: session.subjectIdentifier,
@@ -101,8 +101,6 @@ export const getVcIssuedEvent = (
         )),
     },
   };
-
-  return result;
 };
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
