@@ -46,8 +46,8 @@ export type VcIssuedTxMAEvent = {
 
 export enum AuditAdvisory {
   DRIVING_LICENCE_NOT_EXPIRED = "DOCUMENT_NOT_EXPIRED",
-  DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-  DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+  DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
+  DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
 }
 
 export const getVcIssuedEvent = (
@@ -153,7 +153,5 @@ const getDocumentExpiryEvaluationResultCode = (
 };
 
 const isAuditAdvisory = (advisory: unknown): advisory is AuditAdvisory => {
-  return Object.keys(AuditAdvisory).includes(
-    advisory as unknown as AuditAdvisory,
-  );
+  return Object.keys(AuditAdvisory).includes(advisory as string);
 };
