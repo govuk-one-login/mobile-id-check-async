@@ -9,7 +9,6 @@ import {
 } from "../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
-import { Advisory } from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
