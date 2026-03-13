@@ -1,4 +1,5 @@
 import {
+  Advisory,
   AuditData,
   BiometricCredential,
   ContraIndicatorReason,
@@ -37,13 +38,24 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsPassport?: Flags;
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
+    document_expiry?: {
+      evaluation_result_code?: AuditAdvisory;
+    };
   };
 };
+
+export enum AuditAdvisory {
+  DRIVING_LICENCE_NOT_EXPIRED = "DOCUMENT_NOT_EXPIRED",
+  DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
+  DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
+}
 
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
 ): VcIssuedTxMAEvent => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
@@ -82,6 +94,11 @@ export const getVcIssuedEvent = (
           txmaContraIndicators,
         },
       ],
+      ...(advisories &&
+        getDocumentExpiryEvaluationResultCode(
+          dvlaDrivingLicenceExpiryGracePeriodInDays,
+          advisories,
+        )),
     },
   };
 };
@@ -110,4 +127,27 @@ const isMobileAppMobileJourney = (session: {
   redirectUri?: string;
 }): boolean => {
   return session.redirectUri != null;
+};
+
+const getDocumentExpiryEvaluationResultCode = (
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
+) => {
+  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
+    const advisory = advisories.find((advisory) =>
+      Object.keys(AuditAdvisory).includes(advisory as unknown as AuditAdvisory),
+    );
+
+    if (!advisory) return;
+
+    return (
+      isAuditAdvisory(advisory) && {
+        document_expiry: { evaluation_result_code: AuditAdvisory[advisory] },
+      }
+    );
+  }
+};
+
+const isAuditAdvisory = (advisory: unknown): advisory is AuditAdvisory => {
+  return Object.keys(AuditAdvisory).includes(advisory as string);
 };

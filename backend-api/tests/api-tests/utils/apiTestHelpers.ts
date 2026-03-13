@@ -11,13 +11,20 @@ import {
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
-import { mockClientState } from "./apiTestData";
+import { mockClientState, ONE_DAY_IN_MILLIS } from "./apiTestData";
 import {
   createRemoteJWKSet,
   jwtVerify,
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
+import {
+  PassEvidence,
+  FailEvidence,
+  BiometricCredential,
+  DrivingPermit,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { mockCredentialSubject } from "../../../src/functions/testUtils/unitTestData";
 
 export interface ClientDetails {
   client_id: string;
@@ -135,6 +142,7 @@ export async function setupBiometricSessionByScenario(
   scenario: Scenario,
   opaqueId: string,
   creationDate: string,
+  drivingLicence?: object,
 ) {
   const result = await READ_ID_MOCK_API_INSTANCE.post(
     `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
@@ -143,6 +151,7 @@ export async function setupBiometricSessionByScenario(
       overrides: {
         opaqueId,
         creationDate,
+        drivingLicence,
       },
     }),
   );
@@ -418,7 +427,11 @@ export enum Scenario {
 
 export async function doAsyncJourney(
   biometricSessionScenario: Scenario,
-  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
+  biometricSessionOverrides?: {
+    creationDate?: string;
+    opaqueId?: string;
+    drivingLicence?: object;
+  },
 ): Promise<{
   biometricSessionId: string;
   sessionId: string;
@@ -442,6 +455,7 @@ export async function doAsyncJourney(
     biometricSessionScenario,
     opaqueId,
     creationDate,
+    biometricSessionOverrides?.drivingLicence,
   );
 
   await finishBiometricSession(sessionId, biometricSessionId);
@@ -468,4 +482,45 @@ export async function getVerifiedJwt(
   });
 
   return verifiedJwt;
+}
+
+export function getIsoStringDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
+  const NOW_IN_MILLISECONDS = Date.now();
+  const numberOfDaysInMillis =
+    ONE_DAY_IN_MILLIS * Math.abs(numberOfDaysFromToday);
+
+  if (numberOfDaysFromToday < 0) {
+    return getIsoStringDate(
+      new Date(NOW_IN_MILLISECONDS - numberOfDaysInMillis),
+    );
+  }
+
+  return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
+}
+
+export function getMockCredentialWithCustomDrivingLicenceExpiryDate(
+  evidence: PassEvidence[] | FailEvidence[],
+  isoStringDate: string,
+): BiometricCredential {
+  return {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://identity.gov.uk/credentials/v1",
+    ],
+    type: ["mockCredentialType"],
+    credentialSubject: {
+      ...mockCredentialSubject,
+      drivingPermit: [
+        {
+          ...(mockCredentialSubject.drivingPermit as DrivingPermit[])[0],
+          expiryDate: isoStringDate,
+        },
+      ],
+    },
+    evidence,
+  };
 }
