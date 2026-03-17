@@ -63,6 +63,11 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
+  const evaluationResultCode = getDocumentExpiryEvaluationResultCode(
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+    advisories,
+  );
+
   return {
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
@@ -94,11 +99,11 @@ export const getVcIssuedEvent = (
           txmaContraIndicators,
         },
       ],
-      ...(advisories &&
-        getDocumentExpiryEvaluationResultCode(
-          dvlaDrivingLicenceExpiryGracePeriodInDays,
-          advisories,
-        )),
+      ...(evaluationResultCode && {
+        document_expiry: {
+          evaluation_result_code: evaluationResultCode,
+        },
+      }),
     },
   };
 };
@@ -132,20 +137,16 @@ const isMobileAppMobileJourney = (session: {
 const getDocumentExpiryEvaluationResultCode = (
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
-) => {
+): AuditAdvisory | null => {
   if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
     const advisory = advisories.find((advisory) =>
       Object.keys(AuditAdvisory).includes(advisory as unknown as AuditAdvisory),
     );
 
-    if (!advisory) return;
-
-    return (
-      isAuditAdvisory(advisory) && {
-        document_expiry: { evaluation_result_code: AuditAdvisory[advisory] },
-      }
-    );
+    if (!advisory) return null;
+    if (isAuditAdvisory(advisory)) return AuditAdvisory[advisory];
   }
+  return null;
 };
 
 const isAuditAdvisory = (advisory: unknown): advisory is AuditAdvisory => {
