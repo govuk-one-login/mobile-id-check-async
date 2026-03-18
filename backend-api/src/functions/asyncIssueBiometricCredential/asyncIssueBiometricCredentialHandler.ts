@@ -199,6 +199,49 @@ export async function lambdaHandlerConstructor(
   const dvlaDrivingLicenceExpiryGracePeriodInDays = Number(
     config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
   );
+  if (isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID,
+      {
+        data: {
+          dvlaDrivingLicenceExpiryGracePeriodInDays,
+        },
+      },
+    );
+
+    const handleSendErrorMessageToOutboundQueueResponse =
+      await handleSendErrorMessageToOutboundQueue(
+        dependencies,
+        sessionAttributes,
+        config,
+        { error: "server_error", error_description: "Internal server error" },
+      );
+    if (handleSendErrorMessageToOutboundQueueResponse.isError) {
+      logger.error(
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+        { data: { messageType: "ERROR_MESSAGE" } },
+      );
+    }
+
+    const writeEventResult = await eventService.writeGenericEvent({
+      eventName: getErrorEventName(),
+      sub: sessionAttributes?.subjectIdentifier,
+      sessionId,
+      govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
+      transactionId: biometricSessionId,
+      getNowInMilliseconds: Date.now,
+      componentId: config.ISSUER,
+      ipAddress: undefined,
+      txmaAuditEncoded: undefined,
+      redirect_uri: sessionAttributes?.redirectUri,
+      suspected_fraud_signal: undefined,
+    });
+
+    if (writeEventResult.isError) logErrorWritingErrorEvent();
+
+    return;
+  }
+
   const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
     enableBiometricResidenceCard:
       config.ENABLE_BIOMETRIC_RESIDENCE_CARD === "true",

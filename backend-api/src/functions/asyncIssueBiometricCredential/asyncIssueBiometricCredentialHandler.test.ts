@@ -537,6 +537,14 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("When session state is ASYNC_BIOMETRIC_SESSION_FINISHED", () => {
+    const serverErrorMessage = {
+      sub: mockSubjectIdentifier,
+      state: mockClientState,
+      govuk_signin_journey_id: mockGovukSigninJourneyId,
+      error: "server_error",
+      error_description: "Internal server error",
+    };
+
     describe("When there is an error getting secrets", () => {
       beforeEach(async () => {
         dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
@@ -763,15 +771,60 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Get credential from biometric session error scenarios", () => {
-      const serverErrorMessage = {
-        sub: mockSubjectIdentifier,
-        state: mockClientState,
-        govuk_signin_journey_id: mockGovukSigninJourneyId,
-        error: "server_error",
-        error_description: "Internal server error",
-      };
+    describe("When DVLA driving licence expiry grace period is NaN", () => {
+      beforeEach(async () => {
+        dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
+          "Not a number";
+        dependencies.getEventService = () => ({
+          ...mockInertEventService,
+          writeGenericEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
 
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Logs ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID",
+          data: {
+            dvlaDrivingLicenceExpiryGracePeriodInDays: null,
+          },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
+        });
+      });
+
+      it("Sends server_error to IPV Core", () => {
+        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+          "mockIpvcoreOutboundSqs",
+          serverErrorMessage,
+        );
+      });
+
+      it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: { auditEventName: expectedErrorTxmaEventName },
+          persistentIdentifiers: {
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
+        });
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
+    });
+
+    describe("Get credential from biometric session error scenarios", () => {
       describe("Given an unexpected error is thrown", () => {
         describe("Given writing to txma fails", () => {
           beforeEach(async () => {

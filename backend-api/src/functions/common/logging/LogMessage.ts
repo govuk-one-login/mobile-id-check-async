@@ -384,6 +384,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
     "SQS Event from vendor processing queue is invalid",
   );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID",
+      "The DVLA driving licence expiry grace period is NaN (Not a Number)",
+    );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE =
     new LogMessage(
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_UNEXPECTED_FAILURE",
