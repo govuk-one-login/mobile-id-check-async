@@ -13,6 +13,12 @@ export STS_MOCK_API_URL=$(remove_quotes "$CFN_StsMockApiUrl")
 export TEST_RESOURCES_API_URL=$(remove_quotes "$CFN_TestResourcesApiUrl")
 export READ_ID_MOCK_API_URL=$(remove_quotes "$CFN_ReadIdMockApiUrl")
 
+if [[ $TEST_ENVIRONMENT == "dev" ]]; then
+  export EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=90
+else
+  export EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=0
+fi
+
 mkdir -pv results
 
 if [[ "$TEST_ENVIRONMENT" == "dev" ]] || [[ "$TEST_ENVIRONMENT" == "build" ]]; then
