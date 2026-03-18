@@ -1,5 +1,3 @@
-import { CredentialSubject } from "@govuk-one-login/mobile-id-check-biometric-credential";
-
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "11111111-1111-1111-1111-111111111111";
 export const mockInvalidUUID = "invalid-uuid";
@@ -19,3 +17,7 @@ export const ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 export const generateRandomString = (): string => {
   return Math.random().toString(36);
 };
+
+export const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
+export const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;

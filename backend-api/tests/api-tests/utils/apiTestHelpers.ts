@@ -11,7 +11,11 @@ import {
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
-import { mockClientState, ONE_DAY_IN_MILLIS } from "./apiTestData";
+import {
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  mockClientState,
+  ONE_DAY_IN_MILLIS,
+} from "./apiTestData";
 import {
   createRemoteJWKSet,
   jwtVerify,
@@ -493,4 +497,8 @@ export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
   }
 
   return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
+}
+
+export function expiryGracePeriodEnabled() {
+  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
 }
