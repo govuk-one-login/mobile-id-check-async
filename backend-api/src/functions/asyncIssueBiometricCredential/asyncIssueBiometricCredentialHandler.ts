@@ -206,7 +206,7 @@ export async function lambdaHandlerConstructor(
     config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
   );
 
-  if (isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
+  if (Number.isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
     handleExpiryGracePeriodBeingNaN(
       dvlaDrivingLicenceExpiryGracePeriodInDays,
       config,
