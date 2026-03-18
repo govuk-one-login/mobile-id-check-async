@@ -50,7 +50,6 @@ import {
   GetBiometricSessionError,
 } from "./getBiometricSession/getBiometricSession";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
-import { AuditAdvisory } from "./getVcIssuedEvent";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
@@ -2670,8 +2669,7 @@ describe("Async Issue Biometric Credential", () => {
                       },
                     ],
                     document_expiry: {
-                      evaluation_result_code:
-                        AuditAdvisory.DRIVING_LICENCE_NOT_EXPIRED,
+                      evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
                     },
                   },
                   restricted: {
@@ -2794,7 +2792,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     document_expiry: {
                       evaluation_result_code:
-                        AuditAdvisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+                        "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
                     },
                   },
                   restricted: {
@@ -2917,7 +2915,7 @@ describe("Async Issue Biometric Credential", () => {
                     ],
                     document_expiry: {
                       evaluation_result_code:
-                        AuditAdvisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                        "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
                     },
                   },
                   restricted: {

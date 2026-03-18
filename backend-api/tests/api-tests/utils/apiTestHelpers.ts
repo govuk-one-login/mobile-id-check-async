@@ -18,13 +18,6 @@ import {
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
-import {
-  PassEvidence,
-  FailEvidence,
-  BiometricCredential,
-  DrivingPermit,
-} from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { mockCredentialSubject } from "../../../src/functions/testUtils/unitTestData";
 
 export interface ClientDetails {
   client_id: string;
@@ -500,27 +493,4 @@ export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
   }
 
   return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
-}
-
-export function getMockCredentialWithCustomDrivingLicenceExpiryDate(
-  evidence: PassEvidence[] | FailEvidence[],
-  isoStringDate: string,
-): BiometricCredential {
-  return {
-    "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      "https://identity.gov.uk/credentials/v1",
-    ],
-    type: ["mockCredentialType"],
-    credentialSubject: {
-      ...mockCredentialSubject,
-      drivingPermit: [
-        {
-          ...(mockCredentialSubject.drivingPermit as DrivingPermit[])[0],
-          expiryDate: isoStringDate,
-        },
-      ],
-    },
-    evidence,
-  };
 }

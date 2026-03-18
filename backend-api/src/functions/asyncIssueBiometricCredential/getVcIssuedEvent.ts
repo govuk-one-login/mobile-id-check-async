@@ -39,16 +39,25 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
     document_expiry?: {
-      evaluation_result_code?: AuditAdvisory;
+      evaluation_result_code?: EvaluationResultCodeAdvisory;
     };
   };
 };
 
-export enum AuditAdvisory {
-  DRIVING_LICENCE_NOT_EXPIRED = "DOCUMENT_NOT_EXPIRED",
-  DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
-  DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD = "DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD",
-}
+type EvaluationResultCodeAdvisory =
+  | "DOCUMENT_NOT_EXPIRED"
+  | "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD"
+  | "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD";
+
+const evaluationResultCodeMapping: {
+  [key: string]: EvaluationResultCodeAdvisory;
+} = {
+  [Advisory.DRIVING_LICENCE_NOT_EXPIRED]: "DOCUMENT_NOT_EXPIRED",
+  [Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD]:
+    "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
+  [Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD]:
+    "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
+};
 
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
@@ -63,7 +72,7 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  const evaluationResultCode = getDocumentExpiryEvaluationResultCode(
+  const evaluationResultCode = getEvaluationResultCodeAdvisory(
     dvlaDrivingLicenceExpiryGracePeriodInDays,
     advisories,
   );
@@ -134,21 +143,18 @@ const isMobileAppMobileJourney = (session: {
   return session.redirectUri != null;
 };
 
-const getDocumentExpiryEvaluationResultCode = (
+const getEvaluationResultCodeAdvisory = (
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
-): AuditAdvisory | null => {
+): EvaluationResultCodeAdvisory | undefined => {
+  if (advisories.length <= 0) return undefined;
   if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
     const advisory = advisories.find((advisory) =>
-      Object.keys(AuditAdvisory).includes(advisory as unknown as AuditAdvisory),
+      Object.keys(evaluationResultCodeMapping).includes(advisory),
     );
 
-    if (!advisory) return null;
-    if (isAuditAdvisory(advisory)) return AuditAdvisory[advisory];
+    if (!advisory) return undefined;
+    return evaluationResultCodeMapping[advisory];
   }
-  return null;
-};
-
-const isAuditAdvisory = (advisory: unknown): advisory is AuditAdvisory => {
-  return Object.keys(AuditAdvisory).includes(advisory as string);
+  return undefined;
 };

@@ -138,7 +138,7 @@ describe("Driving licence expiry", () => {
                   ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code:
-                        "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
+                        "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
                     },
                   }),
                 },

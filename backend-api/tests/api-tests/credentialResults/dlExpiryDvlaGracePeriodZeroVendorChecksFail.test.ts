@@ -126,7 +126,7 @@ describe("Driving licence expiry", () => {
                   ...(expiryGracePeriodEnabled() && {
                     document_expiry: {
                       evaluation_result_code:
-                        "DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD",
+                        "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
                     },
                   }),
                 },
@@ -266,7 +266,7 @@ function expiryGracePeriodEnabled() {
   return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
 }
 
-const withinExpiryGracePeriodEvidenceProperties = (
+const getEvidencePropertiesForWithinExpiryGracePeriodScenario = (
   expiryGracePeriodInDays: number,
 ) => {
   if (expiryGracePeriodInDays <= 0) {
