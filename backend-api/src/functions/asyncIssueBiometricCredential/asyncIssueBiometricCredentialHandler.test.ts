@@ -783,7 +783,6 @@ describe("Async Issue Biometric Credential", () => {
             }),
           ),
         });
-
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
@@ -797,6 +796,24 @@ describe("Async Issue Biometric Credential", () => {
           persistentIdentifiers: {
             govukSigninJourneyId: mockGovukSigninJourneyId,
           },
+        });
+      });
+
+      describe("When sending error to IPV Core fails", () => {
+        beforeEach(async () => {
+          dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs IPV Core message error", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+            data: { messageType: "ERROR_MESSAGE" },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
         });
       });
 
