@@ -45,12 +45,10 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
 }
 
 export type GenericEventNames =
-  | "DCMAW_ASYNC_CRI_START"
   | "DCMAW_ASYNC_CRI_4XXERROR"
   | "DCMAW_ASYNC_CRI_5XXERROR"
   | "DCMAW_ASYNC_CRI_ERROR"
   | "DCMAW_ASYNC_CRI_END"
-  | "DCMAW_ASYNC_CRI_APP_START"
   | "DCMAW_ASYNC_APP_END"
   | "DCMAW_ASYNC_ABORT_APP";
 
@@ -65,16 +63,12 @@ export type TxmaBillingEventName = (typeof txmaBillingEventNames)[number];
 export type EventNames =
   | GenericEventNames
   | TxmaBillingEventName
-  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
   | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames | TxmaBillingEventName;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
-}
-export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
-  eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 }
 
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
@@ -88,10 +82,6 @@ export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   extensions: Extensions | undefined;
 }
 
-export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
-  event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-}
-
 export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
   extensions: {
@@ -101,15 +91,9 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   };
 }
 
-export type TxmaEvents =
-  | GenericTxmaEvent
-  | CredentialTokenIssuedEvent
-  | BiometricTokenIssuedEvent;
+export type TxmaEvents = GenericTxmaEvent | BiometricTokenIssuedEvent;
 
 export interface IEventService {
-  writeCredentialTokenIssuedEvent: (
-    eventConfig: CredentialTokenIssuedEventConfig,
-  ) => Promise<Result<void, void>>;
   writeGenericEvent: (
     eventConfig: GenericEventConfig,
   ) => Promise<Result<void, void>>;

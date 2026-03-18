@@ -254,9 +254,6 @@ export const mockInertEventService: IEventService = {
   writeGenericEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),
-  writeCredentialTokenIssuedEvent: jest.fn(() => {
-    throw new Error("Not implemented");
-  }),
   writeBiometricTokenIssuedEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),

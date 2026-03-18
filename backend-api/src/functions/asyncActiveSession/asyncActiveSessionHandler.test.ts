@@ -2,7 +2,6 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import { MockEventWriterSuccess } from "../services/events/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetNullSuccessResult,
@@ -13,12 +12,12 @@ import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
   mockGovukSigninJourneyId,
-  mockInertEventService,
+  mockSendMessageToSqsFailure,
+  mockSendMessageToSqsSuccess,
   mockSessionId,
-  mockSuccessfulEventService,
-  mockWriteGenericEventSuccessResult,
+  NOW_IN_MILLISECONDS,
+  NOW_IN_SECONDS,
 } from "../testUtils/unitTestData";
-import { errorResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
 import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import {
@@ -31,6 +30,7 @@ import {
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
 } from "./mocks";
+import { AppStartEvent } from "../common/audit/types";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
@@ -59,11 +59,17 @@ describe("Async Active Session", () => {
       jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
-      eventService: () => new MockEventWriterSuccess(),
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -73,7 +79,14 @@ describe("Async Active Session", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
-        { ...validRequest, ...{ headers: { "User-Agent": androidUserAgent } } },
+        {
+          ...validRequest,
+          ...{
+            headers: {
+              "User-Agent": androidUserAgent,
+            },
+          },
+        },
         context,
       );
     });
@@ -480,26 +493,20 @@ describe("Async Active Session", () => {
     describe("Given an active session is found", () => {
       beforeEach(async () => {
         const request = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          headers: {
+            Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+            "Txma-Audit-Encoded": "mockTxmaAuditEncoded",
+          },
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetSuccessResult();
-        dependencies.eventService = () => mockSuccessfulEventService;
 
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
 
       describe("Given DCMAW_ASYNC_CRI_APP_START event fails to write to TxMA", () => {
         beforeEach(async () => {
-          dependencies.eventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
-              errorResult({
-                errorMessage: "mockError",
-              }),
-            ),
-          });
-
+          dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
           result = await lambdaHandlerConstructor(
             dependencies,
             validRequest,
@@ -532,18 +539,29 @@ describe("Async Active Session", () => {
       });
 
       it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_APP_START",
-          sub: "mockSub",
-          sessionId: mockSessionId,
-          govukSigninJourneyId: mockGovukSigninJourneyId,
-          getNowInMilliseconds: Date.now,
-          componentId: "https://mockIssuer.com/",
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: undefined,
-          redirect_uri: "https://mockUrl.com/redirect",
-          suspected_fraud_signal: undefined,
-        });
+        const appStart: AppStartEvent = {
+          user: {
+            user_id: "mockSub",
+            session_id: mockSessionId,
+            govuk_signin_journey_id: mockGovukSigninJourneyId,
+            ip_address: "1.1.1.1",
+          },
+          timestamp: NOW_IN_SECONDS,
+          event_timestamp_ms: NOW_IN_MILLISECONDS,
+          event_name: "DCMAW_ASYNC_CRI_APP_START",
+          component_id: "https://mockIssuer.com/",
+          extensions: { redirect_uri: "https://mockUrl.com/redirect" },
+          restricted: {
+            device_information: { encoded: "mockTxmaAuditEncoded" },
+          },
+        };
+        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+          1,
+          {
+            sqsArn: "mockTxmaSqs",
+            expectedMessage: appStart,
+          },
+        );
       });
 
       it("Logs COMPLETED with persistent identifiers", () => {
