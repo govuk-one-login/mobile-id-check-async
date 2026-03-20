@@ -2,6 +2,8 @@ import {
   doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
+  expiryGracePeriodEnabled,
+  getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
@@ -16,11 +18,18 @@ describe("Driving licence failed credential result", () => {
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
+  let expiryDate: string;
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
+      expiryDate = getIsoStringDateNDaysFromToday(1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
+          drivingLicence: {
+            issuedBy: "DVLA",
+            validUntil: expiryDate,
+          },
+        }));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -106,6 +115,11 @@ describe("Driving licence failed credential result", () => {
               txn: expect.any(String),
             },
           ],
+          ...(expiryGracePeriodEnabled() && {
+            document_expiry: {
+              evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
+            },
+          }),
         },
       });
     });

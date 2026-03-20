@@ -12,6 +12,7 @@ import {
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
+import { errorResult, Result, successResult } from "../utils/result";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
@@ -65,19 +66,21 @@ export const getVcIssuedEvent = (
   session: BiometricSessionFinishedAttributes,
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
-): VcIssuedTxMAEvent => {
+): Result<VcIssuedTxMAEvent, Advisory[]> => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
 
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  const evaluationResultCode = getEvaluationResultCodeAdvisory(
+  const evaluationResultCodeResult = getEvaluationResultCodeAdvisoryResult(
     dvlaDrivingLicenceExpiryGracePeriodInDays,
     advisories,
   );
+  if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
+  const evaluationResultCode = evaluationResultCodeResult.value;
 
-  return {
+  return successResult({
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
       user_id: session.subjectIdentifier,
@@ -114,7 +117,7 @@ export const getVcIssuedEvent = (
         },
       }),
     },
-  };
+  });
 };
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
@@ -143,18 +146,20 @@ const isMobileAppMobileJourney = (session: {
   return session.redirectUri != null;
 };
 
-const getEvaluationResultCodeAdvisory = (
+const getEvaluationResultCodeAdvisoryResult = (
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
-): EvaluationResultCodeAdvisory | undefined => {
-  if (advisories.length <= 0) return undefined;
-  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
-    const advisory = advisories.find((advisory) =>
-      Object.keys(evaluationResultCodeMapping).includes(advisory),
-    );
+): Result<EvaluationResultCodeAdvisory | undefined, Advisory[]> => {
+  if (advisories.length === 0 || dvlaDrivingLicenceExpiryGracePeriodInDays <= 0)
+    return successResult(undefined);
 
-    if (!advisory) return undefined;
-    return evaluationResultCodeMapping[advisory];
-  }
-  return undefined;
+  const advisoriesForAudit = advisories.filter((advisory) =>
+    Object.keys(evaluationResultCodeMapping).includes(advisory),
+  );
+
+  if (advisoriesForAudit.length > 1) return errorResult(advisoriesForAudit);
+  if (advisoriesForAudit.length === 0) return successResult(undefined);
+
+  const advisory = advisoriesForAudit[0];
+  return successResult(evaluationResultCodeMapping[advisory]);
 };

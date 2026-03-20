@@ -4,13 +4,12 @@ import {
   Scenario,
   doAsyncJourney,
   expectTxmaEventToHaveBeenWritten,
+  expiryGracePeriodEnabled,
   getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
 } from "../utils/apiTestHelpers";
-
-const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;
@@ -261,37 +260,3 @@ describe("Driving licence expiry", () => {
     });
   });
 });
-
-function expiryGracePeriodEnabled() {
-  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
-}
-
-const getEvidencePropertiesForWithinExpiryGracePeriodScenario = (
-  expiryGracePeriodInDays: number,
-) => {
-  if (expiryGracePeriodInDays <= 0) {
-    return {
-      validityScore: 0,
-      activityHistoryScore: 0,
-      ci: [],
-      ciReasons: [],
-      failedCheckDetails: expect.arrayContaining([
-        expect.objectContaining({
-          biometricVerificationProcessLevel: 3,
-          checkMethod: "bvr",
-        }),
-      ]),
-    };
-  }
-
-  return {
-    validityScore: 2,
-    activityHistoryScore: 1,
-    checkDetails: expect.arrayContaining([
-      expect.objectContaining({
-        biometricVerificationProcessLevel: 3,
-        checkMethod: "bvr",
-      }),
-    ]),
-  };
-};

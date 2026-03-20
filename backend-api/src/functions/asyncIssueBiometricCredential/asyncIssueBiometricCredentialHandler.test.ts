@@ -771,72 +771,78 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("When DVLA driving licence expiry grace period is NaN", () => {
-      beforeEach(async () => {
-        dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-          "Not a number";
-        dependencies.getEventService = () => ({
-          ...mockInertEventService,
-          writeGenericEvent: jest.fn().mockResolvedValue(
-            errorResult({
-              errorMessage: "mockError",
-            }),
-          ),
-        });
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      });
-
-      it("Logs ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID",
-          data: {
-            dvlaDrivingLicenceExpiryGracePeriodInDays: null,
-          },
-          persistentIdentifiers: {
-            govukSigninJourneyId: mockGovukSigninJourneyId,
-          },
-        });
-      });
-
-      describe("When sending error to IPV Core fails", () => {
+    describe("Expiry grace period validation", () => {
+      describe("When DVLA driving licence expiry grace period is NaN", () => {
         beforeEach(async () => {
-          dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
+          dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
+            "Not a number";
+          dependencies.getEventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        it("Logs IPV Core message error", () => {
+        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
-            data: { messageType: "ERROR_MESSAGE" },
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID",
+            data: {
+              dvlaDrivingLicenceExpiryGracePeriodInDays: null,
+            },
             persistentIdentifiers: {
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
           });
         });
-      });
 
-      it("Sends server_error to IPV Core", () => {
-        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
-          "mockIpvcoreOutboundSqs",
-          serverErrorMessage,
-        );
-      });
+        describe("When sending error to IPV Core fails", () => {
+          beforeEach(async () => {
+            dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
+            await lambdaHandlerConstructor(
+              dependencies,
+              validSqsEvent,
+              context,
+            );
+          });
 
-      it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-          data: { auditEventName: expectedErrorTxmaEventName },
-          persistentIdentifiers: {
-            govukSigninJourneyId: mockGovukSigninJourneyId,
-          },
+          it("Logs IPV Core message error", () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode:
+                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+              data: { messageType: "ERROR_MESSAGE" },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+              },
+            });
+          });
         });
-      });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        it("Sends server_error to IPV Core", () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            serverErrorMessage,
+          );
+        });
+
+        it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: expectedErrorTxmaEventName },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
         });
       });
     });
@@ -1315,6 +1321,65 @@ describe("Async Issue Biometric Credential", () => {
           });
         },
       );
+    });
+
+    describe("Expiry grace period failures", () => {
+      describe("Given there is more than one evaluation result code", () => {
+        let mockFailedToSendVCIssuedMessage: jest.Mock;
+        const mockAdvisoriesWithExpiredDrivingLicense: Advisory[] = [
+          Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+        ];
+        const mockSuccessfulGetCredentialFromBiometricSession = jest
+          .fn()
+          .mockReturnValue(
+            successResult({
+              credential: mockBiometricCredential,
+              analytics: mockAnalyticsData,
+              audit: mockAuditData,
+              advisories: mockAdvisoriesWithExpiredDrivingLicense,
+            }),
+          );
+
+        beforeEach(async () => {
+          dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
+            "3";
+          mockFailedToSendVCIssuedMessage = jest
+            .fn()
+            .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
+            .mockResolvedValueOnce(emptyFailure());
+          dependencies = {
+            ...dependencies,
+            sendMessageToSqs: mockFailedToSendVCIssuedMessage,
+            getCredentialFromBiometricSession:
+              mockSuccessfulGetCredentialFromBiometricSession,
+          };
+
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs failure with evaluation result code advisories", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EVALUATION_RESULT_CODES",
+            data: {
+              evaluationResultCodeAdvisories: [
+                Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+                Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+              ],
+            },
+            persistentIdentifiers: {
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
+        });
+      });
     });
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
@@ -2271,15 +2336,23 @@ describe("Async Issue Biometric Credential", () => {
         ])(
           "Given driving licence expiry date in credential is %s",
           (expiryDate: string | null, expectedExpiryDateLogData: string) => {
+            const drivingPermit = [
+              {
+                personalNumber: "mockPersonalNumber",
+                issueNumber: null,
+                issuedBy: null,
+                issueDate: null,
+                expiryDate: "mockExpiryDate",
+                fullAddress: "mockFullAddress",
+              },
+            ];
             const mockCredentialWithExpiredDrivingLicense = {
               ...mockBiometricCredential,
               credentialSubject: {
                 ...mockCredentialSubject,
                 drivingPermit: [
                   {
-                    ...(
-                      mockCredentialSubject.drivingPermit as DrivingPermit[]
-                    )[0],
+                    ...(drivingPermit as DrivingPermit[])[0],
                     expiryDate,
                   },
                 ],

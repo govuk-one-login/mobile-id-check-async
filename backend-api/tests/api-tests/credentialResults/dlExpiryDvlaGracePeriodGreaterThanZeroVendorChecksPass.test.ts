@@ -4,15 +4,17 @@ import {
   Scenario,
   doAsyncJourney,
   expectTxmaEventToHaveBeenWritten,
+  expiryGracePeriodEnabled,
+  getEvidencePropertiesForWithinExpiryGracePeriodScenario,
   getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
 } from "../utils/apiTestHelpers";
-
-const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
-const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
-  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;
+import {
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+} from "../utils/apiTestData";
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;
@@ -185,7 +187,7 @@ describe("Driving licence expiry", () => {
               });
 
               const { validityScore, activityHistoryScore } =
-                withinExpiryGracePeriodEvidenceProperties(
+                getEvidencePropertiesForWithinExpiryGracePeriodScenario(
                   EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
                 );
               expect(payload).toEqual({
@@ -255,7 +257,7 @@ describe("Driving licence expiry", () => {
                       type: "IdentityCheck",
                       txn: expect.any(String),
                       strengthScore: 3,
-                      ...withinExpiryGracePeriodEvidenceProperties(
+                      ...getEvidencePropertiesForWithinExpiryGracePeriodScenario(
                         EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
                       ),
                       txmaContraIndicators: expect.any(Array),
@@ -407,37 +409,3 @@ describe("Driving licence expiry", () => {
     });
   });
 });
-
-function expiryGracePeriodEnabled() {
-  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
-}
-
-const withinExpiryGracePeriodEvidenceProperties = (
-  expiryGracePeriodInDays: number,
-) => {
-  if (expiryGracePeriodInDays <= 0) {
-    return {
-      validityScore: 0,
-      activityHistoryScore: 0,
-      ci: [],
-      ciReasons: [],
-      failedCheckDetails: expect.arrayContaining([
-        expect.objectContaining({
-          biometricVerificationProcessLevel: 3,
-          checkMethod: "bvr",
-        }),
-      ]),
-    };
-  }
-
-  return {
-    validityScore: 2,
-    activityHistoryScore: 1,
-    checkDetails: expect.arrayContaining([
-      expect.objectContaining({
-        biometricVerificationProcessLevel: 3,
-        checkMethod: "bvr",
-      }),
-    ]),
-  };
-};

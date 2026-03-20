@@ -3,6 +3,7 @@ import {
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
   expiryGracePeriodEnabled,
+  getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
@@ -17,11 +18,18 @@ describe("Driving licence passed credential result", () => {
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
+  let expiryDate: string;
 
   describe("Given the vendor returns a driving licence success biometric session", () => {
     beforeAll(async () => {
+      expiryDate = getIsoStringDateNDaysFromToday(1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS));
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
+          drivingLicence: {
+            issuedBy: "DVLA",
+            validUntil: expiryDate,
+          },
+        }));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 

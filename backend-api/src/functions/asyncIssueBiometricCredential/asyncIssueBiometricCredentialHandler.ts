@@ -673,15 +673,25 @@ const writeVcIssuedEvent = async (
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
 ): Promise<Result<void, void>> => {
+  const vcIssuedEventResult = getVcIssuedEvent(
+    credential,
+    audit,
+    sessionAttributes,
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+    advisories,
+  );
+  if (vcIssuedEventResult.isError) {
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EVALUATION_RESULT_CODES,
+      { data: { evaluationResultCodeAdvisories: vcIssuedEventResult.value } },
+    );
+
+    return emptyFailure();
+  }
+
   const sendMessageToSqsResult = await sendMessageToSqs(
     txmaSqsArn,
-    getVcIssuedEvent(
-      credential,
-      audit,
-      sessionAttributes,
-      dvlaDrivingLicenceExpiryGracePeriodInDays,
-      advisories,
-    ),
+    vcIssuedEventResult.value,
   );
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
