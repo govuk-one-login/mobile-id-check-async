@@ -9,10 +9,7 @@ import {
   getVerifiedJwt,
   pollForEvents,
 } from "../utils/apiTestHelpers";
-
-const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
-const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
-  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;
+import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "../utils/apiTestData";
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;

@@ -10,8 +10,6 @@ import {
   pollForEvents,
 } from "../utils/apiTestHelpers";
 
-const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
-
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;
   let sessionId: string;
