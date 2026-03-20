@@ -4,7 +4,6 @@ import {
   Scenario,
   doAsyncJourney,
   expectTxmaEventToHaveBeenWritten,
-  expiryGracePeriodEnabled,
   getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
@@ -139,12 +138,6 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(expiryGracePeriodEnabled() && {
-                    document_expiry: {
-                      evaluation_result_code:
-                        "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
-                    },
-                  }),
                 },
               });
             });
@@ -267,12 +260,6 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(expiryGracePeriodEnabled() && {
-                    document_expiry: {
-                      evaluation_result_code:
-                        "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
-                    },
-                  }),
                 },
               });
             });
@@ -393,11 +380,6 @@ describe("Driving licence expiry", () => {
                       txn: expect.any(String),
                     },
                   ],
-                  ...(expiryGracePeriodEnabled() && {
-                    document_expiry: {
-                      evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
-                    },
-                  }),
                 },
               });
             });
