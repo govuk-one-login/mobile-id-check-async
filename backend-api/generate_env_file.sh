@@ -36,4 +36,5 @@ echo "TEST_ENVIRONMENT=dev" > .env
   echo "STS_MOCK_API_URL=${StsMockApiUrl}"
   echo "TEST_RESOURCES_API_URL=${TestResourcesApiUrl}"
   echo "READ_ID_MOCK_API_URL=${ReadIdMockApiUrl}"
+  echo "EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=90"
 } >> .env

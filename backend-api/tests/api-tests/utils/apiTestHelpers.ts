@@ -11,7 +11,11 @@ import {
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
-import { mockClientState } from "./apiTestData";
+import {
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  mockClientState,
+  ONE_DAY_IN_MILLIS,
+} from "./apiTestData";
 import {
   createRemoteJWKSet,
   jwtVerify,
@@ -135,6 +139,7 @@ export async function setupBiometricSessionByScenario(
   scenario: Scenario,
   opaqueId: string,
   creationDate: string,
+  drivingLicence?: object,
 ) {
   const result = await READ_ID_MOCK_API_INSTANCE.post(
     `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
@@ -143,6 +148,7 @@ export async function setupBiometricSessionByScenario(
       overrides: {
         opaqueId,
         creationDate,
+        drivingLicence,
       },
     }),
   );
@@ -418,7 +424,11 @@ export enum Scenario {
 
 export async function doAsyncJourney(
   biometricSessionScenario: Scenario,
-  biometricSessionOverrides?: { creationDate?: string; opaqueId?: string },
+  biometricSessionOverrides?: {
+    creationDate?: string;
+    opaqueId?: string;
+    drivingLicence?: object;
+  },
 ): Promise<{
   biometricSessionId: string;
   sessionId: string;
@@ -442,6 +452,7 @@ export async function doAsyncJourney(
     biometricSessionScenario,
     opaqueId,
     creationDate,
+    biometricSessionOverrides?.drivingLicence,
   );
 
   await finishBiometricSession(sessionId, biometricSessionId);
@@ -469,3 +480,55 @@ export async function getVerifiedJwt(
 
   return verifiedJwt;
 }
+
+export function getIsoStringDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
+  const NOW_IN_MILLISECONDS = Date.now();
+  const numberOfDaysInMillis =
+    ONE_DAY_IN_MILLIS * Math.abs(numberOfDaysFromToday);
+
+  if (numberOfDaysFromToday < 0) {
+    return getIsoStringDate(
+      new Date(NOW_IN_MILLISECONDS - numberOfDaysInMillis),
+    );
+  }
+
+  return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
+}
+
+export function expiryGracePeriodEnabled() {
+  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
+}
+
+export const getEvidencePropertiesForWithinExpiryGracePeriodScenario = (
+  expiryGracePeriodInDays: number,
+) => {
+  if (expiryGracePeriodInDays <= 0) {
+    return {
+      validityScore: 0,
+      activityHistoryScore: 0,
+      ci: [],
+      ciReasons: [],
+      failedCheckDetails: expect.arrayContaining([
+        expect.objectContaining({
+          biometricVerificationProcessLevel: 3,
+          checkMethod: "bvr",
+        }),
+      ]),
+    };
+  }
+
+  return {
+    validityScore: 2,
+    activityHistoryScore: 1,
+    checkDetails: expect.arrayContaining([
+      expect.objectContaining({
+        biometricVerificationProcessLevel: 3,
+        checkMethod: "bvr",
+      }),
+    ]),
+  };
+};
