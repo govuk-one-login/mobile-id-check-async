@@ -40,19 +40,27 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
     document_expiry?: {
-      evaluation_result_code?: EvaluationResultCodeAdvisory;
+      evaluation_result_code?: EvaluationResultCodeExtension;
     };
   };
 };
 
-type EvaluationResultCodeAdvisory =
+type ExpiredDrivingLicenceAdvisory = Extract<
+  Advisory,
+  | Advisory.DRIVING_LICENCE_NOT_EXPIRED
+  | Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD
+  | Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD
+>;
+
+type EvaluationResultCodeExtension =
   | "DOCUMENT_NOT_EXPIRED"
   | "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD"
   | "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD";
 
-const evaluationResultCodeMapping: {
-  [key: string]: EvaluationResultCodeAdvisory;
-} = {
+const evaluationResultCodeMapping: Record<
+  ExpiredDrivingLicenceAdvisory,
+  EvaluationResultCodeExtension
+> = {
   [Advisory.DRIVING_LICENCE_NOT_EXPIRED]: "DOCUMENT_NOT_EXPIRED",
   [Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD]:
     "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
@@ -74,12 +82,12 @@ export const getVcIssuedEvent = (
   const timestamp = Math.floor(timestamp_ms / 1000);
 
   let evaluationResultCode:
-    | EvaluationResultCodeAdvisory
+    | EvaluationResultCodeExtension
     | undefined
     | Advisory[] = undefined;
   if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && advisories.length > 0) {
     const evaluationResultCodeResult =
-      getEvaluationResultCodeAdvisoryResult(advisories);
+      getEvaluationResultCodeExtensionResult(advisories);
     if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
     evaluationResultCode = evaluationResultCodeResult.value;
   }
@@ -150,16 +158,20 @@ const isMobileAppMobileJourney = (session: {
   return session.redirectUri != null;
 };
 
-const getEvaluationResultCodeAdvisoryResult = (
+const getEvaluationResultCodeExtensionResult = (
   advisories: Advisory[],
-): Result<EvaluationResultCodeAdvisory | undefined, Advisory[]> => {
-  const advisoriesForAudit = advisories.filter((advisory) =>
-    Object.keys(evaluationResultCodeMapping).includes(advisory),
-  );
+): Result<EvaluationResultCodeExtension | undefined, Advisory[]> => {
+  const advisoriesForAudit = advisories.filter(isExpiredDrivingLicenceAdvisory);
 
   if (advisoriesForAudit.length > 1) return errorResult(advisoriesForAudit);
   if (advisoriesForAudit.length === 0) return successResult(undefined);
 
   const advisory = advisoriesForAudit[0];
   return successResult(evaluationResultCodeMapping[advisory]);
+};
+
+const isExpiredDrivingLicenceAdvisory = (
+  advisory: Advisory,
+): advisory is ExpiredDrivingLicenceAdvisory => {
+  return Object.keys(evaluationResultCodeMapping).includes(advisory);
 };
