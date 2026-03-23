@@ -73,12 +73,16 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  const evaluationResultCodeResult = getEvaluationResultCodeAdvisoryResult(
-    dvlaDrivingLicenceExpiryGracePeriodInDays,
-    advisories,
-  );
-  if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
-  const evaluationResultCode = evaluationResultCodeResult.value;
+  let evaluationResultCode:
+    | EvaluationResultCodeAdvisory
+    | undefined
+    | Advisory[] = undefined;
+  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && advisories.length > 0) {
+    const evaluationResultCodeResult =
+      getEvaluationResultCodeAdvisoryResult(advisories);
+    if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
+    evaluationResultCode = evaluationResultCodeResult.value;
+  }
 
   return successResult({
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
@@ -147,12 +151,8 @@ const isMobileAppMobileJourney = (session: {
 };
 
 const getEvaluationResultCodeAdvisoryResult = (
-  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
 ): Result<EvaluationResultCodeAdvisory | undefined, Advisory[]> => {
-  if (advisories.length === 0 || dvlaDrivingLicenceExpiryGracePeriodInDays <= 0)
-    return successResult(undefined);
-
   const advisoriesForAudit = advisories.filter((advisory) =>
     Object.keys(evaluationResultCodeMapping).includes(advisory),
   );
