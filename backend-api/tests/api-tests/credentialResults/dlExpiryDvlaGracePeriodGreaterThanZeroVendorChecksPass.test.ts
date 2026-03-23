@@ -14,7 +14,7 @@ import {
 import {
   EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
   EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
-} from "../utils/apiTestData";
+} from "./testConfig";
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;

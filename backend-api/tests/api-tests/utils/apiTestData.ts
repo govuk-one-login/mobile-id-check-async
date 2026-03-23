@@ -17,7 +17,3 @@ export const ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 export const generateRandomString = (): string => {
   return Math.random().toString(36);
 };
-
-export const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number = 90;
-export const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
-  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;

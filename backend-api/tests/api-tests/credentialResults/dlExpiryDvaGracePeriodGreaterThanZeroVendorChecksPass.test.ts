@@ -9,7 +9,7 @@ import {
   getVerifiedJwt,
   pollForEvents,
 } from "../utils/apiTestHelpers";
-import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "../utils/apiTestData";
+import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "./testConfig";
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;

@@ -11,17 +11,14 @@ import {
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
-import {
-  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-  mockClientState,
-  ONE_DAY_IN_MILLIS,
-} from "./apiTestData";
+import { mockClientState, ONE_DAY_IN_MILLIS } from "./apiTestData";
 import {
   createRemoteJWKSet,
   jwtVerify,
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
+import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/testConfig";
 
 export interface ClientDetails {
   client_id: string;
