@@ -1372,7 +1372,7 @@ describe("Async Issue Biometric Credential", () => {
       );
     });
 
-    describe("Expiry grace period failures", () => {
+    describe("Expiry grace period validation failures", () => {
       describe("Given there is more than one evaluation result code", () => {
         let mockFailedToSendVCIssuedMessage: jest.Mock;
         const mockAdvisoriesWithExpiredDrivingLicense: Advisory[] = [
