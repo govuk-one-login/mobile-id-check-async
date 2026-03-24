@@ -537,7 +537,7 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("When session state is ASYNC_BIOMETRIC_SESSION_FINISHED", () => {
-    const serverErrorMessage = {
+    const expectedServerErrorMessage = {
       sub: mockSubjectIdentifier,
       state: mockClientState,
       govuk_signin_journey_id: mockGovukSigninJourneyId,
@@ -825,7 +825,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Sends server_error to IPV Core", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
             "mockIpvcoreOutboundSqs",
-            serverErrorMessage,
+            expectedServerErrorMessage,
           );
         });
 
@@ -889,7 +889,7 @@ describe("Async Issue Biometric Credential", () => {
           it("Sends server_error to IPV Core", () => {
             expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
               "mockIpvcoreOutboundSqs",
-              serverErrorMessage,
+              expectedServerErrorMessage,
             );
           });
 
@@ -940,7 +940,7 @@ describe("Async Issue Biometric Credential", () => {
           it("Sends server_error to IPV Core", () => {
             expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
               "mockIpvcoreOutboundSqs",
-              serverErrorMessage,
+              expectedServerErrorMessage,
             );
           });
 
@@ -986,21 +986,21 @@ describe("Async Issue Biometric Credential", () => {
           },
           {
             errorCode: "BIOMETRIC_SESSION_PARSE_FAILURE",
-            expectedSqsMessage: serverErrorMessage,
+            expectedSqsMessage: expectedServerErrorMessage,
             expectedSuspectedFraudSignal: undefined,
             logMessage:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE",
           },
           {
             errorCode: "BIOMETRIC_SESSION_NOT_VALID",
-            expectedSqsMessage: serverErrorMessage,
+            expectedSqsMessage: expectedServerErrorMessage,
             expectedSuspectedFraudSignal: undefined,
             logMessage:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID",
           },
           {
             errorCode: "VENDOR_LIKENESS_DISABLED",
-            expectedSqsMessage: serverErrorMessage,
+            expectedSqsMessage: expectedServerErrorMessage,
             expectedSuspectedFraudSignal: undefined,
             logMessage:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED",
