@@ -28,7 +28,7 @@ awk '{ printf("CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt >> docker-vars.env
   echo IS_LOCAL_TEST="$IS_LOCAL_TEST"
 } >> docker-vars.env
 
-if [[ $TEST_ENVIRONMENT == "dev" ]]; then
+if [[ $ENVIRONMENT == "dev" ]]; then
   echo "EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=90" >> docker-vars.env
 else
   echo "EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=0" >> docker-vars.env
