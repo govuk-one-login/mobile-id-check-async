@@ -164,7 +164,7 @@ describe("Async Issue Biometric Credential", () => {
         credential: mockBiometricCredential,
         analytics: mockAnalyticsData,
         audit: mockAuditData,
-        advisories: ["mockAdvisory"],
+        advisories: [],
       }),
     );
 
@@ -1374,29 +1374,22 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Expiry grace period validation failures", () => {
       describe("Given there is more than one evaluation result code", () => {
-        const mockAdvisoriesWithExpiredDrivingLicense: Advisory[] = [
-          Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
-        ];
-        const mockSuccessfulGetCredentialFromBiometricSession = jest
-          .fn()
-          .mockReturnValue(
-            successResult({
-              credential: mockBiometricCredential,
-              analytics: mockAnalyticsData,
-              audit: mockAuditData,
-              advisories: mockAdvisoriesWithExpiredDrivingLicense,
-            }),
-          );
-
         beforeEach(async () => {
           dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
             "3";
-          dependencies = {
-            ...dependencies,
-            getCredentialFromBiometricSession:
-              mockSuccessfulGetCredentialFromBiometricSession,
-          };
+          dependencies.getCredentialFromBiometricSession = jest
+            .fn()
+            .mockReturnValue(
+              successResult({
+                credential: mockBiometricCredential,
+                analytics: mockAnalyticsData,
+                audit: mockAuditData,
+                advisories: [
+                  Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+                  Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                ],
+              }),
+            );
 
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
@@ -1427,29 +1420,13 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
       let mockFailedToSendVCIssuedMessage: jest.Mock;
-      const mockAdvisoriesWithExpiredDrivingLicense: Advisory[] = [];
-      const mockSuccessfulGetCredentialFromBiometricSession = jest
-        .fn()
-        .mockReturnValue(
-          successResult({
-            credential: mockBiometricCredential,
-            analytics: mockAnalyticsData,
-            audit: mockAuditData,
-            advisories: mockAdvisoriesWithExpiredDrivingLicense,
-          }),
-        );
 
       beforeEach(async () => {
         mockFailedToSendVCIssuedMessage = jest
           .fn()
           .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
           .mockResolvedValueOnce(emptyFailure());
-        dependencies = {
-          ...dependencies,
-          sendMessageToSqs: mockFailedToSendVCIssuedMessage,
-          getCredentialFromBiometricSession:
-            mockSuccessfulGetCredentialFromBiometricSession,
-        };
+        dependencies.sendMessageToSqs = mockFailedToSendVCIssuedMessage;
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
@@ -1595,10 +1572,6 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
-      const now = new Date(1768998967000); // Wed 21 Jan 2026 12:36:07 GMT+0000
-      jest.useFakeTimers();
-      jest.setSystemTime(now);
-
       describe("Given user is on a mobile-app-mobile journey", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () =>
@@ -1702,20 +1675,7 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       describe("Given generated biometric credential does not have flags or contraindicators", () => {
-        const mockSuccessfulGetCredentialFromBiometricSession = jest
-          .fn()
-          .mockReturnValue(
-            successResult({
-              credential: mockBiometricCredential,
-              analytics: mockAnalyticsData,
-              audit: mockAuditData,
-              advisories: [],
-            }),
-          );
-
         beforeEach(async () => {
-          dependencies.getCredentialFromBiometricSession =
-            mockSuccessfulGetCredentialFromBiometricSession;
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
@@ -1942,10 +1902,6 @@ describe("Async Issue Biometric Credential", () => {
             },
           ],
         };
-        const mockAdvisoriesWithExpiredDrivingLicense = [
-          "mockAdvisory1",
-          "mockAdvisory2",
-        ];
 
         const mockGetCredentialFromBiometricSessionWithFlags = jest
           .fn()
@@ -1954,7 +1910,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockBiometricCredential,
               analytics: mockAnalyticsData,
               audit: mockAuditDataWithFlags,
-              advisories: mockAdvisoriesWithExpiredDrivingLicense,
+              advisories: ["mockAdvisory1", "mockAdvisory2"],
             }),
           );
 
@@ -2096,10 +2052,6 @@ describe("Async Issue Biometric Credential", () => {
             "TxMACI2" as TxmaContraIndicator,
           ],
         };
-        const mockAdvisoriesWithExpiredDrivingLicense = [
-          "mockAdvisory1",
-          Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-        ];
         const mockGetCredentialFromBiometricSessionWithCI = jest
           .fn()
           .mockReturnValue(
@@ -2107,7 +2059,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockCredentialWithContraIndicators,
               analytics: "mockAnalytics",
               audit: mockAuditDataWithContraIndicatorReasons,
-              advisories: mockAdvisoriesWithExpiredDrivingLicense,
+              advisories: ["mockAdvisory1", "mockAdvisory2"],
             }),
           );
 
@@ -2251,7 +2203,7 @@ describe("Async Issue Biometric Credential", () => {
           .mockReturnValue(
             successResult({
               credential: mockCredentialWithContraIndicators,
-              analytics: "mockAnalytics",
+              analytics: mockAnalyticsData,
               audit: mockAuditDataWithBothFlagsAndCI,
               advisories: [Advisory.DRIVING_LICENCE_NOT_EXPIRED],
             }),
@@ -2402,11 +2354,6 @@ describe("Async Issue Biometric Credential", () => {
               },
             };
 
-            const mockAdvisoriesWithExpiredDrivingLicense = [
-              Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-              Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
-            ];
-
             const mockGetCredentialWithExpiredDrivingLicense = jest
               .fn()
               .mockReturnValue(
@@ -2414,7 +2361,10 @@ describe("Async Issue Biometric Credential", () => {
                   credential: mockCredentialWithExpiredDrivingLicense,
                   analytics: mockAnalyticsData,
                   audit: mockAuditData,
-                  advisories: mockAdvisoriesWithExpiredDrivingLicense,
+                  advisories: [
+                    Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+                    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                  ],
                 }),
               );
 
@@ -2559,7 +2509,6 @@ describe("Async Issue Biometric Credential", () => {
 
           describe("Given document has not expired", () => {
             beforeEach(async () => {
-              const mockAdvisories: Advisory[] = [];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
@@ -2567,7 +2516,7 @@ describe("Async Issue Biometric Credential", () => {
                     credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
-                    advisories: mockAdvisories,
+                    advisories: [],
                   }),
                 );
               dependencies.getCredentialFromBiometricSession =
@@ -2675,7 +2624,6 @@ describe("Async Issue Biometric Credential", () => {
 
           describe("Given document has expired", () => {
             beforeEach(async () => {
-              const mockAdvisories = ["mockAdvisory1"];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
@@ -2683,7 +2631,7 @@ describe("Async Issue Biometric Credential", () => {
                     credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
-                    advisories: mockAdvisories,
+                    advisories: ["mockAdvisory1"],
                   }),
                 );
               dependencies.getCredentialFromBiometricSession =
@@ -2798,7 +2746,6 @@ describe("Async Issue Biometric Credential", () => {
 
           describe("Given document has not expired", () => {
             beforeEach(async () => {
-              const mockAdvisories = [Advisory.DRIVING_LICENCE_NOT_EXPIRED];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
@@ -2806,7 +2753,7 @@ describe("Async Issue Biometric Credential", () => {
                     credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
-                    advisories: mockAdvisories,
+                    advisories: [Advisory.DRIVING_LICENCE_NOT_EXPIRED],
                   }),
                 );
               dependencies.getCredentialFromBiometricSession =
@@ -2917,10 +2864,6 @@ describe("Async Issue Biometric Credential", () => {
 
           describe("Given document has expired and is within the grace period", () => {
             beforeEach(async () => {
-              const mockAdvisories = [
-                "mockAdvisory1",
-                Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-              ];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
@@ -2928,7 +2871,10 @@ describe("Async Issue Biometric Credential", () => {
                     credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
-                    advisories: mockAdvisories,
+                    advisories: [
+                      "mockAdvisory1",
+                      Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+                    ],
                   }),
                 );
               dependencies.getCredentialFromBiometricSession =
@@ -3040,10 +2986,6 @@ describe("Async Issue Biometric Credential", () => {
 
           describe("Given document has expired and is beyond the grace period", () => {
             beforeEach(async () => {
-              const mockAdvisories = [
-                "mockAdvisory1",
-                Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
-              ];
               const mockGetCredentialFromBiometricSession = jest
                 .fn()
                 .mockReturnValue(
@@ -3051,7 +2993,10 @@ describe("Async Issue Biometric Credential", () => {
                     credential: mockBiometricCredential,
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
-                    advisories: mockAdvisories,
+                    advisories: [
+                      "mockAdvisory1",
+                      Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                    ],
                   }),
                 );
               dependencies.getCredentialFromBiometricSession =
