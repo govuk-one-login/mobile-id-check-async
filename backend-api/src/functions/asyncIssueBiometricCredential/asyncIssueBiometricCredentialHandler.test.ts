@@ -1374,7 +1374,6 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Expiry grace period validation failures", () => {
       describe("Given there is more than one evaluation result code", () => {
-        let mockFailedToSendVCIssuedMessage: jest.Mock;
         const mockAdvisoriesWithExpiredDrivingLicense: Advisory[] = [
           Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
           Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
@@ -1393,13 +1392,8 @@ describe("Async Issue Biometric Credential", () => {
         beforeEach(async () => {
           dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
             "3";
-          mockFailedToSendVCIssuedMessage = jest
-            .fn()
-            .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
-            .mockResolvedValueOnce(emptyFailure());
           dependencies = {
             ...dependencies,
-            sendMessageToSqs: mockFailedToSendVCIssuedMessage,
             getCredentialFromBiometricSession:
               mockSuccessfulGetCredentialFromBiometricSession,
           };
