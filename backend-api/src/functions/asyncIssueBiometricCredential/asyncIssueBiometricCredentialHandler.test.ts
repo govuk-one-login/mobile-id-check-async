@@ -829,13 +829,15 @@ describe("Async Issue Biometric Credential", () => {
           );
         });
 
-        it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: { auditEventName: expectedErrorTxmaEventName },
-            persistentIdentifiers: {
-              govukSigninJourneyId: mockGovukSigninJourneyId,
-            },
+        describe("When writing to TxMA fails", () => {
+          it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+              data: { auditEventName: expectedErrorTxmaEventName },
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+              },
+            });
           });
         });
 
