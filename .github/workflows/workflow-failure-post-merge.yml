@@ -22,11 +22,25 @@ jobs:
         uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3.0.1
         with:
           webhook-type: webhook-trigger
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_BACKEND_DEV }}
           payload: |
             {
-              "author": "${{ github.actor }}",
-              "message": "A post-merge workflow has failed before getting to secure pipelines.",
-              "repo_name": "${{ github.repository }}",
-              "workflow_name": "${{ github.event.workflow }}"
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":x: Github Workflow Failure:  ${{ github.event.workflow.name }} :x:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Title*: ${{ github.event.workflow_run.display_title }}\n*Workflow*: ${{ github.event.workflow_run.html_url }}\n*Branch*: ${{ github.event.workflow_run.head_branch }}\n"
+                    },
+                  ]
+                }
+              ]
             }
