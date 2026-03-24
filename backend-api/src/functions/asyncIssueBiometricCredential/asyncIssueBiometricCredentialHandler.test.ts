@@ -776,14 +776,7 @@ describe("Async Issue Biometric Credential", () => {
         beforeEach(async () => {
           dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
             "Not a number";
-          dependencies.getEventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
-              errorResult({
-                errorMessage: "mockError",
-              }),
-            ),
-          });
+
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
@@ -830,6 +823,25 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         describe("When writing to TxMA fails", () => {
+          beforeEach(async () => {
+            dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
+              "Not a number";
+            dependencies.getEventService = () => ({
+              ...mockInertEventService,
+              writeGenericEvent: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorMessage: "mockError",
+                }),
+              ),
+            });
+
+            await lambdaHandlerConstructor(
+              dependencies,
+              validSqsEvent,
+              context,
+            );
+          });
+
           it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
@@ -839,6 +851,41 @@ describe("Async Issue Biometric Credential", () => {
               },
             });
           });
+        });
+
+        describe("When writing to TxMA succeeds", () => {
+          it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
+            expect(
+              mockSuccessfulEventService.writeGenericEvent,
+            ).toHaveBeenCalledWith({
+              componentId: mockIssuer,
+              eventName: expectedErrorTxmaEventName,
+              getNowInMilliseconds: Date.now,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+              ipAddress: undefined,
+              redirect_uri: undefined,
+              sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+              sub: "mockSubjectIdentifier",
+              transactionId: mockBiometricSessionId,
+              txmaAuditEncoded: undefined,
+            });
+          });
+        });
+
+        it("sendMessageToSqs called with correct arguments", () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledNthWithSqsMessage(
+            1,
+            {
+              sqsArn: "mockIpvcoreOutboundSqs",
+              expectedMessage: {
+                sub: "mockSubjectIdentifier",
+                state: "mockClientState",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                error: "server_error",
+                error_description: "Internal server error",
+              },
+            },
+          );
         });
 
         it("Does not log COMPLETED", () => {
