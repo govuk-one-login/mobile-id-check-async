@@ -13,6 +13,8 @@ import {
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
 import { errorResult, Result, successResult } from "../utils/result";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
@@ -161,12 +163,22 @@ const isMobileAppMobileJourney = (session: {
 const getEvaluationResultCodeExtensionResult = (
   advisories: Advisory[],
 ): Result<EvaluationResultCodeExtension | undefined, Advisory[]> => {
-  const advisoriesForAudit = advisories.filter(isExpiredDrivingLicenceAdvisory);
+  const expiredDrivingLicenceAdvisories = advisories.filter(
+    isExpiredDrivingLicenceAdvisory,
+  );
 
-  if (advisoriesForAudit.length > 1) return errorResult(advisoriesForAudit);
-  if (advisoriesForAudit.length === 0) return successResult(undefined);
+  if (expiredDrivingLicenceAdvisories.length > 1) {
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES,
+      { data: { expiredDrivingLicenceAdvisories } },
+    );
 
-  const advisory = advisoriesForAudit[0];
+    return errorResult(expiredDrivingLicenceAdvisories);
+  }
+  if (expiredDrivingLicenceAdvisories.length === 0)
+    return successResult(undefined);
+
+  const advisory = expiredDrivingLicenceAdvisories[0];
   return successResult(evaluationResultCodeMapping[advisory]);
 };
 

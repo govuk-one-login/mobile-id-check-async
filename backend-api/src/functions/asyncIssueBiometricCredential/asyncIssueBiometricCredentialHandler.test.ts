@@ -1361,9 +1361,9 @@ describe("Async Issue Biometric Credential", () => {
         it("Logs failure with evaluation result code advisories", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EVALUATION_RESULT_CODES",
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES",
             data: {
-              evaluationResultCodeAdvisories: [
+              expiredDrivingLicenceAdvisories: [
                 Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
                 Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
               ],

@@ -418,9 +418,9 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
       "Vendor checks passed for expired driving licence",
     );
-  static readonly ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EVALUATION_RESULT_CODES =
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES =
     new LogMessage(
-      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EVALUATION_RESULT_CODES",
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES",
       "The biometric-credential package returned more than one evaluation result code",
     );
 

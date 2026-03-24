@@ -681,11 +681,6 @@ const writeVcIssuedEvent = async (
     advisories,
   );
   if (vcIssuedEventResult.isError) {
-    logger.error(
-      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EVALUATION_RESULT_CODES,
-      { data: { evaluationResultCodeAdvisories: vcIssuedEventResult.value } },
-    );
-
     return emptyFailure();
   }
 
