@@ -2331,13 +2331,13 @@ describe("Async Issue Biometric Credential", () => {
         ])(
           "Given driving licence expiry date in credential is %s",
           (expiryDate: string | null, expectedExpiryDateLogData: string) => {
-            const drivingPermit = [
+            const drivingPermit: DrivingPermit[] = [
               {
                 personalNumber: "mockPersonalNumber",
                 issueNumber: null,
                 issuedBy: null,
                 issueDate: null,
-                expiryDate: "mockExpiryDate",
+                expiryDate,
                 fullAddress: "mockFullAddress",
               },
             ];
@@ -2345,12 +2345,7 @@ describe("Async Issue Biometric Credential", () => {
               ...mockBiometricCredential,
               credentialSubject: {
                 ...mockCredentialSubject,
-                drivingPermit: [
-                  {
-                    ...(drivingPermit as DrivingPermit[])[0],
-                    expiryDate,
-                  },
-                ],
+                drivingPermit,
               },
             };
 
