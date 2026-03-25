@@ -28,6 +28,7 @@ import {
   mockInertEventService,
   mockInertSessionRegistry,
   mockIssuer,
+  mockPassEvidence,
   mockRedirectUri,
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
@@ -1450,7 +1451,7 @@ describe("Async Issue Biometric Credential", () => {
             extensions: {
               evidence: [
                 {
-                  strengthScore: 0,
+                  strengthScore: 3,
                   validityScore: 0,
                   activityHistoryScore: 0,
                   type: "IdentityCheck",
@@ -1460,7 +1461,7 @@ describe("Async Issue Biometric Credential", () => {
                       checkMethod: "bvr",
                       identityCheckPolicy: "published",
                       activityFrom: undefined,
-                      biometricVerificationProcessLevel: 0,
+                      biometricVerificationProcessLevel: 3,
                     },
                   ],
                   txmaContraIndicators: [],
@@ -1601,7 +1602,7 @@ describe("Async Issue Biometric Credential", () => {
                     {
                       type: "IdentityCheck",
                       txn: "mockTxn",
-                      strengthScore: 0,
+                      strengthScore: 3,
                       validityScore: 0,
                       activityHistoryScore: 0,
                       checkDetails: [
@@ -1609,7 +1610,7 @@ describe("Async Issue Biometric Credential", () => {
                           checkMethod: "bvr",
                           identityCheckPolicy: "published",
                           activityFrom: undefined,
-                          biometricVerificationProcessLevel: 0,
+                          biometricVerificationProcessLevel: 3,
                         },
                       ],
                       txmaContraIndicators: [],
@@ -1773,7 +1774,7 @@ describe("Async Issue Biometric Credential", () => {
                 extensions: {
                   evidence: [
                     {
-                      strengthScore: 0,
+                      strengthScore: 3,
                       validityScore: 0,
                       activityHistoryScore: 0,
                       type: "IdentityCheck",
@@ -1784,7 +1785,7 @@ describe("Async Issue Biometric Credential", () => {
                           checkMethod: "bvr",
                           identityCheckPolicy: "published",
                           activityFrom: undefined,
-                          biometricVerificationProcessLevel: 0,
+                          biometricVerificationProcessLevel: 3,
                         },
                       ],
                     },
@@ -1943,7 +1944,7 @@ describe("Async Issue Biometric Credential", () => {
                   },
                   evidence: [
                     {
-                      strengthScore: 0,
+                      strengthScore: 3,
                       validityScore: 0,
                       activityHistoryScore: 0,
                       type: "IdentityCheck",
@@ -1954,7 +1955,7 @@ describe("Async Issue Biometric Credential", () => {
                           checkMethod: "bvr",
                           identityCheckPolicy: "published",
                           activityFrom: undefined,
-                          biometricVerificationProcessLevel: 0,
+                          biometricVerificationProcessLevel: 3,
                         },
                       ],
                     },
@@ -2088,7 +2089,7 @@ describe("Async Issue Biometric Credential", () => {
                 extensions: {
                   evidence: [
                     {
-                      strengthScore: 0,
+                      strengthScore: 3,
                       validityScore: 0,
                       activityHistoryScore: 0,
                       type: "IdentityCheck",
@@ -2103,7 +2104,7 @@ describe("Async Issue Biometric Credential", () => {
                           checkMethod: "bvr",
                           identityCheckPolicy: "published",
                           activityFrom: undefined,
-                          biometricVerificationProcessLevel: 0,
+                          biometricVerificationProcessLevel: 3,
                         },
                       ],
                     },
@@ -2234,7 +2235,7 @@ describe("Async Issue Biometric Credential", () => {
                 extensions: {
                   evidence: [
                     {
-                      strengthScore: 0,
+                      strengthScore: 3,
                       validityScore: 0,
                       activityHistoryScore: 0,
                       type: "IdentityCheck",
@@ -2249,7 +2250,7 @@ describe("Async Issue Biometric Credential", () => {
                           checkMethod: "bvr",
                           identityCheckPolicy: "published",
                           activityFrom: undefined,
-                          biometricVerificationProcessLevel: 0,
+                          biometricVerificationProcessLevel: 3,
                         },
                       ],
                     },
@@ -2421,7 +2422,7 @@ describe("Async Issue Biometric Credential", () => {
                       {
                         type: "IdentityCheck",
                         txn: "mockTxn",
-                        strengthScore: 0,
+                        strengthScore: 3,
                         validityScore: 0,
                         activityHistoryScore: 0,
                         checkDetails: [
@@ -2429,7 +2430,7 @@ describe("Async Issue Biometric Credential", () => {
                             checkMethod: "bvr",
                             identityCheckPolicy: "published",
                             activityFrom: undefined,
-                            biometricVerificationProcessLevel: 0,
+                            biometricVerificationProcessLevel: 3,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2503,19 +2504,23 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given document has not expired", () => {
+            const mockCredential = {
+              ...mockBiometricCredential,
+              evidence: mockPassEvidence,
+            };
+
+            const mockGetCredential = jest.fn().mockReturnValue(
+              successResult({
+                credential: mockCredential,
+                analytics: mockAnalyticsData,
+                audit: mockAuditData,
+                advisories: [],
+              }),
+            );
+
             beforeEach(async () => {
-              const mockGetCredentialFromBiometricSession = jest
-                .fn()
-                .mockReturnValue(
-                  successResult({
-                    credential: mockBiometricCredential,
-                    analytics: mockAnalyticsData,
-                    audit: mockAuditData,
-                    advisories: [],
-                  }),
-                );
               dependencies.getCredentialFromBiometricSession =
-                mockGetCredentialFromBiometricSession;
+                mockGetCredential;
 
               await lambdaHandlerConstructor(
                 dependencies,
@@ -2545,15 +2550,15 @@ describe("Async Issue Biometric Credential", () => {
                       {
                         type: "IdentityCheck",
                         txn: "mockTxn",
-                        strengthScore: 0,
-                        validityScore: 0,
-                        activityHistoryScore: 0,
+                        strengthScore: 3,
+                        validityScore: 2,
+                        activityHistoryScore: 1,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
                             identityCheckPolicy: "published",
                             activityFrom: undefined,
-                            biometricVerificationProcessLevel: 0,
+                            biometricVerificationProcessLevel: 3,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2660,7 +2665,7 @@ describe("Async Issue Biometric Credential", () => {
                       {
                         type: "IdentityCheck",
                         txn: "mockTxn",
-                        strengthScore: 0,
+                        strengthScore: 3,
                         validityScore: 0,
                         activityHistoryScore: 0,
                         checkDetails: [
@@ -2668,7 +2673,7 @@ describe("Async Issue Biometric Credential", () => {
                             checkMethod: "bvr",
                             identityCheckPolicy: "published",
                             activityFrom: undefined,
-                            biometricVerificationProcessLevel: 0,
+                            biometricVerificationProcessLevel: 3,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2745,7 +2750,10 @@ describe("Async Issue Biometric Credential", () => {
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockBiometricCredential,
+                    credential: {
+                      ...mockBiometricCredential,
+                      evidence: mockPassEvidence,
+                    },
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: [Advisory.DRIVING_LICENCE_NOT_EXPIRED],
@@ -2782,15 +2790,15 @@ describe("Async Issue Biometric Credential", () => {
                       {
                         type: "IdentityCheck",
                         txn: "mockTxn",
-                        strengthScore: 0,
-                        validityScore: 0,
-                        activityHistoryScore: 0,
+                        strengthScore: 3,
+                        validityScore: 2,
+                        activityHistoryScore: 1,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
                             identityCheckPolicy: "published",
                             activityFrom: undefined,
-                            biometricVerificationProcessLevel: 0,
+                            biometricVerificationProcessLevel: 3,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -2863,7 +2871,10 @@ describe("Async Issue Biometric Credential", () => {
                 .fn()
                 .mockReturnValue(
                   successResult({
-                    credential: mockBiometricCredential,
+                    credential: {
+                      ...mockBiometricCredential,
+                      evidence: mockPassEvidence,
+                    },
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: [
@@ -2903,15 +2914,15 @@ describe("Async Issue Biometric Credential", () => {
                       {
                         type: "IdentityCheck",
                         txn: "mockTxn",
-                        strengthScore: 0,
-                        validityScore: 0,
-                        activityHistoryScore: 0,
+                        strengthScore: 3,
+                        validityScore: 2,
+                        activityHistoryScore: 1,
                         checkDetails: [
                           {
                             checkMethod: "bvr",
                             identityCheckPolicy: "published",
                             activityFrom: undefined,
-                            biometricVerificationProcessLevel: 0,
+                            biometricVerificationProcessLevel: 3,
                           },
                         ],
                         txmaContraIndicators: [],
@@ -3023,7 +3034,7 @@ describe("Async Issue Biometric Credential", () => {
                   extensions: {
                     evidence: [
                       {
-                        strengthScore: 0,
+                        strengthScore: 3,
                         validityScore: 0,
                         activityHistoryScore: 0,
                         type: "IdentityCheck",
@@ -3034,7 +3045,7 @@ describe("Async Issue Biometric Credential", () => {
                             checkMethod: "bvr",
                             identityCheckPolicy: "published",
                             activityFrom: undefined,
-                            biometricVerificationProcessLevel: 0,
+                            biometricVerificationProcessLevel: 3,
                           },
                         ],
                       },
