@@ -54,7 +54,7 @@ type ExpiredDrivingLicenceAdvisory = Extract<
   | Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD
 >;
 
-type EvaluationResultCodeExtension =
+export type EvaluationResultCodeExtension =
   | "DOCUMENT_NOT_EXPIRED"
   | "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD"
   | "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD";

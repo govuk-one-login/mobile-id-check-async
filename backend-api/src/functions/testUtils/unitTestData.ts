@@ -88,7 +88,10 @@ export const mockFailEvidence = [
     strengthScore: 3,
     validityScore: 0,
     activityHistoryScore: 0,
-    checkDetails: [
+    ci: [],
+    ciReasons: [],
+    txmaContraIndicators: [],
+    failedCheckDetails: [
       {
         checkMethod: "bvr" as const,
         identityCheckPolicy: "published" as const,
@@ -106,6 +109,7 @@ export const mockPassEvidence = [
     strengthScore: 3,
     validityScore: 2,
     activityHistoryScore: 1,
+    txmaContraIndicators: [],
     checkDetails: [
       {
         checkMethod: "bvr" as const,
