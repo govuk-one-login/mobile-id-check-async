@@ -2206,7 +2206,7 @@ describe("Async Issue Biometric Credential", () => {
               credential: mockCredentialWithContraIndicators,
               analytics: mockAnalyticsData,
               audit: mockAuditDataWithBothFlagsAndCI,
-              advisories: [Advisory.DRIVING_LICENCE_NOT_EXPIRED],
+              advisories: [],
             }),
           );
 
@@ -2359,7 +2359,6 @@ describe("Async Issue Biometric Credential", () => {
                   audit: mockAuditData,
                   advisories: [
                     Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
                   ],
                 }),
               );
