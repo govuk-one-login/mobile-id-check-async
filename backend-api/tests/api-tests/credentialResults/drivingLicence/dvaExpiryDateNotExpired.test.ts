@@ -18,7 +18,7 @@ describe("Driving licence expiry", () => {
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
 
-  describe("Given document has not expired", () => {
+  describe("Given DVA document has not expired", () => {
     describe("Given vendor checks fail", () => {
       beforeEach(async () => {
         expiryDate = getIsoStringDateNDaysFromToday(1);
