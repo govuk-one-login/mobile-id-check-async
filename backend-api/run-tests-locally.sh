@@ -28,6 +28,12 @@ awk '{ printf("CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt >> docker-vars.env
   echo IS_LOCAL_TEST="$IS_LOCAL_TEST"
 } >> docker-vars.env
 
+if [[ $ENVIRONMENT == "dev" ]]; then
+  echo "EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=90" >> docker-vars.env
+else
+  echo "EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS=0" >> docker-vars.env
+fi
+
 aws configure export-credentials --format env-no-export >> docker-vars.env
 
 docker buildx build --tag testcontainer --secret id=NPM_TOKEN,env=NPM_TOKEN .

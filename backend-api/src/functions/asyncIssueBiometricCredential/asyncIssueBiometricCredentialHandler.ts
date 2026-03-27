@@ -47,12 +47,16 @@ import {
   SessionState,
 } from "../common/session/session";
 import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
-import { GenericEventNames, IEventService } from "../services/events/types";
+import {
+  GenericEventConfig,
+  GenericEventNames,
+  IEventService,
+} from "../services/events/types";
 import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
-import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
 import { getVcIssuedEvent } from "./getVcIssuedEvent";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -68,6 +72,13 @@ export async function lambdaHandlerConstructor(
     throw new RetainMessageOnQueue("Invalid config");
   }
   const config = configResult.value;
+
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD, {
+    data: {
+      dvlaDrivingLicenceExpiryGracePeriod:
+        config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+    },
+  });
 
   const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
@@ -131,6 +142,20 @@ export async function lambdaHandlerConstructor(
     viewerKey,
   );
 
+  const genericEvent = {
+    eventName: getErrorEventName(),
+    sub: sessionAttributes?.subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
+    transactionId: biometricSessionId,
+    getNowInMilliseconds: Date.now,
+    componentId: config.ISSUER,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: sessionAttributes?.redirectUri,
+    suspected_fraud_signal: undefined,
+  };
+
   if (biometricSessionResult.isError) {
     const error: GetBiometricSessionError = biometricSessionResult.value;
 
@@ -155,19 +180,7 @@ export async function lambdaHandlerConstructor(
       );
     }
 
-    const writeEventResult = await eventService.writeGenericEvent({
-      eventName: getErrorEventName(),
-      sub: sessionAttributes?.subjectIdentifier,
-      sessionId,
-      govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
-      transactionId: biometricSessionId,
-      getNowInMilliseconds: Date.now,
-      componentId: config.ISSUER,
-      ipAddress: undefined,
-      txmaAuditEncoded: undefined,
-      redirect_uri: sessionAttributes?.redirectUri,
-      suspected_fraud_signal: undefined,
-    });
+    const writeEventResult = await eventService.writeGenericEvent(genericEvent);
 
     if (writeEventResult.isError) logErrorWritingErrorEvent();
 
@@ -189,10 +202,23 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const fraudCheckData: FraudCheckData = {
-    userSessionCreatedAt: sessionAttributes.createdAt,
-    opaqueId: sessionAttributes.opaqueId,
-  };
+  const dvlaDrivingLicenceExpiryGracePeriodInDays = Number(
+    config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  );
+
+  if (Number.isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
+    handleExpiryGracePeriodBeingNaN(
+      dvlaDrivingLicenceExpiryGracePeriodInDays,
+      config,
+      dependencies,
+      sessionAttributes,
+      eventService,
+      genericEvent,
+    );
+
+    return;
+  }
+
   const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
     enableBiometricResidenceCard:
       config.ENABLE_BIOMETRIC_RESIDENCE_CARD === "true",
@@ -201,9 +227,14 @@ export async function lambdaHandlerConstructor(
     enableDrivingLicence: config.ENABLE_DRIVING_LICENCE === "true",
     enableNfcPassport: config.ENABLE_NFC_PASSPORT === "true",
     enableUtopiaTestDocument: config.ENABLE_UTOPIA_TEST_DOCUMENT === "true",
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
   };
 
   let getCredentialFromBiometricSessionResult;
+  const fraudCheckData: FraudCheckData = {
+    userSessionCreatedAt: sessionAttributes.createdAt,
+    opaqueId: sessionAttributes.opaqueId,
+  };
   try {
     getCredentialFromBiometricSessionResult =
       dependencies.getCredentialFromBiometricSession(
@@ -291,6 +322,8 @@ export async function lambdaHandlerConstructor(
     sessionAttributes,
     credential,
     audit,
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+    advisories,
   );
   if (writeVCIssuedEventResult.isError) {
     return;
@@ -637,10 +670,23 @@ const writeVcIssuedEvent = async (
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
   audit: AuditData,
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
 ): Promise<Result<void, void>> => {
+  const vcIssuedEventResult = getVcIssuedEvent(
+    credential,
+    audit,
+    sessionAttributes,
+    dvlaDrivingLicenceExpiryGracePeriodInDays,
+    advisories,
+  );
+  if (vcIssuedEventResult.isError) {
+    return emptyFailure();
+  }
+
   const sendMessageToSqsResult = await sendMessageToSqs(
     txmaSqsArn,
-    getVcIssuedEvent(credential, audit, sessionAttributes),
+    vcIssuedEventResult.value,
   );
   if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
@@ -704,4 +750,39 @@ function logIfExpiredDrivingLicence(
       },
     );
   }
+}
+
+async function handleExpiryGracePeriodBeingNaN(
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  config: IssueBiometricCredentialConfig,
+  dependencies: IssueBiometricCredentialDependencies,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  eventService: IEventService,
+  event: GenericEventConfig,
+) {
+  logger.error(
+    LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID,
+    {
+      data: {
+        dvlaDrivingLicenceExpiryGracePeriodInDays,
+      },
+    },
+  );
+
+  const handleSendErrorMessageToOutboundQueueResponse =
+    await handleSendErrorMessageToOutboundQueue(
+      dependencies,
+      sessionAttributes,
+      config,
+      { error: "server_error", error_description: "Internal server error" },
+    );
+  if (handleSendErrorMessageToOutboundQueueResponse.isError) {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR, {
+      data: { messageType: "ERROR_MESSAGE" },
+    });
+  }
+
+  const writeEventResult = await eventService.writeGenericEvent(event);
+
+  if (writeEventResult.isError) logErrorWritingErrorEvent();
 }

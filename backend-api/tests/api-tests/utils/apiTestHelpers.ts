@@ -18,6 +18,7 @@ import {
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
+import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/testConfig";
 
 export interface ClientDetails {
   client_id: string;
@@ -480,4 +481,8 @@ export async function getVerifiedJwt(
   });
 
   return verifiedJwt;
+}
+
+export function expiryGracePeriodEnabled() {
+  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
 }

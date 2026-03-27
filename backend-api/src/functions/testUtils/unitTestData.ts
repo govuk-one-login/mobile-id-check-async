@@ -81,19 +81,41 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockVcIssuedEvidence = [
+export const mockFailEvidence = [
   {
     type: "IdentityCheck" as const,
     txn: "mockTxn",
-    strengthScore: 0,
+    strengthScore: 3,
     validityScore: 0,
     activityHistoryScore: 0,
+    ci: [],
+    ciReasons: [],
+    txmaContraIndicators: [],
+    failedCheckDetails: [
+      {
+        checkMethod: "bvr" as const,
+        identityCheckPolicy: "published" as const,
+        activityFrom: undefined,
+        biometricVerificationProcessLevel: 3,
+      },
+    ],
+  },
+];
+
+export const mockPassEvidence = [
+  {
+    type: "IdentityCheck" as const,
+    txn: "mockTxn",
+    strengthScore: 3,
+    validityScore: 2,
+    activityHistoryScore: 1,
+    txmaContraIndicators: [],
     checkDetails: [
       {
         checkMethod: "bvr" as const,
         identityCheckPolicy: "published" as const,
         activityFrom: undefined,
-        biometricVerificationProcessLevel: 0,
+        biometricVerificationProcessLevel: 3,
       },
     ],
   },
@@ -106,7 +128,7 @@ export const mockBiometricCredential: BiometricCredential = {
   ],
   type: ["mockCredentialType"],
   credentialSubject: mockCredentialSubject,
-  evidence: mockVcIssuedEvidence,
+  evidence: mockFailEvidence,
 };
 
 export const mockAuditWithFlags = {
