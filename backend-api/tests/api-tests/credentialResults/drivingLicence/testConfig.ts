@@ -1,0 +1,7 @@
+import dotenv from "dotenv";
+dotenv.config({ quiet: true });
+
+export const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number =
+  Number(process.env.EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS);
+export const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;
