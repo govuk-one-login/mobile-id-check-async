@@ -16,6 +16,7 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { getHeader } from "../common/request/getHeader/getHeader";
 import { getCredentialConfig } from "./credentialConfig";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
+import { getCriStartEvent } from "./getCriStartEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -173,25 +174,22 @@ export async function lambdaHandlerConstructor(
   }
   const sessionId = createSessionResult.value;
 
-  // Write audit event
-  const eventService = dependencies.eventService(config.TXMA_SQS);
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_START",
-    sub: requestBody.sub,
+  const criStartEvent = getCriStartEvent({
     sessionId,
+    userId: requestBody.sub,
+    issuer: configResult.value.ISSUER,
     govukSigninJourneyId: requestBody.govuk_signin_journey_id,
-    getNowInMilliseconds: Date.now,
-    componentId: config.ISSUER,
-    redirect_uri: requestBody.redirect_uri,
-    suspected_fraud_signal: undefined,
-    // ipAddress and txmaAuditEncoded values only required for lambdas that are triggered as a result of a direct user interaction to the ID Check service
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    redirectUri: requestBody.redirect_uri,
   });
 
-  if (writeEventResult.isError) {
+  const sendMessageToSqsResult = await dependencies.sendMessageToSqs(
+    config.TXMA_SQS,
+    criStartEvent,
+  );
+
+  if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName: "DCMAW_ASYNC_CRI_START" },
+      data: { auditEventName: criStartEvent.event_name },
     });
     return serverErrorResponse;
   }

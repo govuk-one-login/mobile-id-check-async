@@ -20,7 +20,8 @@ import {
   getAuditData,
 } from "../common/request/getAuditData/getAuditData";
 import { Session } from "../services/session/types";
-import { IEventService } from "../services/events/types";
+import { ISendMessageToSqs } from "../adapters/aws/sqs/types";
+import { getAppStartEvent } from "./getAppStartEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
@@ -35,7 +36,6 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   const config = configResult.value;
-  const eventService = dependencies.eventService(config.TXMA_SQS);
 
   const authorizationHeaderResult = new RequestService().getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
@@ -103,12 +103,16 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: session.govukSigninJourneyId,
   });
 
-  return await handleOkResponse(eventService, {
-    session,
-    auditData: getAuditData(event),
-    sub,
-    issuer: config.ISSUER,
-  });
+  return await handleOkResponse(
+    config.TXMA_SQS,
+    dependencies.sendMessageToSqs,
+    {
+      session,
+      auditData: getAuditData(event),
+      sub,
+      issuer: config.ISSUER,
+    },
+  );
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
@@ -161,29 +165,25 @@ interface HandleOkResponseData {
 }
 
 async function handleOkResponse(
-  eventService: IEventService,
+  sqsArn: string,
+  sendMessageToSqs: ISendMessageToSqs,
   { session, auditData, sub, issuer }: HandleOkResponseData,
 ) {
-  const { ipAddress, txmaAuditEncoded } = auditData;
   const { govukSigninJourneyId, redirectUri, sessionId, state } = session;
-  const eventName = "DCMAW_ASYNC_CRI_APP_START";
 
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName,
-    sub,
+  const appStartEvent = getAppStartEvent({
     sessionId,
     govukSigninJourneyId,
-    getNowInMilliseconds: Date.now,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    redirect_uri: redirectUri,
-    suspected_fraud_signal: undefined,
+    redirectUri,
+    userId: sub,
+    issuer,
+    ...auditData,
   });
-  if (writeEventResult.isError) {
+  const sendMessageToSqsResult = await sendMessageToSqs(sqsArn, appStartEvent);
+  if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
-        auditEventName: eventName,
+        auditEventName: appStartEvent.event_name,
       },
     });
 
