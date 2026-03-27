@@ -10,7 +10,7 @@ import {
 } from "../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
 
-describe("Given DVLA document has expired", () => {
+describe("Given DVA document has expired", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
@@ -18,13 +18,15 @@ describe("Given DVLA document has expired", () => {
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
 
+  beforeEach(() => {
+    expiryDate = getIsoStringDateNDaysFromToday(-1);
+  });
   describe("Given vendor checks fail", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(-1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
-            issuedBy: "DVLA",
+            issuedBy: "DVA",
             validUntil: expiryDate,
           },
         }));
@@ -123,11 +125,10 @@ describe("Given DVLA document has expired", () => {
 
   describe("Given vendor checks pass", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(-1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
-            issuedBy: "DVLA",
+            issuedBy: "DVA",
             validUntil: expiryDate,
           },
         }));
@@ -195,11 +196,11 @@ describe("Given DVLA document has expired", () => {
           ],
           drivingPermit: [
             {
-              expiryDate: "2026-03-26",
+              expiryDate,
               fullAddress: "WHATEVER STREET, WIRRAL, CH1 1AQ",
               issueDate: "2022-05-29",
               issueNumber: null,
-              issuedBy: "DVLA",
+              issuedBy: "DVA",
               personalNumber: "DOE99802085J99FG",
             },
           ],

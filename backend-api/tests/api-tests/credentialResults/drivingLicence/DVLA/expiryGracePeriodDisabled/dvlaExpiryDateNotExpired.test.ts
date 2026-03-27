@@ -7,24 +7,26 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../../utils/apiTestHelpers";
-import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
+} from "../../../../utils/apiTestHelpers";
+import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 
-describe("Given DVA document has expired", () => {
+describe("Given DVLA document has not expired", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
+  beforeEach(() => {
+    expiryDate = getIsoStringDateNDaysFromToday(0);
+  });
 
   describe("Given vendor checks fail", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(-1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
-            issuedBy: "DVA",
+            issuedBy: "DVLA",
             validUntil: expiryDate,
           },
         }));
@@ -123,11 +125,10 @@ describe("Given DVA document has expired", () => {
 
   describe("Given vendor checks pass", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(-1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
-            issuedBy: "DVA",
+            issuedBy: "DVLA",
             validUntil: expiryDate,
           },
         }));
@@ -141,7 +142,7 @@ describe("Given DVA document has expired", () => {
       });
     }, 60000);
 
-    it("Writes verified credential with fail evidence to the IPV Core outbound queue", () => {
+    it("Writes verified credential with pass evidence to the IPV Core outbound queue", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
@@ -157,11 +158,19 @@ describe("Given DVA document has expired", () => {
         nbf: expect.any(Number),
         sub: subjectIdentifier,
         vc: expect.objectContaining({
+          credentialSubject: expect.objectContaining({
+            drivingPermit: [
+              expect.objectContaining({
+                expiryDate,
+                issuedBy: "DVLA",
+              }),
+            ],
+          }),
           evidence: [
             expect.objectContaining({
               strengthScore: 3,
-              validityScore: 0,
-              activityHistoryScore: 0,
+              validityScore: 2,
+              activityHistoryScore: 1,
             }),
           ],
         }),
@@ -170,6 +179,7 @@ describe("Given DVA document has expired", () => {
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
+
       expect(actualEvent).toStrictEqual({
         timestamp: expect.any(Number),
         user: {
@@ -187,23 +197,19 @@ describe("Given DVA document has expired", () => {
               nameParts: expect.any(Array),
             },
           ],
-          birthDate: [{ value: "1985-02-08" }],
+          birthDate: [expect.any(Object)],
           deviceId: [
             {
               value: expect.any(String),
             },
           ],
-          drivingPermit: [
-            {
-              expiryDate: "2026-03-26",
-              fullAddress: "WHATEVER STREET, WIRRAL, CH1 1AQ",
-              issueDate: "2022-05-29",
-              issueNumber: null,
-              issuedBy: "DVA",
-              personalNumber: "DOE99802085J99FG",
-            },
-          ],
           address: [expect.any(Object)],
+          drivingPermit: [
+            expect.objectContaining({
+              expiryDate,
+              issuedBy: "DVLA",
+            }),
+          ],
         },
         extensions: {
           redirect_uri: "https://mockRedirectUri.com",
@@ -211,11 +217,9 @@ describe("Given DVA document has expired", () => {
             {
               type: "IdentityCheck",
               strengthScore: 3,
-              validityScore: 0,
-              activityHistoryScore: 0,
-              ci: [],
-              ciReasons: [],
-              failedCheckDetails: expect.arrayContaining([
+              validityScore: 2,
+              activityHistoryScore: 1,
+              checkDetails: expect.arrayContaining([
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
                   checkMethod: "bvr",
