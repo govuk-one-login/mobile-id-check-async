@@ -499,33 +499,3 @@ export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
 export function expiryGracePeriodEnabled() {
   return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
 }
-
-export const getEvidencePropertiesForWithinExpiryGracePeriodScenario = (
-  expiryGracePeriodInDays: number,
-) => {
-  if (expiryGracePeriodInDays <= 0) {
-    return {
-      validityScore: 0,
-      activityHistoryScore: 0,
-      ci: [],
-      ciReasons: [],
-      failedCheckDetails: expect.arrayContaining([
-        expect.objectContaining({
-          biometricVerificationProcessLevel: 3,
-          checkMethod: "bvr",
-        }),
-      ]),
-    };
-  }
-
-  return {
-    validityScore: 2,
-    activityHistoryScore: 1,
-    checkDetails: expect.arrayContaining([
-      expect.objectContaining({
-        biometricVerificationProcessLevel: 3,
-        checkMethod: "bvr",
-      }),
-    ]),
-  };
-};
