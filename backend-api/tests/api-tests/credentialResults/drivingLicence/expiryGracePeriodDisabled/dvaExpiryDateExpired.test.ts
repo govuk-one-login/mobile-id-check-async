@@ -7,10 +7,10 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../utils/apiTestHelpers";
-import { getIsoStringDateNDaysFromToday } from "../../utils/apiTestData";
+} from "../../../utils/apiTestHelpers";
+import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
 
-describe("Given DVA document has not expired", () => {
+describe("Given DVA document has expired", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
@@ -20,7 +20,7 @@ describe("Given DVA document has not expired", () => {
 
   describe("Given vendor checks fail", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(0);
+      expiryDate = getIsoStringDateNDaysFromToday(-1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
@@ -123,7 +123,7 @@ describe("Given DVA document has not expired", () => {
 
   describe("Given vendor checks pass", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(0);
+      expiryDate = getIsoStringDateNDaysFromToday(-1);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
@@ -141,7 +141,7 @@ describe("Given DVA document has not expired", () => {
       });
     }, 60000);
 
-    it("Writes verified credential with pass evidence to the IPV Core outbound queue", () => {
+    it("Writes verified credential with fail evidence to the IPV Core outbound queue", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
@@ -157,19 +157,11 @@ describe("Given DVA document has not expired", () => {
         nbf: expect.any(Number),
         sub: subjectIdentifier,
         vc: expect.objectContaining({
-          credentialSubject: expect.objectContaining({
-            drivingPermit: [
-              expect.objectContaining({
-                expiryDate,
-                issuedBy: "DVA",
-              }),
-            ],
-          }),
           evidence: [
             expect.objectContaining({
               strengthScore: 3,
-              validityScore: 2,
-              activityHistoryScore: 1,
+              validityScore: 0,
+              activityHistoryScore: 0,
             }),
           ],
         }),
@@ -178,7 +170,6 @@ describe("Given DVA document has not expired", () => {
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-
       expect(actualEvent).toStrictEqual({
         timestamp: expect.any(Number),
         user: {
@@ -196,19 +187,23 @@ describe("Given DVA document has not expired", () => {
               nameParts: expect.any(Array),
             },
           ],
-          birthDate: [expect.any(Object)],
+          birthDate: [{ value: "1985-02-08" }],
           deviceId: [
             {
               value: expect.any(String),
             },
           ],
-          address: [expect.any(Object)],
           drivingPermit: [
-            expect.objectContaining({
-              expiryDate,
+            {
+              expiryDate: "2026-03-26",
+              fullAddress: "WHATEVER STREET, WIRRAL, CH1 1AQ",
+              issueDate: "2022-05-29",
+              issueNumber: null,
               issuedBy: "DVA",
-            }),
+              personalNumber: "DOE99802085J99FG",
+            },
           ],
+          address: [expect.any(Object)],
         },
         extensions: {
           redirect_uri: "https://mockRedirectUri.com",
@@ -216,9 +211,11 @@ describe("Given DVA document has not expired", () => {
             {
               type: "IdentityCheck",
               strengthScore: 3,
-              validityScore: 2,
-              activityHistoryScore: 1,
-              checkDetails: expect.arrayContaining([
+              validityScore: 0,
+              activityHistoryScore: 0,
+              ci: [],
+              ciReasons: [],
+              failedCheckDetails: expect.arrayContaining([
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
                   checkMethod: "bvr",
