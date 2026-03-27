@@ -2,8 +2,6 @@ import {
   doAsyncJourney,
   EventResponse,
   expectTxmaEventToHaveBeenWritten,
-  expiryGracePeriodEnabled,
-  getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
@@ -11,6 +9,7 @@ import {
 } from "../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
+import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
@@ -115,11 +114,6 @@ describe("Driving licence failed credential result", () => {
               txn: expect.any(String),
             },
           ],
-          ...(expiryGracePeriodEnabled() && {
-            document_expiry: {
-              evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
-            },
-          }),
         },
       });
     });
