@@ -9,8 +9,7 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../utils/apiTestHelpers";
-import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "../testConfig";
+} from "../../../../utils/apiTestHelpers";
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;
@@ -20,12 +19,10 @@ describe("Driving licence expiry", () => {
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
 
-  describe("Given DVLA document has expired and is beyond the grace period", () => {
+  describe("Given DVLA document has not expired", () => {
     describe("Given vendor checks fail", () => {
       beforeEach(async () => {
-        expiryDate = getIsoStringDateNDaysFromToday(
-          -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
-        );
+        expiryDate = getIsoStringDateNDaysFromToday(1);
         ({ biometricSessionId, sessionId, subjectIdentifier } =
           await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
             drivingLicence: {
@@ -106,20 +103,20 @@ describe("Driving licence expiry", () => {
                 validityScore: 0,
                 activityHistoryScore: 0,
                 ci: expect.arrayContaining([expect.any(String)]),
+                ciReasons: expect.arrayContaining([expect.any(Object)]),
                 failedCheckDetails: expect.arrayContaining([
                   expect.objectContaining({
                     biometricVerificationProcessLevel: 3,
                     checkMethod: "bvr",
                   }),
                 ]),
-                ciReasons: expect.arrayContaining([expect.any(Object)]),
                 txmaContraIndicators: expect.any(Array),
                 txn: expect.any(String),
               },
             ],
             ...(expiryGracePeriodEnabled() && {
               document_expiry: {
-                evaluation_result_code: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
+                evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
               },
             }),
           },
@@ -133,13 +130,11 @@ describe("Driving licence expiry", () => {
 
     describe("Given vendor checks pass", () => {
       beforeEach(async () => {
-        expiryDate = getIsoStringDateNDaysFromToday(
-          -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
-        );
+        expiryDate = getIsoStringDateNDaysFromToday(1);
         ({ biometricSessionId, sessionId, subjectIdentifier } =
           await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
             drivingLicence: {
-              issuedBy: "DVLA",
+              issuedBy: "DVA",
               validUntil: expiryDate,
             },
           }));
@@ -153,7 +148,7 @@ describe("Driving licence expiry", () => {
         });
       }, 60000);
 
-      it("Writes verified credential with fail evidence to the IPV Core outbound queue", () => {
+      it("Writes verified credential with pass evidence to the IPV Core outbound queue", () => {
         const { protectedHeader, payload } = verifiedJwt;
 
         expect(protectedHeader).toEqual({
@@ -173,15 +168,15 @@ describe("Driving licence expiry", () => {
               drivingPermit: [
                 expect.objectContaining({
                   expiryDate,
-                  issuedBy: "DVLA",
+                  issuedBy: "DVA",
                 }),
               ],
             }),
             evidence: [
               expect.objectContaining({
                 strengthScore: 3,
-                validityScore: 0,
-                activityHistoryScore: 0,
+                validityScore: 2,
+                activityHistoryScore: 1,
               }),
             ],
           }),
@@ -190,6 +185,7 @@ describe("Driving licence expiry", () => {
 
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
         const actualEvent = getVcIssuedEventObject(criTxmaEvents);
+
         expect(actualEvent).toStrictEqual({
           timestamp: expect.any(Number),
           user: {
@@ -217,7 +213,7 @@ describe("Driving licence expiry", () => {
             drivingPermit: [
               expect.objectContaining({
                 expiryDate,
-                issuedBy: "DVLA",
+                issuedBy: "DVA",
               }),
             ],
           },
@@ -227,11 +223,9 @@ describe("Driving licence expiry", () => {
               {
                 type: "IdentityCheck",
                 strengthScore: 3,
-                validityScore: 0,
-                activityHistoryScore: 0,
-                ci: [],
-                ciReasons: [],
-                failedCheckDetails: expect.arrayContaining([
+                validityScore: 2,
+                activityHistoryScore: 1,
+                checkDetails: expect.arrayContaining([
                   expect.objectContaining({
                     biometricVerificationProcessLevel: 3,
                     checkMethod: "bvr",
@@ -241,11 +235,6 @@ describe("Driving licence expiry", () => {
                 txn: expect.any(String),
               },
             ],
-            ...(expiryGracePeriodEnabled() && {
-              document_expiry: {
-                evaluation_result_code: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
-              },
-            }),
           },
         });
       });

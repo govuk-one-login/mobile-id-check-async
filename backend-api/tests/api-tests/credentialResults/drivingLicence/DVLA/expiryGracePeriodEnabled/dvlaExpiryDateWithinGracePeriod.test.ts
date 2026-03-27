@@ -10,8 +10,8 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../utils/apiTestHelpers";
-import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../testConfig";
+} from "../../../../utils/apiTestHelpers";
+import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../../../testConfig";
 
 describe("Driving licence expiry", () => {
   let subjectIdentifier: string;
