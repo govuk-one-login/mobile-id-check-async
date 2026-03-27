@@ -7,8 +7,8 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../utils/apiTestHelpers";
-import { getIsoStringDateNDaysFromToday } from "../../utils/apiTestData";
+} from "../../../../utils/apiTestHelpers";
+import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 
 describe("Given DVLA document has not expired", () => {
   let subjectIdentifier: string;
@@ -17,10 +17,12 @@ describe("Given DVLA document has not expired", () => {
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
+  beforeEach(() => {
+    expiryDate = getIsoStringDateNDaysFromToday(0);
+  });
 
   describe("Given vendor checks fail", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(0);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
@@ -123,7 +125,6 @@ describe("Given DVLA document has not expired", () => {
 
   describe("Given vendor checks pass", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(0);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
