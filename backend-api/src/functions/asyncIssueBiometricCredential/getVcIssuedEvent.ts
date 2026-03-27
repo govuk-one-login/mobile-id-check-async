@@ -87,10 +87,11 @@ export const getVcIssuedEvent = (
     | EvaluationResultCodeExtension
     | undefined
     | Advisory[] = undefined;
-  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0 && advisories.length > 0) {
+  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
     const evaluationResultCodeResult =
       getEvaluationResultCodeExtensionResult(advisories);
     if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
+
     evaluationResultCode = evaluationResultCodeResult.value;
   }
 
@@ -163,6 +164,8 @@ const isMobileAppMobileJourney = (session: {
 const getEvaluationResultCodeExtensionResult = (
   advisories: Advisory[],
 ): Result<EvaluationResultCodeExtension | undefined, Advisory[]> => {
+  if (advisories.length === 0) return successResult(undefined);
+
   const expiredDrivingLicenceAdvisories = advisories.filter(
     isExpiredDrivingLicenceAdvisory,
   );
@@ -175,6 +178,7 @@ const getEvaluationResultCodeExtensionResult = (
 
     return errorResult(expiredDrivingLicenceAdvisories);
   }
+
   if (expiredDrivingLicenceAdvisories.length === 0)
     return successResult(undefined);
 

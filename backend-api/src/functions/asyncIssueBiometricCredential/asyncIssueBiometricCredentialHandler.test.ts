@@ -2367,7 +2367,7 @@ describe("Async Issue Biometric Credential", () => {
               });
             });
 
-            describe("When sending error to IPV Core fails", () => {
+            describe("Given sending error to IPV Core fails", () => {
               beforeEach(async () => {
                 dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
                 await lambdaHandlerConstructor(
@@ -2396,7 +2396,7 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            describe("When writing to TxMA fails", () => {
+            describe("Given writing to TxMA fails", () => {
               beforeEach(async () => {
                 dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
                   "Not a number";
@@ -2427,7 +2427,7 @@ describe("Async Issue Biometric Credential", () => {
               });
             });
 
-            describe("When writing to TxMA succeeds", () => {
+            describe("Given writing to TxMA succeeds", () => {
               it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
                 expect(
                   mockSuccessfulEventService.writeGenericEvent,
