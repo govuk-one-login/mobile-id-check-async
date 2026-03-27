@@ -135,7 +135,7 @@ export async function setupBiometricSessionByScenario(
   scenario: Scenario,
   opaqueId: string,
   creationDate: string,
-  drivingLicence?: object,
+  drivingLicence?: DrivingLicenceOverrides,
 ) {
   const result = await READ_ID_MOCK_API_INSTANCE.post(
     `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
@@ -418,12 +418,17 @@ export enum Scenario {
   INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
 }
 
+interface DrivingLicenceOverrides {
+  validUntil: string;
+  issuedBy: "DVA" | "DVLA";
+}
+
 export async function doAsyncJourney(
   biometricSessionScenario: Scenario,
   biometricSessionOverrides?: {
     creationDate?: string;
     opaqueId?: string;
-    drivingLicence?: object;
+    drivingLicence?: DrivingLicenceOverrides;
   },
 ): Promise<{
   biometricSessionId: string;
