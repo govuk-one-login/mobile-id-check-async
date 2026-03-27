@@ -1,0 +1,19 @@
+name: Initialise New GitHub Actions Job
+
+on:
+  workflow_dispatch:
+    inputs:
+      JOB_NAME:
+        description: The Name of the New Job
+        type: string
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Create Tag v0.0.1
+        run: |
+          $job_name=${{ inputs.JOB_NAME }}
+
+          git tag $job_name/v0.0.1
+          git push origin $job_name/v0.0.1
