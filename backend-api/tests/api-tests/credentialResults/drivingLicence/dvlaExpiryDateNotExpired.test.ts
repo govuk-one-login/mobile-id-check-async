@@ -4,11 +4,11 @@ import {
   Scenario,
   doAsyncJourney,
   expectTxmaEventToHaveBeenWritten,
-  getIsoStringDateNDaysFromToday,
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
 } from "../../utils/apiTestHelpers";
+import { getIsoStringDateNDaysFromToday } from "../../utils/apiTestData";
 
 describe("Given DVLA document has not expired", () => {
   let subjectIdentifier: string;
@@ -127,7 +127,7 @@ describe("Given DVLA document has not expired", () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
-            issuedBy: "DVA",
+            issuedBy: "DVLA",
             validUntil: expiryDate,
           },
         }));
@@ -161,7 +161,7 @@ describe("Given DVLA document has not expired", () => {
             drivingPermit: [
               expect.objectContaining({
                 expiryDate,
-                issuedBy: "DVA",
+                issuedBy: "DVLA",
               }),
             ],
           }),
@@ -206,7 +206,7 @@ describe("Given DVLA document has not expired", () => {
           drivingPermit: [
             expect.objectContaining({
               expiryDate,
-              issuedBy: "DVA",
+              issuedBy: "DVLA",
             }),
           ],
         },

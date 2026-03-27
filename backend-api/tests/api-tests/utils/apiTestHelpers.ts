@@ -11,14 +11,13 @@ import {
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
-import { mockClientState, ONE_DAY_IN_MILLIS } from "./apiTestData";
+import { mockClientState } from "./apiTestData";
 import {
   createRemoteJWKSet,
   jwtVerify,
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
-import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/drivingLicence/testConfig";
 
 export interface ClientDetails {
   client_id: string;
@@ -476,26 +475,4 @@ export async function getVerifiedJwt(
   });
 
   return verifiedJwt;
-}
-
-export function getIsoStringDate(date: Date): string {
-  return date.toISOString().split("T")[0];
-}
-
-export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
-  const NOW_IN_MILLISECONDS = Date.now();
-  const numberOfDaysInMillis =
-    ONE_DAY_IN_MILLIS * Math.abs(numberOfDaysFromToday);
-
-  if (numberOfDaysFromToday < 0) {
-    return getIsoStringDate(
-      new Date(NOW_IN_MILLISECONDS - numberOfDaysInMillis),
-    );
-  }
-
-  return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
-}
-
-export function expiryGracePeriodEnabled() {
-  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
 }

@@ -12,8 +12,26 @@ export const expectedSecurityHeaders = {
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
 };
-export const ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
+const ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
 
 export const generateRandomString = (): string => {
   return Math.random().toString(36);
 };
+
+function getIsoStringDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+export function getIsoStringDateNDaysFromToday(numberOfDaysFromToday: number) {
+  const NOW_IN_MILLISECONDS = Date.now();
+  const numberOfDaysInMillis =
+    ONE_DAY_IN_MILLIS * Math.abs(numberOfDaysFromToday);
+
+  if (numberOfDaysFromToday < 0) {
+    return getIsoStringDate(
+      new Date(NOW_IN_MILLISECONDS - numberOfDaysInMillis),
+    );
+  }
+
+  return getIsoStringDate(new Date(NOW_IN_MILLISECONDS + numberOfDaysInMillis));
+}
