@@ -129,7 +129,7 @@ describe("Given DVLA document has not expired", () => {
 
   describe("Given vendor checks pass", () => {
     beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(1);
+      expiryDate = getIsoStringDateNDaysFromToday(0);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
