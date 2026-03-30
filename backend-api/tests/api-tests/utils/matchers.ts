@@ -1,6 +1,5 @@
 import { describe, expect } from "@jest/globals";
-import dotenv from "dotenv";
-dotenv.config({ quiet: true });
+import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/testConfig";
 
 const toBeValidUuid = (candidate: unknown) => {
   const pass = isValidUuid(candidate);
@@ -19,9 +18,8 @@ const isValidUuid = (candidate: unknown): boolean => {
   return regexUUID.test(candidate);
 };
 
-const expiryGracePeriodInDays = Number(
-  process.env.EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-);
+const expiryGracePeriodInDays =
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS;
 
 export function getDescribeForExpiryGracePeriodDisabledTests() {
   if (

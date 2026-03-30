@@ -11,6 +11,7 @@ import {
 import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "../../../testConfig";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 import { getDescribeForExpiryGracePeriodEnabledTests } from "../../../../utils/matchers";
+import { beforeAll, it, expect } from "@jest/globals";
 
 const describe = getDescribeForExpiryGracePeriodEnabledTests();
 
@@ -22,11 +23,14 @@ describe("Given DVLA document has expired and is beyond the grace period", () =>
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
 
+  beforeAll(() => {
+    expiryDate = getIsoStringDateNDaysFromToday(
+      -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+    );
+  });
+
   describe("Given vendor checks fail", () => {
-    beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(
-        -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
-      );
+    beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
@@ -131,10 +135,7 @@ describe("Given DVLA document has expired and is beyond the grace period", () =>
   });
 
   describe("Given vendor checks pass", () => {
-    beforeEach(async () => {
-      expiryDate = getIsoStringDateNDaysFromToday(
-        -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
-      );
+    beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {

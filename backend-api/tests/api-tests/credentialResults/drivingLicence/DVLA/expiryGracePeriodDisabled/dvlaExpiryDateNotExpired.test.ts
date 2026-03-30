@@ -10,6 +10,7 @@ import {
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 import { getDescribeForExpiryGracePeriodDisabledTests } from "../../../../utils/matchers";
+import { beforeAll, it, expect } from "@jest/globals";
 
 const describe = getDescribeForExpiryGracePeriodDisabledTests();
 
@@ -20,12 +21,13 @@ describe("Given DVLA document has not expired", () => {
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
-  beforeEach(() => {
+
+  beforeAll(() => {
     expiryDate = getIsoStringDateNDaysFromToday(0);
   });
 
   describe("Given vendor checks fail", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
@@ -127,7 +129,7 @@ describe("Given DVLA document has not expired", () => {
   });
 
   describe("Given vendor checks pass", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
