@@ -2481,8 +2481,8 @@ describe("Async Issue Biometric Credential", () => {
                     analytics: mockAnalyticsData,
                     audit: mockAuditData,
                     advisories: [
-                      Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-                      Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                      Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
+                      Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
                     ],
                   }),
                 );
@@ -2500,8 +2500,8 @@ describe("Async Issue Biometric Credential", () => {
                   "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES",
                 data: {
                   expiredDrivingLicenceAdvisories: [
-                    Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
-                    Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                    Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
+                    Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
                   ],
                 },
                 persistentIdentifiers: {
@@ -2645,7 +2645,7 @@ describe("Async Issue Biometric Credential", () => {
                 dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
                   "3";
               });
-              describe("Given the second advisory is DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD", () => {
+              describe("Given the second advisory is DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD", () => {
                 beforeEach(async () => {
                   dependencies.getCredentialFromBiometricSession = jest
                     .fn()
@@ -2656,7 +2656,7 @@ describe("Async Issue Biometric Credential", () => {
                         audit: mockAuditData,
                         advisories: [
                           Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                          Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+                          Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
                         ],
                       }),
                     );
@@ -2767,7 +2767,7 @@ describe("Async Issue Biometric Credential", () => {
                 });
               });
 
-              describe("Given the second advisory is DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD", () => {
+              describe("Given the second advisory is DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD", () => {
                 beforeEach(async () => {
                   dependencies.getCredentialFromBiometricSession = jest
                     .fn()
@@ -2781,7 +2781,7 @@ describe("Async Issue Biometric Credential", () => {
                         audit: mockAuditData,
                         advisories: [
                           Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                          Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+                          Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
                         ],
                       }),
                     );
@@ -2894,7 +2894,7 @@ describe("Async Issue Biometric Credential", () => {
 
           describe.each([
             {
-              advisory: Advisory.DRIVING_LICENCE_EXPIRY_BEYOND_GRACE_PERIOD,
+              advisory: Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
               gracePeriodZeroScenario: {
                 expiryGracePeriodString: "0",
                 evidenceType: "fail",
@@ -2908,7 +2908,7 @@ describe("Async Issue Biometric Credential", () => {
               },
             },
             {
-              advisory: Advisory.DRIVING_LICENCE_EXPIRY_WITHIN_GRACE_PERIOD,
+              advisory: Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
               gracePeriodZeroScenario: {
                 expiryGracePeriodString: "0",
                 evidenceType: "fail",
