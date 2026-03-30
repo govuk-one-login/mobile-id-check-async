@@ -9,6 +9,9 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+import { getDescribeForExpiryGracePeriodEnabledTests } from "../../../../utils/matchers";
+
+const describe = getDescribeForExpiryGracePeriodEnabledTests();
 
 describe("Given DVLA document has not expired", () => {
   let subjectIdentifier: string;
@@ -231,6 +234,9 @@ describe("Given DVLA document has not expired", () => {
               txn: expect.any(String),
             },
           ],
+          document_expiry: {
+            evaluation_result_code: "DOCUMENT_NOT_EXPIRED",
+          },
         },
       });
     });

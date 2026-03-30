@@ -9,6 +9,9 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+import { getDescribeForExpiryGracePeriodEnabledTests } from "../../../../utils/matchers";
+
+const describe = getDescribeForExpiryGracePeriodEnabledTests();
 
 describe("Given DVLA document has expired and is within the grace period", () => {
   let subjectIdentifier: string;

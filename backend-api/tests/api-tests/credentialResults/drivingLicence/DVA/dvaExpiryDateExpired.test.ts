@@ -9,6 +9,10 @@ import {
   pollForEvents,
 } from "../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
+import { getDescribeForExpiryGracePeriodDisabledTests } from "../../../utils/matchers";
+import { beforeEach, it, expect } from "@jest/globals";
+
+const describe = getDescribeForExpiryGracePeriodDisabledTests();
 
 describe("Given DVA document has expired", () => {
   let subjectIdentifier: string;

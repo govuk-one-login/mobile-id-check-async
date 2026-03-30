@@ -10,6 +10,9 @@ import {
 } from "../../../../utils/apiTestHelpers";
 import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "../../../testConfig";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+import { getDescribeForExpiryGracePeriodEnabledTests } from "../../../../utils/matchers";
+
+const describe = getDescribeForExpiryGracePeriodEnabledTests();
 
 describe("Given DVLA document has expired and is beyond the grace period", () => {
   let subjectIdentifier: string;

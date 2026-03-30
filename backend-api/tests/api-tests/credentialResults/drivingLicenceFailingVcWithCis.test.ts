@@ -10,6 +10,9 @@ import {
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect } from "@jest/globals";
 import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
+import { getDescribeForExpiryGracePeriodDisabledTests } from "../utils/matchers";
+
+const describe = getDescribeForExpiryGracePeriodDisabledTests();
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
