@@ -155,7 +155,7 @@ expiryGracePeriodEnabledDescribe()(
         });
       }, 60000);
 
-      it("Writes verified credential with fail evidence to the IPV Core outbound queue", () => {
+      it("Writes verified credential with pass evidence to the IPV Core outbound queue", () => {
         const { protectedHeader, payload } = verifiedJwt;
 
         expect(protectedHeader).toEqual({
