@@ -482,7 +482,3 @@ export async function getVerifiedJwt(
 
   return verifiedJwt;
 }
-
-export function expiryGracePeriodEnabled() {
-  return EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0;
-}
