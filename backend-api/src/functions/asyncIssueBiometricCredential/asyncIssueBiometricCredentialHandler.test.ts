@@ -1796,7 +1796,7 @@ describe("Async Issue Biometric Credential", () => {
                   credential: mockBiometricCredential,
                   analytics: mockAnalyticsData,
                   audit: mockAuditDataWithFlags,
-                  advisories: ["mockAdvisory1", "mockAdvisory2"],
+                  advisories: [],
                 }),
               );
 
@@ -1950,7 +1950,7 @@ describe("Async Issue Biometric Credential", () => {
                   credential: mockCredentialWithContraIndicators,
                   analytics: "mockAnalytics",
                   audit: mockAuditDataWithContraIndicatorReasons,
-                  advisories: ["mockAdvisory1", "mockAdvisory2"],
+                  advisories: [],
                 }),
               );
 
