@@ -2399,8 +2399,37 @@ describe("Async Issue Biometric Credential", () => {
       );
 
       describe("Document expiry - evaluation result codes", () => {
-        describe("Validation failures", () => {
-          describe("Given there is more than one evaluation result code", () => {
+        describe("Validation failures - multiple advisories that map to result codes", () => {
+          describe.each([
+            {
+              scenario: "_BEYOND_ and _WITHIN_",
+              advisories: [
+                Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
+                Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
+              ],
+            },
+            {
+              scenario: "_BEYOND_ and _NOT_EXPIRED_",
+              advisories: [
+                Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
+                Advisory.DRIVING_LICENCE_NOT_EXPIRED,
+              ],
+            },
+            {
+              scenario: "_WITHIN_ and _NOT_EXPIRED",
+              advisories: [
+                Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
+                Advisory.DRIVING_LICENCE_NOT_EXPIRED,
+              ],
+            },
+            {
+              scenario: "_BEYOND_ and _BEYOND_",
+              advisories: [
+                Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
+                Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
+              ],
+            },
+          ])("Given the codes are $scenario", ({ advisories }) => {
             describe("Given the grace period is 0 (disabled)", () => {
               beforeEach(async () => {
                 dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
@@ -2412,10 +2441,7 @@ describe("Async Issue Biometric Credential", () => {
                       credential: mockBiometricCredential,
                       analytics: mockAnalyticsData,
                       audit: mockAuditData,
-                      advisories: [
-                        Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
-                        Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
-                      ],
+                      advisories,
                     }),
                   );
 
@@ -2539,10 +2565,7 @@ describe("Async Issue Biometric Credential", () => {
                       credential: mockBiometricCredential,
                       analytics: mockAnalyticsData,
                       audit: mockAuditData,
-                      advisories: [
-                        Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
-                        Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
-                      ],
+                      advisories,
                     }),
                   );
 
@@ -2558,10 +2581,7 @@ describe("Async Issue Biometric Credential", () => {
                   messageCode:
                     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES",
                   data: {
-                    expiredDrivingLicenceAdvisories: [
-                      Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
-                      Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
-                    ],
+                    expiredDrivingLicenceAdvisories: advisories,
                   },
                   persistentIdentifiers: {
                     govukSigninJourneyId: mockGovukSigninJourneyId,
