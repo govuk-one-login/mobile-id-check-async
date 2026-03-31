@@ -7,12 +7,10 @@ export const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
   EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;
 
 export function expiryGracePeriodDisabledDescribe() {
-  if (
-    isValidExpiryGracePeriod(
-      EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-    ) &&
-    EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0
-  ) {
+  throwIfExpiryGracePeriodNotValid(
+    EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  );
+  if (EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0) {
     return describe.skip;
   }
 
@@ -20,26 +18,30 @@ export function expiryGracePeriodDisabledDescribe() {
 }
 
 export function expiryGracePeriodEnabledDescribe() {
-  if (
-    isValidExpiryGracePeriod(
-      EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-    ) &&
-    EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS === 0
-  ) {
+  throwIfExpiryGracePeriodNotValid(
+    EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  );
+
+  if (EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS === 0) {
     return describe.skip;
   }
 
   return describe;
 }
 
-function isValidExpiryGracePeriod(expiryGracePeriod: any) {
-  if (expiryGracePeriod == null) return false;
+function throwIfExpiryGracePeriodNotValid(expiryGracePeriod: any) {
+  if (expiryGracePeriod == null)
+    throw new Error(
+      "EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS is not set in test environment variables",
+    );
   if (
     !Number.isNaN(expiryGracePeriod) &&
     typeof expiryGracePeriod === "number" &&
     expiryGracePeriod >= 0
   )
-    return true;
+    return;
 
-  return false;
+  throw new Error(
+    `EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS is not valid: ${expiryGracePeriod}`,
+  );
 }
