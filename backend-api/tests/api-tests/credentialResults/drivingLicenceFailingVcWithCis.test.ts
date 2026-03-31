@@ -1,3 +1,6 @@
+import { beforeAll, expect, it } from "@jest/globals";
+import { JWTVerifyResult, ResolvedKey } from "jose";
+import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
 import {
   doAsyncJourney,
   EventResponse,
@@ -7,10 +10,6 @@ import {
   pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
-import { JWTVerifyResult, ResolvedKey } from "jose";
-import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
-import { beforeAll, it, expect } from "@jest/globals";
-import { expiryGracePeriodDisabledDescribe } from "./drivingLicence/DVLA/dvlaExpiryTestSetup";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
