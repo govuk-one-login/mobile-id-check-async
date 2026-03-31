@@ -47,11 +47,7 @@ import {
   SessionState,
 } from "../common/session/session";
 import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
-import {
-  GenericEventConfig,
-  GenericEventNames,
-  IEventService,
-} from "../services/events/types";
+import { GenericEventNames, IEventService } from "../services/events/types";
 import { CredentialJwtPayload } from "../types/jwt";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
@@ -68,10 +64,20 @@ export async function lambdaHandlerConstructor(
 
   const configResult = getIssueBiometricCredentialConfig(dependencies.env);
   if (configResult.isError) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG);
     throw new RetainMessageOnQueue("Invalid config");
   }
   const config = configResult.value;
+
+  const dvlaDrivingLicenceExpiryGracePeriodInDays = Number(
+    config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  );
+
+  if (Number.isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG, {
+      data: { invalidExpiryGracePeriod: "NaN" },
+    });
+    throw new RetainMessageOnQueue("Invalid config");
+  }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD, {
     data: {
@@ -200,23 +206,6 @@ export async function lambdaHandlerConstructor(
     throw new RetainMessageOnQueue(
       `Biometric session not ready: ${biometricSession.finish}`,
     );
-  }
-
-  const dvlaDrivingLicenceExpiryGracePeriodInDays = Number(
-    config.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-  );
-
-  if (Number.isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
-    handleExpiryGracePeriodBeingNaN(
-      dvlaDrivingLicenceExpiryGracePeriodInDays,
-      config,
-      dependencies,
-      sessionAttributes,
-      eventService,
-      genericEvent,
-    );
-
-    return;
   }
 
   const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
@@ -750,39 +739,4 @@ function logIfExpiredDrivingLicence(
       },
     );
   }
-}
-
-async function handleExpiryGracePeriodBeingNaN(
-  dvlaDrivingLicenceExpiryGracePeriodInDays: unknown,
-  config: IssueBiometricCredentialConfig,
-  dependencies: IssueBiometricCredentialDependencies,
-  sessionAttributes: BiometricSessionFinishedAttributes,
-  eventService: IEventService,
-  event: GenericEventConfig,
-) {
-  logger.error(
-    LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID,
-    {
-      data: {
-        dvlaDrivingLicenceExpiryGracePeriodInDays,
-      },
-    },
-  );
-
-  const handleSendErrorMessageToOutboundQueueResponse =
-    await handleSendErrorMessageToOutboundQueue(
-      dependencies,
-      sessionAttributes,
-      config,
-      { error: "server_error", error_description: "Internal server error" },
-    );
-  if (handleSendErrorMessageToOutboundQueueResponse.isError) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR, {
-      data: { messageType: "ERROR_MESSAGE" },
-    });
-  }
-
-  const writeEventResult = await eventService.writeGenericEvent(event);
-
-  if (writeEventResult.isError) logErrorWritingErrorEvent();
 }

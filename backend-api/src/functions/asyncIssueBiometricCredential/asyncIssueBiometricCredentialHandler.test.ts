@@ -276,6 +276,33 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
     });
+
+    describe("Given the DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS is invalid", () => {
+      beforeEach(async () => {
+        dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
+          "INVALID";
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error;
+        }
+      });
+
+      it("Logs INVALID_CONFIG", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+          data: {
+            invalidExpiryGracePeriod: "NaN",
+          },
+        });
+      });
+
+      it("Throws RetainMessageOnQueue", async () => {
+        expect(lambdaError).toStrictEqual(
+          new RetainMessageOnQueue("Invalid config"),
+        );
+      });
+    });
   });
 
   describe("SQS Event validation", () => {
@@ -2342,133 +2369,6 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         describe("Validation failures", () => {
-          describe("Given DVLA driving licence expiry grace period is NaN", () => {
-            beforeEach(async () => {
-              dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                "Not a number";
-
-              await lambdaHandlerConstructor(
-                dependencies,
-                validSqsEvent,
-                context,
-              );
-            });
-
-            it("Logs ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID", () => {
-              expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-                messageCode:
-                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD_NOT_VALID",
-                data: {
-                  dvlaDrivingLicenceExpiryGracePeriodInDays: null,
-                },
-                persistentIdentifiers: {
-                  govukSigninJourneyId: mockGovukSigninJourneyId,
-                },
-              });
-            });
-
-            describe("Given sending error to IPV Core fails", () => {
-              beforeEach(async () => {
-                dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
-                await lambdaHandlerConstructor(
-                  dependencies,
-                  validSqsEvent,
-                  context,
-                );
-              });
-
-              it("Logs IPV Core message error", () => {
-                expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-                  messageCode:
-                    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
-                  data: { messageType: "ERROR_MESSAGE" },
-                  persistentIdentifiers: {
-                    govukSigninJourneyId: mockGovukSigninJourneyId,
-                  },
-                });
-              });
-            });
-
-            it("Sends server_error to IPV Core", () => {
-              expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
-                "mockIpvcoreOutboundSqs",
-                expectedServerErrorMessage,
-              );
-            });
-
-            describe("Given writing to TxMA fails", () => {
-              beforeEach(async () => {
-                dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                  "Not a number";
-                dependencies.getEventService = () => ({
-                  ...mockInertEventService,
-                  writeGenericEvent: jest.fn().mockResolvedValue(
-                    errorResult({
-                      errorMessage: "mockError",
-                    }),
-                  ),
-                });
-
-                await lambdaHandlerConstructor(
-                  dependencies,
-                  validSqsEvent,
-                  context,
-                );
-              });
-
-              it("Logs DCMAW_ASYNC_CRI_ERROR audit event failure", () => {
-                expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-                  messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-                  data: { auditEventName: expectedErrorTxmaEventName },
-                  persistentIdentifiers: {
-                    govukSigninJourneyId: mockGovukSigninJourneyId,
-                  },
-                });
-              });
-            });
-
-            describe("Given writing to TxMA succeeds", () => {
-              it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
-                expect(
-                  mockSuccessfulEventService.writeGenericEvent,
-                ).toHaveBeenCalledWith({
-                  componentId: mockIssuer,
-                  eventName: expectedErrorTxmaEventName,
-                  getNowInMilliseconds: Date.now,
-                  govukSigninJourneyId: mockGovukSigninJourneyId,
-                  ipAddress: undefined,
-                  redirect_uri: undefined,
-                  sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
-                  sub: "mockSubjectIdentifier",
-                  transactionId: mockBiometricSessionId,
-                  txmaAuditEncoded: undefined,
-                });
-              });
-            });
-
-            it("sendMessageToSqs called with correct arguments", () => {
-              expect(
-                mockSendMessageToSqsSuccess,
-              ).toHaveBeenCalledNthWithSqsMessage(1, {
-                sqsArn: "mockIpvcoreOutboundSqs",
-                expectedMessage: {
-                  sub: "mockSubjectIdentifier",
-                  state: "mockClientState",
-                  govuk_signin_journey_id: "mockGovukSigninJourneyId",
-                  error: "server_error",
-                  error_description: "Internal server error",
-                },
-              });
-            });
-
-            it("Does not log COMPLETED", () => {
-              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-                messageCode:
-                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-              });
-            });
-          });
-
           describe("Given there is more than one evaluation result code", () => {
             beforeEach(async () => {
               dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
