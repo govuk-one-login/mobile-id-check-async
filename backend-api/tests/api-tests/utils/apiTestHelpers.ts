@@ -5,6 +5,12 @@ import {
 import { AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
 import {
+  createRemoteJWKSet,
+  jwtVerify,
+  JWTVerifyResult,
+  ResolvedKey,
+} from "jose";
+import {
   PROXY_API_INSTANCE,
   READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
@@ -12,13 +18,6 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  JWTVerifyResult,
-  ResolvedKey,
-} from "jose";
-import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/drivingLicence/DVLA/dvlaExpiryTestSetup";
 
 export interface ClientDetails {
   client_id: string;
