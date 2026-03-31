@@ -2363,7 +2363,7 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      describe("Expiry grace period", () => {
+      describe("Document expiry - evaluation result codes", () => {
         describe("Validation failures", () => {
           describe("Given there is more than one evaluation result code", () => {
             describe("Given the grace period is 0 (disabled)", () => {
@@ -2544,260 +2544,7 @@ describe("Async Issue Biometric Credential", () => {
           });
         });
 
-        describe("Given there is an expired driving licence advisory", () => {
-          describe("Given there are multiple advisories", () => {
-            describe("Given the grace period is greater than 0", () => {
-              beforeEach(() => {
-                dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                  "3";
-              });
-              describe("Given the advisories are VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE and DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD", () => {
-                beforeEach(async () => {
-                  dependencies.getCredentialFromBiometricSession = jest
-                    .fn()
-                    .mockReturnValue(
-                      successResult({
-                        credential: mockBiometricCredential,
-                        analytics: mockAnalyticsData,
-                        audit: mockAuditData,
-                        advisories: [
-                          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                          Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
-                        ],
-                      }),
-                    );
-
-                  await lambdaHandlerConstructor(
-                    dependencies,
-                    validSqsEvent,
-                    context,
-                  );
-                });
-
-                it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with fail evidence", () => {
-                  expect(
-                    mockSendMessageToSqsSuccess,
-                  ).toHaveBeenCalledNthWithSqsMessage(2, {
-                    sqsArn: "mockTxmaSqs",
-                    expectedMessage: {
-                      event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-                      user: {
-                        user_id: mockSubjectIdentifier,
-                        session_id: mockSessionId,
-                        govuk_signin_journey_id: mockGovukSigninJourneyId,
-                        transaction_id: mockBiometricSessionId,
-                      },
-                      event_timestamp_ms: 1704110400000,
-                      timestamp: 1704110400,
-                      component_id: "mockIssuer",
-                      extensions: {
-                        evidence: [
-                          {
-                            type: "IdentityCheck",
-                            txn: "mockTxn",
-                            strengthScore: 3,
-                            validityScore: 0,
-                            activityHistoryScore: 0,
-                            ci: [],
-                            ciReasons: [],
-                            txmaContraIndicators: [],
-                            failedCheckDetails: [
-                              {
-                                checkMethod: "bvr",
-                                identityCheckPolicy: "published",
-                                activityFrom: undefined,
-                                biometricVerificationProcessLevel: 3,
-                              },
-                            ],
-                          },
-                        ],
-                        document_expiry: {
-                          evaluation_result_code:
-                            "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
-                        },
-                      },
-                      restricted: {
-                        name: [
-                          {
-                            nameParts: [
-                              {
-                                type: "GivenName",
-                                value: "mockGivenName",
-                              },
-                              {
-                                type: "FamilyName",
-                                value: "mockFamilyName",
-                              },
-                            ],
-                          },
-                        ],
-                        birthDate: [
-                          {
-                            value: "mockBirthDate",
-                          },
-                        ],
-                        deviceId: [
-                          {
-                            value: "mockDeviceId",
-                          },
-                        ],
-                        address: [
-                          {
-                            addressCountry: null,
-                            addressLocality: null,
-                            buildingName: null,
-                            buildingNumber: null,
-                            dependentAddressLocality: null,
-                            dependentStreetName: null,
-                            doubleDependentAddressLocality: null,
-                            organisationName: null,
-                            postalCode: "mockPostalCode",
-                            streetName: null,
-                            subBuildingName: null,
-                            uprn: null,
-                          },
-                        ],
-                        drivingPermit: [
-                          {
-                            expiryDate: "mockExpiryDate",
-                            fullAddress: "mockFullAddress",
-                            issueDate: null,
-                            issueNumber: null,
-                            issuedBy: null,
-                            personalNumber: "mockPersonalNumber",
-                          },
-                        ],
-                      },
-                    },
-                  });
-                });
-              });
-
-              describe("Given the advisories are VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE and DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD", () => {
-                beforeEach(async () => {
-                  dependencies.getCredentialFromBiometricSession = jest
-                    .fn()
-                    .mockReturnValue(
-                      successResult({
-                        credential: {
-                          ...mockBiometricCredential,
-                          evidence: mockPassEvidence,
-                        },
-                        analytics: mockAnalyticsData,
-                        audit: mockAuditData,
-                        advisories: [
-                          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                          Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
-                        ],
-                      }),
-                    );
-
-                  await lambdaHandlerConstructor(
-                    dependencies,
-                    validSqsEvent,
-                    context,
-                  );
-                });
-
-                it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with pass evidence", () => {
-                  expect(
-                    mockSendMessageToSqsSuccess,
-                  ).toHaveBeenCalledNthWithSqsMessage(2, {
-                    sqsArn: "mockTxmaSqs",
-                    expectedMessage: {
-                      event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-                      user: {
-                        user_id: mockSubjectIdentifier,
-                        session_id: mockSessionId,
-                        govuk_signin_journey_id: mockGovukSigninJourneyId,
-                        transaction_id: mockBiometricSessionId,
-                      },
-                      event_timestamp_ms: 1704110400000,
-                      timestamp: 1704110400,
-                      component_id: "mockIssuer",
-                      extensions: {
-                        evidence: [
-                          {
-                            type: "IdentityCheck",
-                            txn: "mockTxn",
-                            strengthScore: 3,
-                            validityScore: 2,
-                            activityHistoryScore: 1,
-                            txmaContraIndicators: [],
-                            checkDetails: [
-                              {
-                                checkMethod: "bvr",
-                                identityCheckPolicy: "published",
-                                activityFrom: undefined,
-                                biometricVerificationProcessLevel: 3,
-                              },
-                            ],
-                          },
-                        ],
-                        document_expiry: {
-                          evaluation_result_code:
-                            "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
-                        },
-                      },
-                      restricted: {
-                        name: [
-                          {
-                            nameParts: [
-                              {
-                                type: "GivenName",
-                                value: "mockGivenName",
-                              },
-                              {
-                                type: "FamilyName",
-                                value: "mockFamilyName",
-                              },
-                            ],
-                          },
-                        ],
-                        birthDate: [
-                          {
-                            value: "mockBirthDate",
-                          },
-                        ],
-                        deviceId: [
-                          {
-                            value: "mockDeviceId",
-                          },
-                        ],
-                        address: [
-                          {
-                            addressCountry: null,
-                            addressLocality: null,
-                            buildingName: null,
-                            buildingNumber: null,
-                            dependentAddressLocality: null,
-                            dependentStreetName: null,
-                            doubleDependentAddressLocality: null,
-                            organisationName: null,
-                            postalCode: "mockPostalCode",
-                            streetName: null,
-                            subBuildingName: null,
-                            uprn: null,
-                          },
-                        ],
-                        drivingPermit: [
-                          {
-                            expiryDate: "mockExpiryDate",
-                            fullAddress: "mockFullAddress",
-                            issueDate: null,
-                            issueNumber: null,
-                            issuedBy: null,
-                            personalNumber: "mockPersonalNumber",
-                          },
-                        ],
-                      },
-                    },
-                  });
-                });
-              });
-            });
-          });
-
+        describe("Given there is an advisory that maps to an evaluation result code", () => {
           describe.each([
             {
               advisory: Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
@@ -2865,7 +2612,10 @@ describe("Async Issue Biometric Credential", () => {
                         },
                         analytics: mockAnalyticsData,
                         audit: mockAuditData,
-                        advisories: ["mockAdvisory1", advisory],
+                        advisories: [
+                          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+                          advisory,
+                        ],
                       }),
                     );
 
@@ -2973,7 +2723,10 @@ describe("Async Issue Biometric Credential", () => {
                         },
                         analytics: mockAnalyticsData,
                         audit: mockAuditData,
-                        advisories: ["mockAdvisory1", advisory],
+                        advisories: [
+                          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+                          advisory,
+                        ],
                       }),
                     );
 
