@@ -18,7 +18,7 @@ import {
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
-import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/dvlaExpiryTestSetup";
+import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../credentialResults/drivingLicence/DVLA/dvlaExpiryTestSetup";
 
 export interface ClientDetails {
   client_id: string;

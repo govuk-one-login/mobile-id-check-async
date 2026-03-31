@@ -10,7 +10,7 @@ import {
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 import { beforeAll, it, expect } from "@jest/globals";
-import { expiryGracePeriodEnabledDescribe } from "../../../dvlaExpiryTestSetup";
+import { expiryGracePeriodEnabledDescribe } from "../dvlaExpiryTestSetup";
 
 expiryGracePeriodEnabledDescribe()(
   "Given DVLA document has not expired",

@@ -12,7 +12,7 @@ import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 import {
   EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
   expiryGracePeriodEnabledDescribe,
-} from "../../../dvlaExpiryTestSetup";
+} from "../dvlaExpiryTestSetup";
 import { beforeAll, it, expect } from "@jest/globals";
 
 expiryGracePeriodEnabledDescribe()(

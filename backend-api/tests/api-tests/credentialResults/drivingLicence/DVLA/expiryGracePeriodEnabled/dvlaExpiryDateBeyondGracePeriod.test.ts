@@ -11,7 +11,7 @@ import {
 import {
   EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
   expiryGracePeriodEnabledDescribe,
-} from "../../../dvlaExpiryTestSetup";
+} from "../dvlaExpiryTestSetup";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
 import { beforeAll, it, expect } from "@jest/globals";
 
