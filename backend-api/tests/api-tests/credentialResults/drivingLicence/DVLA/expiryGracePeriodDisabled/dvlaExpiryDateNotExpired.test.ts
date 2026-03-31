@@ -9,6 +9,7 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Given DVLA document has not expired", () => {
   let subjectIdentifier: string;

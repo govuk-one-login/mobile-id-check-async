@@ -9,6 +9,7 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { generateRandomString } from "./utils/apiTestData";
+import { expect, it, describe, beforeAll } from "vitest";
 
 const getApisToTest = (): {
   apiName: string;

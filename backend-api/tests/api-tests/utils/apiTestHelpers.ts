@@ -18,6 +18,7 @@ import {
   JWTVerifyResult,
   ResolvedKey,
 } from "jose";
+import { expect } from "vitest";
 
 export interface ClientDetails {
   client_id: string;

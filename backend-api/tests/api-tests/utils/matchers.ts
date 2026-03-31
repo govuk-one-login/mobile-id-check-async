@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { expect } from "vitest";
 
 const toBeValidUuid = (candidate: unknown) => {
   const pass = isValidUuid(candidate);

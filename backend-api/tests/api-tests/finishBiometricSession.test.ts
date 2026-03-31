@@ -14,6 +14,7 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { AxiosResponse } from "axios";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("POST /async/finishBiometricSession", () => {
   describe("Given the request body is invalid", () => {

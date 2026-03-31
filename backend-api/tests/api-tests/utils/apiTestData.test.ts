@@ -1,16 +1,17 @@
 import { getIsoStringDateNDaysFromToday } from "./apiTestData";
+import { vi, expect, it, describe, beforeEach, afterEach } from "vitest";
 
 describe("API Test Data", () => {
   describe("getIsoStringDateNDaysFromToday", () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
     describe("Today is 2024-01-01", () => {
       beforeEach(() => {
-        jest.setSystemTime(1704110400000); // Monday, January 1, 2024 at 12:00:00 PM
+        vi.setSystemTime(1704110400000); // Monday, January 1, 2024 at 12:00:00 PM
       });
       it("Returns yesterday's date", () => {
         const result = getIsoStringDateNDaysFromToday(-1);
@@ -28,7 +29,7 @@ describe("API Test Data", () => {
 
     describe("Today is 2024-03-01 (leap year)", () => {
       beforeEach(() => {
-        jest.setSystemTime(1709294400000); // Friday, March 1, 2024 at 12:00:00 PM
+        vi.setSystemTime(1709294400000); // Friday, March 1, 2024 at 12:00:00 PM
       });
       it("Returns yesterday's date", () => {
         const result = getIsoStringDateNDaysFromToday(-1);
@@ -46,7 +47,7 @@ describe("API Test Data", () => {
 
     describe("Today is 2023-03-01 (not a leap year)", () => {
       beforeEach(() => {
-        jest.setSystemTime(1677672000000); // Wednesday, March 1, 2023 at 12:00:00 PM
+        vi.setSystemTime(1677672000000); // Wednesday, March 1, 2023 at 12:00:00 PM
       });
       it("Returns yesterday's date", () => {
         const result = getIsoStringDateNDaysFromToday(-1);

@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import { AxiosResponse } from "axios";
 import "./utils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
@@ -13,6 +12,7 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("POST /async/biometricToken", () => {
   describe("Given request body is invalid", () => {

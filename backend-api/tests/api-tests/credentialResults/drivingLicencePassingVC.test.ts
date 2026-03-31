@@ -8,7 +8,7 @@ import {
   Scenario,
 } from "../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
-import { expect } from "@jest/globals";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("Driving licence passed credential result", () => {
   let subjectIdentifier: string;
