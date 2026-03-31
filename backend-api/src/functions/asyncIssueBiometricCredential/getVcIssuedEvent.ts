@@ -11,10 +11,10 @@ import {
   PassEvidence,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { BiometricSessionFinishedAttributes } from "../common/session/session";
-import { errorResult, Result, successResult } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { BiometricSessionFinishedAttributes } from "../common/session/session";
+import { emptyFailure, Result, successResult } from "../utils/result";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
@@ -76,17 +76,15 @@ export const getVcIssuedEvent = (
   session: BiometricSessionFinishedAttributes,
   dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
-): Result<VcIssuedTxMAEvent, Advisory[]> => {
+): Result<VcIssuedTxMAEvent, void> => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
 
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  let evaluationResultCode:
-    | EvaluationResultCodeExtension
-    | undefined
-    | Advisory[] = undefined;
+  let evaluationResultCode: EvaluationResultCodeExtension | undefined =
+    undefined;
   if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
     const evaluationResultCodeResult =
       getEvaluationResultCodeExtensionResult(advisories);
@@ -163,7 +161,7 @@ const isMobileAppMobileJourney = (session: {
 
 const getEvaluationResultCodeExtensionResult = (
   advisories: Advisory[],
-): Result<EvaluationResultCodeExtension | undefined, Advisory[]> => {
+): Result<EvaluationResultCodeExtension | undefined, void> => {
   if (advisories.length === 0) return successResult(undefined);
 
   const expiredDrivingLicenceAdvisories = advisories.filter(
@@ -176,7 +174,7 @@ const getEvaluationResultCodeExtensionResult = (
       { data: { expiredDrivingLicenceAdvisories } },
     );
 
-    return errorResult(expiredDrivingLicenceAdvisories);
+    return emptyFailure();
   }
 
   if (expiredDrivingLicenceAdvisories.length === 0)
