@@ -2549,12 +2549,10 @@ describe("Async Issue Biometric Credential", () => {
             {
               advisory: Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
               gracePeriodZeroScenario: {
-                expiryGracePeriodString: "0",
                 evidenceType: "fail",
                 evidence: mockFailEvidence,
               },
               gracePeriodGreaterThanZeroScenario: {
-                expiryGracePeriodString: "3",
                 evidenceType: "fail",
                 evidence: mockFailEvidence,
                 evaluationResultCode: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
@@ -2563,12 +2561,10 @@ describe("Async Issue Biometric Credential", () => {
             {
               advisory: Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
               gracePeriodZeroScenario: {
-                expiryGracePeriodString: "0",
                 evidenceType: "fail",
                 evidence: mockFailEvidence,
               },
               gracePeriodGreaterThanZeroScenario: {
-                expiryGracePeriodString: "3",
                 evidenceType: "pass",
                 evidence: mockPassEvidence,
                 evaluationResultCode: "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
@@ -2577,12 +2573,10 @@ describe("Async Issue Biometric Credential", () => {
             {
               advisory: Advisory.DRIVING_LICENCE_NOT_EXPIRED,
               gracePeriodZeroScenario: {
-                expiryGracePeriodString: "0",
                 evidenceType: "pass",
                 evidence: mockPassEvidence,
               },
               gracePeriodGreaterThanZeroScenario: {
-                expiryGracePeriodString: "3",
                 evidenceType: "pass",
                 evidence: mockPassEvidence,
                 evaluationResultCode: "DOCUMENT_NOT_EXPIRED",
@@ -2596,12 +2590,11 @@ describe("Async Issue Biometric Credential", () => {
               gracePeriodGreaterThanZeroScenario,
             }) => {
               describe("Given the grace period is 0", () => {
-                const { expiryGracePeriodString, evidenceType, evidence } =
-                  gracePeriodZeroScenario;
+                const { evidenceType, evidence } = gracePeriodZeroScenario;
 
                 beforeEach(async () => {
                   dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                    expiryGracePeriodString;
+                    "0";
                   dependencies.getCredentialFromBiometricSession = jest
                     .fn()
                     .mockReturnValue(
@@ -2703,16 +2696,12 @@ describe("Async Issue Biometric Credential", () => {
               });
 
               describe("Given the grace period is greater than 0", () => {
-                const {
-                  expiryGracePeriodString,
-                  evidenceType,
-                  evidence,
-                  evaluationResultCode,
-                } = gracePeriodGreaterThanZeroScenario;
+                const { evidenceType, evidence, evaluationResultCode } =
+                  gracePeriodGreaterThanZeroScenario;
 
                 beforeEach(async () => {
                   dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                    expiryGracePeriodString;
+                    "3";
                   dependencies.getCredentialFromBiometricSession = jest
                     .fn()
                     .mockReturnValue(
