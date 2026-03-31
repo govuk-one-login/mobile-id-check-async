@@ -1,6 +1,7 @@
 import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
+import { expect, it, describe, test } from "vitest";
 
 const { schema } = require("yaml-cfn");
 

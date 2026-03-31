@@ -13,7 +13,7 @@
     "lint": "./node_modules/.bin/eslint ./src/functions",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
     "test:api": "NODE_OPTIONS=--experimental-vm-modules ./node_modules/.bin/jest --testPathPatterns=api-tests/",
-    "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
+    "test:infra": "vitest run infra-tests",
     "test:pact": "./node_modules/.bin/jest --testPathPatterns=src/functions/tests/pact/",
     "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
     "test:pact:ci": "npm run test:pact:authorize && npm run test:pact",
