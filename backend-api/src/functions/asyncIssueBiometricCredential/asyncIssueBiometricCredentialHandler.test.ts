@@ -305,6 +305,22 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
+  describe("Expiry grace period log", () => {
+    beforeEach(async () => {
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+
+    it("Logs DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
+        data: {
+          dvlaDrivingLicenceExpiryGracePeriod: "0",
+        },
+      });
+    });
+  });
+
   describe("SQS Event validation", () => {
     describe("Given event does not contain exactly 1 record", () => {
       describe.each([
@@ -2348,26 +2364,6 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       describe("Expiry grace period", () => {
-        describe("Expiry grace period log", () => {
-          beforeEach(async () => {
-            await lambdaHandlerConstructor(
-              dependencies,
-              validSqsEvent,
-              context,
-            );
-          });
-
-          it("Logs DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS", () => {
-            expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-              messageCode:
-                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
-              data: {
-                dvlaDrivingLicenceExpiryGracePeriod: "0",
-              },
-            });
-          });
-        });
-
         describe("Validation failures", () => {
           describe("Given there is more than one evaluation result code", () => {
             beforeEach(async () => {
