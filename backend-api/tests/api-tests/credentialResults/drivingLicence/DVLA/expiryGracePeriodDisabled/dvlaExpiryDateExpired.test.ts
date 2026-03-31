@@ -9,12 +9,10 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import { getDescribeForExpiryGracePeriodDisabledTests } from "../../../../utils/matchers";
 import { beforeAll, it, expect } from "@jest/globals";
+import { expiryGracePeriodDisabledDescribe } from "../../../dvlaExpiryTestSetup";
 
-const describe = getDescribeForExpiryGracePeriodDisabledTests();
-
-describe("Given DVLA document has expired", () => {
+expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;

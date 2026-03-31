@@ -1,4 +1,6 @@
+import { beforeAll, expect, it } from "@jest/globals";
 import { JWTVerifyResult, ResolvedKey } from "jose";
+import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
 import {
   EventResponse,
   Scenario,
@@ -8,11 +10,6 @@ import {
   getVerifiedJwt,
   pollForEvents,
 } from "../../../utils/apiTestHelpers";
-import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
-import { getDescribeForExpiryGracePeriodDisabledTests } from "../../../utils/matchers";
-import { beforeAll, it, expect } from "@jest/globals";
-
-const describe = getDescribeForExpiryGracePeriodDisabledTests();
 
 describe("Given DVA document has expired", () => {
   let subjectIdentifier: string;
