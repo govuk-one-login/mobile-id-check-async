@@ -753,7 +753,7 @@ function logIfExpiredDrivingLicence(
 }
 
 async function handleExpiryGracePeriodBeingNaN(
-  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  dvlaDrivingLicenceExpiryGracePeriodInDays: unknown,
   config: IssueBiometricCredentialConfig,
   dependencies: IssueBiometricCredentialDependencies,
   sessionAttributes: BiometricSessionFinishedAttributes,
