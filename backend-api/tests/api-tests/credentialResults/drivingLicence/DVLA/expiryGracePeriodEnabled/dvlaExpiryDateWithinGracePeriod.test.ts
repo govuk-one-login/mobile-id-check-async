@@ -9,11 +9,14 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+import {
+  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+  expiryGracePeriodEnabledDescribe,
+} from "../dvlaExpiryTestSetup";
 import { beforeAll, it, expect } from "@jest/globals";
-import { expiryGracePeriodDisabledDescribe } from "../dvlaExpiryTestSetup";
 
-expiryGracePeriodDisabledDescribe()(
-  "Given DVLA document has not expired",
+expiryGracePeriodEnabledDescribe()(
+  "Given DVLA document has expired and is within the grace period",
   () => {
     let subjectIdentifier: string;
     let sessionId: string;
@@ -23,7 +26,9 @@ expiryGracePeriodDisabledDescribe()(
     let expiryDate: string;
 
     beforeAll(() => {
-      expiryDate = getIsoStringDateNDaysFromToday(0);
+      expiryDate = getIsoStringDateNDaysFromToday(
+        -EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
+      );
     });
 
     describe("Given vendor checks fail", () => {
@@ -119,6 +124,9 @@ expiryGracePeriodDisabledDescribe()(
                 txn: expect.any(String),
               },
             ],
+            document_expiry: {
+              evaluation_result_code: "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
+            },
           },
         });
       });
@@ -184,7 +192,6 @@ expiryGracePeriodDisabledDescribe()(
 
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
         const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-
         expect(actualEvent).toStrictEqual({
           timestamp: expect.any(Number),
           user: {
@@ -221,6 +228,7 @@ expiryGracePeriodDisabledDescribe()(
             evidence: [
               {
                 type: "IdentityCheck",
+                txn: expect.any(String),
                 strengthScore: 3,
                 validityScore: 2,
                 activityHistoryScore: 1,
@@ -231,9 +239,11 @@ expiryGracePeriodDisabledDescribe()(
                   }),
                 ]),
                 txmaContraIndicators: expect.any(Array),
-                txn: expect.any(String),
               },
             ],
+            document_expiry: {
+              evaluation_result_code: "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
+            },
           },
         });
       });

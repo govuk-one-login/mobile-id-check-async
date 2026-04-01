@@ -1,3 +1,6 @@
+import { beforeAll, expect, it } from "@jest/globals";
+import { JWTVerifyResult, ResolvedKey } from "jose";
+import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
 import {
   doAsyncJourney,
   EventResponse,
@@ -7,8 +10,6 @@ import {
   pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
-import { JWTVerifyResult, ResolvedKey } from "jose";
-import { expect } from "@jest/globals";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
@@ -16,11 +17,18 @@ describe("Driving licence failed credential result", () => {
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
+  let expiryDate: string;
 
   describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
+      expiryDate = getIsoStringDateNDaysFromToday(0);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS));
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
+          drivingLicence: {
+            issuedBy: "DVA",
+            validUntil: expiryDate,
+          },
+        }));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 

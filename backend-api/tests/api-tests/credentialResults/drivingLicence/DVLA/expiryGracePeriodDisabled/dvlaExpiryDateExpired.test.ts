@@ -9,8 +9,10 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+import { beforeAll, it, expect } from "@jest/globals";
+import { expiryGracePeriodDisabledDescribe } from "../dvlaExpiryTestSetup";
 
-describe("Given DVLA document has expired", () => {
+expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
@@ -18,12 +20,12 @@ describe("Given DVLA document has expired", () => {
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
   let expiryDate: string;
 
-  beforeEach(() => {
+  beforeAll(() => {
     expiryDate = getIsoStringDateNDaysFromToday(-1);
   });
 
   describe("Given vendor checks fail", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
           drivingLicence: {
@@ -125,7 +127,7 @@ describe("Given DVLA document has expired", () => {
   });
 
   describe("Given vendor checks pass", () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
         await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS, {
           drivingLicence: {
