@@ -1,13 +1,14 @@
 import { ProxyRequestService, validateStatus } from "./proxyRequestService";
 import axios, { AxiosResponse } from "axios";
 import { ErrorCategory } from "../../utils/result";
+import { vi, expect, it, describe, beforeEach } from "vitest";
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxios = vi.mocked(axios, true);
 
-jest.mock("axios");
+vi.mock("axios");
 describe("Proxy Request Service", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
   describe("Given the network request is not successful", () => {
     it("Returns an error result", async () => {
