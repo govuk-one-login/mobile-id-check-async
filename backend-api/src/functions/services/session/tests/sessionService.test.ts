@@ -11,13 +11,14 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { ISessionService, SessionService } from "../sessionService";
-import "aws-sdk-client-mock-jest";
+import "aws-sdk-client-mock-vitest";
 import { ErrorCategory } from "../../../utils/result";
 import {
   NOW_IN_MILLISECONDS,
   ONE_HOUR_AGO_IN_MILLISECONDS,
   ONE_HOUR_IN_FUTURE_IN_SECONDS,
 } from "../../../testUtils/unitTestData";
+import { vi, expect, it, describe, beforeEach, afterEach } from "vitest";
 
 describe("Session Service", () => {
   let sessionService: ISessionService;
@@ -30,11 +31,11 @@ describe("Session Service", () => {
   beforeEach(() => {
     sessionService = new SessionService("mockTableName");
     dynamoDbMockClient = mockClient(DynamoDBClient);
-    jest.useFakeTimers().setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers().setSystemTime(NOW_IN_MILLISECONDS);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("Get active session details", () => {
@@ -174,7 +175,9 @@ describe("Session Service", () => {
           redirectUri: "mockRedirectUri",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
         });
-        const expectedCommandInput: QueryCommandInput = {
+        const expectedCommandInput: Partial<
+          QueryCommandInput & Record<string, unknown>
+        > = {
           ExpressionAttributeValues: {
             ":oneHourAgoInMilliseconds": {
               N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
@@ -265,7 +268,9 @@ describe("Session Service", () => {
 
           expect(result.isError).toBe(false);
           expect(result.value).toEqual(expect.any(String));
-          const expectedCommandInput: PutItemCommandInput = {
+          const expectedCommandInput: Partial<
+            PutItemCommandInput & Record<string, unknown>
+          > = {
             ConditionExpression: "attribute_not_exists(sessionId)",
             Item: {
               clientId: { S: "mockClientId" },
@@ -302,7 +307,9 @@ describe("Session Service", () => {
 
           expect(result.isError).toBe(false);
           expect(result.value).toEqual(expect.any(String));
-          const expectedCommandInput: PutItemCommandInput = {
+          const expectedCommandInput: Partial<
+            PutItemCommandInput & Record<string, unknown>
+          > = {
             ConditionExpression: "attribute_not_exists(sessionId)",
             Item: {
               clientId: { S: "mockClientId" },
