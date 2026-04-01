@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import "../../../../../../tests/testUtils/matchers";
 import { InMemoryJwksCache } from "../JwksCache";
 import { GetKeysResponse, JwksCacheDependencies } from "../types";
@@ -9,32 +8,41 @@ import {
   successResult,
 } from "../../../../utils/result";
 import { NOW_IN_MILLISECONDS } from "../../../../testUtils/unitTestData";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 let inMemoryJwksCache: InMemoryJwksCache;
 let dependencies: JwksCacheDependencies;
 let result: Result<GetKeysResponse, void>;
-let consoleErrorSpy: jest.SpyInstance;
+let consoleErrorSpy: MockInstance;
 
 describe("InMemoryJwksCache - Errors", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
 
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleErrorSpy = vi.spyOn(console, "error");
 
     dependencies = {
-      sendRequest: jest.fn(),
+      sendRequest: vi.fn(),
     };
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("getJwks", () => {
     describe("Given an HTTP network error occurs", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest
+        dependencies.sendRequest = vi
           .fn()
           .mockResolvedValue(
             errorResult({ description: "mock_error_description" }),
@@ -60,7 +68,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given an error response is returned", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           errorResult({
             statusCode: 500,
             description: "mock_error_description",
@@ -88,7 +96,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given status code is not 200", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 201,
           }),
@@ -113,7 +121,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given response does not contain body", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
           }),
@@ -138,7 +146,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given response body is not valid JSON", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: "invalid_json",
@@ -164,7 +172,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given response body does not include keys", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: JSON.stringify({ invalid: "object" }),
@@ -190,7 +198,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given keys are not an array", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: JSON.stringify({ keys: "invalid_keys" }),
@@ -216,7 +224,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given not all keys in array are objects", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: JSON.stringify({
@@ -244,7 +252,7 @@ describe("InMemoryJwksCache - Errors", () => {
 
     describe("Given a key in the array is null", () => {
       beforeEach(async () => {
-        dependencies.sendRequest = jest.fn().mockResolvedValue(
+        dependencies.sendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: JSON.stringify({

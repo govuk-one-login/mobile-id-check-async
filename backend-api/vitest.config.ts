@@ -6,6 +6,7 @@ export default defineConfig({
       enabled: true,
       exclude: ["**/testUtils/**", "**/node-modules/**"],
     },
+    setupFiles: ["testSetup.ts"],
     environment: "node",
     include: ["**/*.test.ts"],
     clearMocks: true,

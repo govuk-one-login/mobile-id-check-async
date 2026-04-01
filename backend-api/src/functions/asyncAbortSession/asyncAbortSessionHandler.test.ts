@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
@@ -27,12 +26,21 @@ import {
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncAbortSessionHandler";
 import { IAsyncAbortSessionDependencies } from "./handlerDependencies";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 describe("Async Abort Session", () => {
   let dependencies: IAsyncAbortSessionDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   const validRequest = buildRequest({
@@ -41,7 +49,7 @@ describe("Async Abort Session", () => {
     }),
   });
 
-  const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
+  const mockSessionUpdateSuccess = vi.fn().mockResolvedValue(
     successResult({
       attributes: validAbortSessionAttributes,
     }),
@@ -66,14 +74,14 @@ describe("Async Abort Session", () => {
     };
 
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -181,7 +189,7 @@ describe("Async Abort Session", () => {
             getEventService: () => mockFailingEventService,
             getSessionRegistry: () => ({
               ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
+              updateSession: vi.fn().mockResolvedValue(
                 errorResult({
                   errorType: UpdateSessionError.SESSION_NOT_FOUND,
                 }),
@@ -207,7 +215,7 @@ describe("Async Abort Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.SESSION_NOT_FOUND,
               }),
@@ -248,7 +256,7 @@ describe("Async Abort Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                 attributes: expiredSessionAttributes,
@@ -286,7 +294,7 @@ describe("Async Abort Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                 attributes: validSessionAttributes,
@@ -328,7 +336,7 @@ describe("Async Abort Session", () => {
             getEventService: () => mockFailingEventService,
             getSessionRegistry: () => ({
               ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
+              updateSession: vi.fn().mockResolvedValue(
                 errorResult({
                   errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                   attributes: validSessionAttributes,
@@ -361,7 +369,7 @@ describe("Async Abort Session", () => {
             getEventService: () => mockFailingEventService,
             getSessionRegistry: () => ({
               ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
+              updateSession: vi.fn().mockResolvedValue(
                 errorResult({
                   errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
                 }),
@@ -388,7 +396,7 @@ describe("Async Abort Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
               }),

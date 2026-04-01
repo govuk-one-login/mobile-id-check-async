@@ -8,13 +8,14 @@ import {
 import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { BiometricTokenIssued } from "./BiometricTokenIssued";
+import { vi, expect, it, describe, beforeEach, afterEach } from "vitest";
 
 describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     biometricTokenIssued = new BiometricTokenIssued(
       "NFC_PASSPORT",
       "mockOpaqueId",
@@ -22,7 +23,7 @@ describe("BiometricTokenIssued", () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("When I request the DynamoDB UpdateExpression", () => {

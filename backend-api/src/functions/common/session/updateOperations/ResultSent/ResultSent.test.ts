@@ -8,18 +8,19 @@ import {
 import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { ResultSent } from "./ResultSent";
+import { vi, expect, it, describe, beforeEach, afterEach } from "vitest";
 
 describe("ResultSent", () => {
   let resultSent: ResultSent;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     resultSent = new ResultSent(mockSessionId);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("When I request the DynamoDB UpdateExpression", () => {

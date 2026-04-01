@@ -9,21 +9,22 @@ import {
 import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { BiometricSessionFinished } from "./BiometricSessionFinished";
+import { vi, expect, it, describe, beforeEach, afterEach } from "vitest";
 
 describe("BiometricSessionFinished", () => {
   let biometricSessionFinished: BiometricSessionFinished;
   const mockBiometricSessionId = "mock-biometric-session-id";
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     biometricSessionFinished = new BiometricSessionFinished(
       mockBiometricSessionId,
     );
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("When I request the DynamoDB UpdateExpression", () => {

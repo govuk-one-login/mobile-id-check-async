@@ -16,6 +16,7 @@ import {
   IMakeProxyRequest,
   RequestOptions,
 } from "./proxyRequestService/proxyRequestService";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Mock Proxy", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;

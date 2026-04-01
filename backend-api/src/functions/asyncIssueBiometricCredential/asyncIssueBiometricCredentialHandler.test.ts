@@ -4,7 +4,6 @@ import {
   ContraIndicator,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { expect } from "@jest/globals";
 import { Context, SQSEvent } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
@@ -51,17 +50,30 @@ import {
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
-jest.mock("crypto", () => ({
-  ...jest.requireActual("crypto"),
-  randomUUID: () => "mock_random_uuid",
-}));
+vi.mock("node:crypto", async () => {
+  const actual =
+    await vi.importActual<typeof import("node:crypto")>("node:crypto");
+
+  return {
+    ...actual,
+    randomUUID: () => "mock_random_uuid",
+  };
+});
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let lambdaError: unknown;
   const expectedErrorTxmaEventName = "DCMAW_ASYNC_CRI_ERROR";
 
@@ -73,21 +85,21 @@ describe("Async Issue Biometric Credential", () => {
     finish: "PROCESSING",
   };
 
-  const mockGetSessionSuccess = jest
+  const mockGetSessionSuccess = vi
     .fn()
     .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
 
-  const mockGetSessionSuccessMobileAppMobile = jest
+  const mockGetSessionSuccessMobileAppMobile = vi
     .fn()
     .mockResolvedValue(
       successResult(validBiometricSessionFinishedAttributesMobileApp),
     );
 
-  const mockGetBiometricSessionSuccess = jest
+  const mockGetBiometricSessionSuccess = vi
     .fn()
     .mockResolvedValue(successResult(mockReadyBiometricSession));
 
-  const mockGetBiometricSessionNotReady = jest
+  const mockGetBiometricSessionNotReady = vi
     .fn()
     .mockResolvedValue(successResult(mockNotReadyBiometricSession));
 
@@ -99,15 +111,15 @@ describe("Async Issue Biometric Credential", () => {
     isRetryable: false,
   };
 
-  const mockGetBiometricSessionRetryableFailure = jest
+  const mockGetBiometricSessionRetryableFailure = vi
     .fn()
     .mockResolvedValue(errorResult(mockRetryableError));
 
-  const mockGetBiometricSessionNonRetryableFailure = jest
+  const mockGetBiometricSessionNonRetryableFailure = vi
     .fn()
     .mockResolvedValue(errorResult(mockNonRetryableError));
 
-  const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
+  const mockGetSecretsSuccess = vi.fn().mockResolvedValue(
     successResult({
       mockBiometricViewerAccessKey: "mockViewerKey",
     }),
@@ -139,7 +151,7 @@ describe("Async Issue Biometric Credential", () => {
   const mockSessionRegistrySuccess: SessionRegistry = {
     ...mockInertSessionRegistry,
     getSession: mockGetSessionSuccess,
-    updateSession: jest.fn().mockResolvedValue(
+    updateSession: vi.fn().mockResolvedValue(
       successResult({
         attributes: validBiometricSessionFinishedAttributes,
       }),
@@ -149,14 +161,14 @@ describe("Async Issue Biometric Credential", () => {
   const mockMobileAppMobileSessionRegistrySuccess: SessionRegistry = {
     ...mockInertSessionRegistry,
     getSession: mockGetSessionSuccessMobileAppMobile,
-    updateSession: jest.fn().mockResolvedValue(
+    updateSession: vi.fn().mockResolvedValue(
       successResult({
         attributes: validBiometricSessionFinishedAttributesMobileApp,
       }),
     ),
   };
 
-  const mockSuccessfulGetCredentialFromBiometricSession = jest
+  const mockSuccessfulGetCredentialFromBiometricSession = vi
     .fn()
     .mockReturnValue(
       successResult({
@@ -168,13 +180,13 @@ describe("Async Issue Biometric Credential", () => {
     );
 
   const mockSignedJwt = "mockHeader.mockPayload.mockSignature";
-  const mockCreateKmsSignedJwtSuccess = jest
+  const mockCreateKmsSignedJwtSuccess = vi
     .fn()
     .mockResolvedValue(successResult(mockSignedJwt));
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
@@ -202,8 +214,8 @@ describe("Async Issue Biometric Credential", () => {
       createKmsSignedJwt: mockCreateKmsSignedJwtSuccess,
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {
@@ -394,7 +406,7 @@ describe("Async Issue Biometric Credential", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
+          getSession: vi.fn().mockResolvedValue(
             errorResult({
               errorType: GetSessionError.INTERNAL_SERVER_ERROR,
             }),
@@ -421,7 +433,7 @@ describe("Async Issue Biometric Credential", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.CLIENT_ERROR,
               }),
@@ -429,7 +441,7 @@ describe("Async Issue Biometric Credential", () => {
           });
           dependencies.getEventService = () => ({
             ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
+            writeGenericEvent: vi.fn().mockResolvedValue(
               errorResult({
                 errorMessage: "mockError",
               }),
@@ -457,7 +469,7 @@ describe("Async Issue Biometric Credential", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.CLIENT_ERROR,
               }),
@@ -491,7 +503,7 @@ describe("Async Issue Biometric Credential", () => {
     beforeEach(async () => {
       dependencies.getSessionRegistry = () => ({
         ...mockInertSessionRegistry,
-        getSession: jest
+        getSession: vi
           .fn()
           .mockResolvedValue(successResult(validResultSentAttributes)),
       });
@@ -520,7 +532,7 @@ describe("Async Issue Biometric Credential", () => {
   describe("When session state is ASYNC_BIOMETRIC_SESSION_FINISHED", () => {
     describe("When there is an error getting secrets", () => {
       beforeEach(async () => {
-        dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
+        dependencies.getSecrets = vi.fn().mockResolvedValue(emptyFailure());
         try {
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         } catch (error: unknown) {
@@ -624,7 +636,7 @@ describe("Async Issue Biometric Credential", () => {
             beforeEach(async () => {
               dependencies.getEventService = () => ({
                 ...mockInertEventService,
-                writeGenericEvent: jest.fn().mockResolvedValue(
+                writeGenericEvent: vi.fn().mockResolvedValue(
                   errorResult({
                     errorMessage: "mockError",
                   }),
@@ -756,7 +768,7 @@ describe("Async Issue Biometric Credential", () => {
       describe("Given an unexpected error is thrown", () => {
         describe("Given writing to txma fails", () => {
           beforeEach(async () => {
-            dependencies.getCredentialFromBiometricSession = jest
+            dependencies.getCredentialFromBiometricSession = vi
               .fn()
               .mockImplementation(() => {
                 throw Error("UNEXPECTED_FAILURE");
@@ -764,7 +776,7 @@ describe("Async Issue Biometric Credential", () => {
 
             dependencies.getEventService = () => ({
               ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
+              writeGenericEvent: vi.fn().mockResolvedValue(
                 errorResult({
                   errorMessage: "mockError",
                 }),
@@ -817,7 +829,7 @@ describe("Async Issue Biometric Credential", () => {
 
         describe("Given writing to txma is successful", () => {
           beforeEach(async () => {
-            dependencies.getCredentialFromBiometricSession = jest
+            dependencies.getCredentialFromBiometricSession = vi
               .fn()
               .mockImplementation(() => {
                 throw Error("UNEXPECTED_FAILURE");
@@ -920,7 +932,7 @@ describe("Async Issue Biometric Credential", () => {
           }) => {
             describe("Given writing to txma fails", () => {
               beforeEach(async () => {
-                dependencies.getCredentialFromBiometricSession = jest
+                dependencies.getCredentialFromBiometricSession = vi
                   .fn()
                   .mockReturnValue(
                     errorResult({
@@ -933,7 +945,7 @@ describe("Async Issue Biometric Credential", () => {
                   );
                 dependencies.getEventService = () => ({
                   ...mockInertEventService,
-                  writeGenericEvent: jest.fn().mockResolvedValue(
+                  writeGenericEvent: vi.fn().mockResolvedValue(
                     errorResult({
                       errorMessage: "mockError",
                     }),
@@ -987,7 +999,7 @@ describe("Async Issue Biometric Credential", () => {
 
             describe("Given writing to txma succeeds", () => {
               beforeEach(async () => {
-                dependencies.getCredentialFromBiometricSession = jest
+                dependencies.getCredentialFromBiometricSession = vi
                   .fn()
                   .mockReturnValue(
                     errorResult({
@@ -1058,7 +1070,7 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Given signing jwt fails", () => {
       beforeEach(async () => {
-        dependencies.createKmsSignedJwt = jest
+        dependencies.createKmsSignedJwt = vi
           .fn()
           .mockResolvedValue(emptyFailure());
 
@@ -1127,7 +1139,7 @@ describe("Async Issue Biometric Credential", () => {
               dependencies.getSessionRegistry = () => ({
                 ...mockInertSessionRegistry,
                 getSession: mockGetSessionSuccess,
-                updateSession: jest.fn().mockResolvedValue(
+                updateSession: vi.fn().mockResolvedValue(
                   errorResult({
                     errorType: updateSessionError,
                   }),
@@ -1184,7 +1196,7 @@ describe("Async Issue Biometric Credential", () => {
               dependencies.getSessionRegistry = () => ({
                 ...mockInertSessionRegistry,
                 getSession: mockGetSessionSuccess,
-                updateSession: jest.fn().mockResolvedValue(
+                updateSession: vi.fn().mockResolvedValue(
                   errorResult({
                     errorType: updateSessionError,
                   }),
@@ -1229,10 +1241,10 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
-      let mockFailedToSendVCIssuedMessage: jest.Mock;
+      let mockFailedToSendVCIssuedMessage: ReturnType<typeof vi.fn>;
 
       beforeEach(async () => {
-        mockFailedToSendVCIssuedMessage = jest
+        mockFailedToSendVCIssuedMessage = vi
           .fn()
           .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
           .mockResolvedValueOnce(emptyFailure());
@@ -1488,7 +1500,7 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       describe("Given generated biometric credential does not have flags or contraindicators", () => {
-        const mockSuccessfulGetCredentialFromBiometricSession = jest
+        const mockSuccessfulGetCredentialFromBiometricSession = vi
           .fn()
           .mockReturnValue(
             successResult({
@@ -1728,7 +1740,7 @@ describe("Async Issue Biometric Credential", () => {
           ],
         };
 
-        const mockGetCredentialFromBiometricSessionWithFlags = jest
+        const mockGetCredentialFromBiometricSessionWithFlags = vi
           .fn()
           .mockReturnValue(
             successResult({
@@ -1878,7 +1890,7 @@ describe("Async Issue Biometric Credential", () => {
           ],
         };
 
-        const mockGetCredentialFromBiometricSessionWithCI = jest
+        const mockGetCredentialFromBiometricSessionWithCI = vi
           .fn()
           .mockReturnValue(
             successResult({
@@ -2024,7 +2036,7 @@ describe("Async Issue Biometric Credential", () => {
           ],
         };
 
-        const mockGetCredentialFromBiometricSessionWithBoth = jest
+        const mockGetCredentialFromBiometricSessionWithBoth = vi
           .fn()
           .mockReturnValue(
             successResult({
@@ -2173,7 +2185,7 @@ describe("Async Issue Biometric Credential", () => {
               Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
             ];
 
-            const mockGetCredentialWithExpiredDrivingLicense = jest
+            const mockGetCredentialWithExpiredDrivingLicense = vi
               .fn()
               .mockReturnValue(
                 successResult({

@@ -8,6 +8,7 @@ import { JwksBuilder } from "../jwksBuilder";
 import { createPublicKey } from "node:crypto";
 import { ErrorCategory } from "../../../utils/result";
 import { Jwks } from "../../../types/jwks";
+import { expect, it, describe, beforeEach, afterEach } from "vitest";
 
 const mockKmsClient = mockClient(KMSClient);
 

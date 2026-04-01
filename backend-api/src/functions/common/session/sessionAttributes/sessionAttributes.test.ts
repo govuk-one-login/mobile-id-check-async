@@ -15,11 +15,12 @@ import {
   getBiometricTokenIssuedSessionAttributes,
   getAuthSessionAbortedAttributes,
 } from "./sessionAttributes";
+import { vi, expect, it, describe, beforeEach } from "vitest";
 
 describe("Session attributes", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
   });
 
   interface TestScenario {

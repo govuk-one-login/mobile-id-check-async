@@ -1,5 +1,5 @@
-import { expect } from "@jest/globals";
 import { buildUserAgent } from "./buildUserAgent";
+import { expect, it, describe } from "vitest";
 
 describe("buildUserAgent", () => {
   describe("User-Agent is empty string", () => {
