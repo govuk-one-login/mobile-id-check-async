@@ -1,8 +1,7 @@
-import { expect } from "@jest/globals";
 import "../../../../../tests/testUtils/matchers";
 import "dotenv/config";
 import { mockClient } from "aws-sdk-client-mock";
-import "aws-sdk-client-mock-jest";
+import "aws-sdk-client-mock-vitest";
 import {
   GetParametersCommand,
   InternalServerError,
@@ -12,6 +11,15 @@ import { emptyFailure, Result, successResult } from "../../../utils/result";
 import { getSecretsFromParameterStore } from "./getSecretsFromParameterStore";
 import { clearCaches } from "@aws-lambda-powertools/parameters";
 import { NOW_IN_MILLISECONDS } from "../../../testUtils/unitTestData";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 const mockSsmClient = mockClient(SSMClient);
 const mockSecretName1 = "mockSecretName1";
@@ -20,20 +28,20 @@ const mockSecretValue1 = "mockSecretValue1";
 const mockSecretValue2 = "mockSecretValue2";
 
 let result: Result<Record<string, string>, void>;
-let consoleDebugSpy: jest.SpyInstance;
-let consoleErrorSpy: jest.SpyInstance;
+let consoleDebugSpy: MockInstance;
+let consoleErrorSpy: MockInstance;
 
 describe("getSecretsFromParameterStore", () => {
   beforeEach(() => {
-    consoleDebugSpy = jest.spyOn(console, "debug");
-    consoleErrorSpy = jest.spyOn(console, "error");
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    consoleDebugSpy = vi.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
   });
   afterEach(() => {
     mockSsmClient.reset();
     clearCaches();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("On every call", () => {
@@ -251,7 +259,7 @@ describe("getSecretsFromParameterStore", () => {
         cacheDurationInSeconds: 10,
       });
 
-      jest.setSystemTime(NOW_IN_MILLISECONDS + 10000);
+      vi.setSystemTime(NOW_IN_MILLISECONDS + 10000);
 
       result = await getSecretsFromParameterStore({
         secretNames: [mockSecretName1, mockSecretName2],
@@ -303,7 +311,7 @@ describe("getSecretsFromParameterStore", () => {
         cacheDurationInSeconds: 10,
       });
 
-      jest.setSystemTime(NOW_IN_MILLISECONDS + 10001);
+      vi.setSystemTime(NOW_IN_MILLISECONDS + 10001);
 
       result = await getSecretsFromParameterStore({
         secretNames: [mockSecretName1, mockSecretName2],

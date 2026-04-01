@@ -5,11 +5,12 @@ import {
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
-import "aws-sdk-client-mock-jest";
+import "aws-sdk-client-mock-vitest";
 import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
 import { GenericEventNames, TxmaBillingEventName } from "../types";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");

@@ -1,20 +1,27 @@
+import "aws-sdk-client-mock-vitest";
 import {
   SendMessageCommand,
   ServiceInputTypes,
   ServiceOutputTypes,
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
-import { expect } from "@jest/globals";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
-import "aws-sdk-client-mock-jest";
 import "../../../../../tests/testUtils/matchers";
 import { mockSqsResponseMessageId } from "../../../testUtils/unitTestData";
 import { emptyFailure, Result, successResult } from "../../../utils/result";
 import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 describe("Sending a message to SQS", () => {
-  let consoleDebugSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleDebugSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let sqsMock: AwsStub<
     ServiceInputTypes,
     ServiceOutputTypes,
@@ -28,8 +35,8 @@ describe("Sending a message to SQS", () => {
   const mockQueueArn = "mockQueueArn";
 
   beforeEach(() => {
-    consoleDebugSpy = jest.spyOn(console, "debug");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleDebugSpy = vi.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
     sqsMock = mockClient(sqsClient);
   });
 

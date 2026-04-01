@@ -5,9 +5,9 @@ import { Server } from "http";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 import { execSync } from "child_process";
+import { it, describe, beforeAll, afterAll } from "vitest";
 
-jest.setTimeout(30000);
-describe("Provider API contract verification", () => {
+describe("Provider API contract verification", { timeout: 30000 }, () => {
   let app: Application;
   let server: Server;
   const port = 2025;
