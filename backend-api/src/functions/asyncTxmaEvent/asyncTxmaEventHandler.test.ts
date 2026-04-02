@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
@@ -21,17 +20,26 @@ import {
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
@@ -42,13 +50,13 @@ describe("Async TxMA Event", () => {
       getEventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   describe("On every invocation", () => {
@@ -164,7 +172,7 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
+          getSession: vi.fn().mockResolvedValue(
             errorResult({
               errorType: GetSessionError.INTERNAL_SERVER_ERROR,
             }),
@@ -194,7 +202,7 @@ describe("Async TxMA Event", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.SESSION_NOT_FOUND,
               }),
@@ -223,7 +231,7 @@ describe("Async TxMA Event", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.SESSION_NOT_VALID,
               }),
@@ -260,7 +268,7 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getEventService = () => ({
           ...mockInertEventService,
-          writeGenericEvent: jest.fn().mockResolvedValue(
+          writeGenericEvent: vi.fn().mockResolvedValue(
             errorResult({
               errorMessage: "mockError",
             }),
@@ -365,7 +373,7 @@ const validRequest = buildRequest({
 
 export const mockTxmaEventSessionRegistrySuccess: SessionRegistry = {
   ...mockInertSessionRegistry,
-  getSession: jest
+  getSession: vi
     .fn()
     .mockResolvedValue(
       successResult(validBiometricTokenIssuedSessionAttributes),
