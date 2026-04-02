@@ -8,12 +8,15 @@ import {
   getVerifiedJwt,
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
+import {
+  EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+  expiryGracePeriodEnabledDescribe,
+} from "../dvlaExpiryTestSetup";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import { expiryGracePeriodDisabledDescribe } from "../dvlaExpiryTestSetup";
-import { expect, it, describe, beforeAll } from "vitest";
+import { beforeAll, it, describe, expect } from "vitest";
 
-expiryGracePeriodDisabledDescribe()(
-  "Given DVLA document has not expired",
+expiryGracePeriodEnabledDescribe()(
+  "Given DVLA document has expired and is beyond the grace period",
   () => {
     let subjectIdentifier: string;
     let sessionId: string;
@@ -23,7 +26,9 @@ expiryGracePeriodDisabledDescribe()(
     let expiryDate: string;
 
     beforeAll(() => {
-      expiryDate = getIsoStringDateNDaysFromToday(0);
+      expiryDate = getIsoStringDateNDaysFromToday(
+        -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+      );
     });
 
     describe("Given vendor checks fail", () => {
@@ -108,17 +113,20 @@ expiryGracePeriodDisabledDescribe()(
                 validityScore: 0,
                 activityHistoryScore: 0,
                 ci: expect.arrayContaining([expect.any(String)]),
-                ciReasons: expect.arrayContaining([expect.any(Object)]),
                 failedCheckDetails: expect.arrayContaining([
                   expect.objectContaining({
                     biometricVerificationProcessLevel: 3,
                     checkMethod: "bvr",
                   }),
                 ]),
+                ciReasons: expect.arrayContaining([expect.any(Object)]),
                 txmaContraIndicators: expect.any(Array),
                 txn: expect.any(String),
               },
             ],
+            document_expiry: {
+              evaluation_result_code: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
+            },
           },
         });
       });
@@ -147,7 +155,7 @@ expiryGracePeriodDisabledDescribe()(
         });
       }, 60000);
 
-      it("Writes verified credential with pass evidence to the IPV Core outbound queue", () => {
+      it("Writes verified credential with fail evidence to the IPV Core outbound queue", () => {
         const { protectedHeader, payload } = verifiedJwt;
 
         expect(protectedHeader).toEqual({
@@ -174,8 +182,8 @@ expiryGracePeriodDisabledDescribe()(
             evidence: [
               expect.objectContaining({
                 strengthScore: 3,
-                validityScore: 2,
-                activityHistoryScore: 1,
+                validityScore: 0,
+                activityHistoryScore: 0,
               }),
             ],
           }),
@@ -184,7 +192,6 @@ expiryGracePeriodDisabledDescribe()(
 
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
         const actualEvent = getVcIssuedEventObject(criTxmaEvents);
-
         expect(actualEvent).toStrictEqual({
           timestamp: expect.any(Number),
           user: {
@@ -222,9 +229,11 @@ expiryGracePeriodDisabledDescribe()(
               {
                 type: "IdentityCheck",
                 strengthScore: 3,
-                validityScore: 2,
-                activityHistoryScore: 1,
-                checkDetails: expect.arrayContaining([
+                validityScore: 0,
+                activityHistoryScore: 0,
+                ci: [],
+                ciReasons: [],
+                failedCheckDetails: expect.arrayContaining([
                   expect.objectContaining({
                     biometricVerificationProcessLevel: 3,
                     checkMethod: "bvr",
@@ -234,6 +243,9 @@ expiryGracePeriodDisabledDescribe()(
                 txn: expect.any(String),
               },
             ],
+            document_expiry: {
+              evaluation_result_code: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
+            },
           },
         });
       });

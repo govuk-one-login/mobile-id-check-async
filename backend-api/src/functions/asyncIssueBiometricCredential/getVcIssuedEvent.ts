@@ -1,4 +1,5 @@
 import {
+  Advisory,
   AuditData,
   BiometricCredential,
   ContraIndicatorReason,
@@ -10,7 +11,10 @@ import {
   PassEvidence,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
 import { BiometricSessionFinishedAttributes } from "../common/session/session";
+import { emptyFailure, Result, successResult } from "../utils/result";
 
 type VcEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
@@ -37,21 +41,59 @@ export type VcIssuedTxMAEvent = {
     dcmawFlagsPassport?: Flags;
     dcmawFlagsDL?: Flags;
     dcmawFlagsBRP?: Flags;
+    document_expiry?: {
+      evaluation_result_code?: EvaluationResultCodeExtension;
+    };
   };
+};
+
+type ExpiredDrivingLicenceAdvisory = Extract<
+  Advisory,
+  | Advisory.DRIVING_LICENCE_NOT_EXPIRED
+  | Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD
+  | Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD
+>;
+
+export type EvaluationResultCodeExtension =
+  | "DOCUMENT_NOT_EXPIRED"
+  | "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD"
+  | "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD";
+
+const evaluationResultCodeMapping: Record<
+  ExpiredDrivingLicenceAdvisory,
+  EvaluationResultCodeExtension
+> = {
+  [Advisory.DRIVING_LICENCE_NOT_EXPIRED]: "DOCUMENT_NOT_EXPIRED",
+  [Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD]:
+    "DOCUMENT_EXPIRED_WITHIN_GRACE_PERIOD",
+  [Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD]:
+    "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
 };
 
 export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
-): VcIssuedTxMAEvent => {
+  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
+  advisories: Advisory[],
+): Result<VcIssuedTxMAEvent, void> => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
     audit;
 
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  return {
+  let evaluationResultCode: EvaluationResultCodeExtension | undefined =
+    undefined;
+  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
+    const evaluationResultCodeResult =
+      getEvaluationResultCodeExtensionResult(advisories);
+    if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
+
+    evaluationResultCode = evaluationResultCodeResult.value;
+  }
+
+  return successResult({
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
     user: {
       user_id: session.subjectIdentifier,
@@ -82,8 +124,13 @@ export const getVcIssuedEvent = (
           txmaContraIndicators,
         },
       ],
+      ...(evaluationResultCode && {
+        document_expiry: {
+          evaluation_result_code: evaluationResultCode,
+        },
+      }),
     },
-  };
+  });
 };
 
 const hasContraIndicators = (credential: BiometricCredential): boolean => {
@@ -110,4 +157,35 @@ const isMobileAppMobileJourney = (session: {
   redirectUri?: string;
 }): boolean => {
   return session.redirectUri != null;
+};
+
+const getEvaluationResultCodeExtensionResult = (
+  advisories: Advisory[],
+): Result<EvaluationResultCodeExtension | undefined, void> => {
+  if (advisories.length === 0) return successResult(undefined);
+
+  const expiredDrivingLicenceAdvisories = advisories.filter(
+    isExpiredDrivingLicenceAdvisory,
+  );
+
+  if (expiredDrivingLicenceAdvisories.length > 1) {
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_MULTIPLE_EXPIRED_DRIVING_LICENCE_ADVISORIES,
+      { data: { expiredDrivingLicenceAdvisories } },
+    );
+
+    return emptyFailure();
+  }
+
+  if (expiredDrivingLicenceAdvisories.length === 0)
+    return successResult(undefined);
+
+  const advisory = expiredDrivingLicenceAdvisories[0];
+  return successResult(evaluationResultCodeMapping[advisory]);
+};
+
+const isExpiredDrivingLicenceAdvisory = (
+  advisory: Advisory,
+): advisory is ExpiredDrivingLicenceAdvisory => {
+  return Object.keys(evaluationResultCodeMapping).includes(advisory);
 };

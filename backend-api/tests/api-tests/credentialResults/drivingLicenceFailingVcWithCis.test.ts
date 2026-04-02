@@ -1,3 +1,4 @@
+import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
 import {
   doAsyncJourney,
   EventResponse,
@@ -10,17 +11,24 @@ import {
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect, it, describe, beforeAll } from "vitest";
 
-describe("Driving licence passed credential result", () => {
+describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
+  let expiryDate: string;
 
-  describe("Given the vendor returns a driving licence success biometric session", () => {
+  describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
+      expiryDate = getIsoStringDateNDaysFromToday(0);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.DRIVING_LICENCE_SUCCESS));
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
+          drivingLicence: {
+            issuedBy: "DVA",
+            validUntil: expiryDate,
+          },
+        }));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -31,7 +39,7 @@ describe("Driving licence passed credential result", () => {
       });
     }, 60000);
 
-    it("Writes verified credential with passed evidence to the IPV Core outbound queue", () => {
+    it("Writes verified credential with failed evidence to the IPV Core outbound queue", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
@@ -50,8 +58,8 @@ describe("Driving licence passed credential result", () => {
           evidence: [
             expect.objectContaining({
               strengthScore: 3,
-              validityScore: 2,
-              activityHistoryScore: 1,
+              validityScore: 0,
+              activityHistoryScore: 0,
             }),
           ],
         }),
@@ -78,17 +86,11 @@ describe("Driving licence passed credential result", () => {
               nameParts: expect.any(Array),
             },
           ],
-          birthDate: [expect.any(Object)],
+          birthDate: [],
           deviceId: [
             {
               value: expect.any(String),
             },
-          ],
-          drivingPermit: [
-            expect.objectContaining({
-              expiryDate: expect.any(String),
-              issuedBy: "DVLA",
-            }),
           ],
           address: [expect.any(Object)],
         },
@@ -98,15 +100,17 @@ describe("Driving licence passed credential result", () => {
             {
               type: "IdentityCheck",
               strengthScore: 3,
-              validityScore: 2,
-              activityHistoryScore: 1,
-              checkDetails: expect.arrayContaining([
+              validityScore: 0,
+              activityHistoryScore: 0,
+              ci: expect.arrayContaining([expect.any(String)]),
+              failedCheckDetails: expect.arrayContaining([
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
                   checkMethod: "bvr",
                 }),
               ]),
-              txmaContraIndicators: [],
+              ciReasons: expect.arrayContaining([expect.any(Object)]),
+              txmaContraIndicators: expect.any(Array),
               txn: expect.any(String),
             },
           ],
