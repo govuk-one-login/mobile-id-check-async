@@ -151,14 +151,14 @@ fields @timestamp, message, messageCode
 
 There is a custom matcher (defined in `backend-api/src/functions/testUtils/matchers.ts`) that can be used to facilitate unit testing log messages.
 
-First, we must set the environment variable `POWERTOOLS_DEV` to `true`, which will ensure that Lambda Powertools uses the global console to emit logs. This is done in `jest.config.ts`.
+First, we must set the environment variable `POWERTOOLS_DEV` to `true`, which will ensure that Lambda Powertools uses the global console to emit logs. This is done in `vitest.config.ts`.
 Next, we must spy on the relevant method (`info`, `error`, etc) of the global console object, so we can track calls made to it.
 
 ```ts
-let consoleErrorSpy: jest.SpyInstance;
+let consoleErrorSpy: vi.SpyInstance;
 
 beforeEach(() => {
-  consoleErrorSpy = jest.spyOn(console, "error");
+  consoleErrorSpy = vi.spyOn(console, "error");
 });
 ```
 
@@ -176,9 +176,9 @@ expect(consoleErrorSpy).not.toHaveBeenCalledWithLogFields({
 });
 ```
 
-In any jest test file where we need to make log assertions, we must import the following:
+In any test file where we need to make log assertions, we must import the following:
 
 ```ts
-import { expect } from "@jest/globals";
+import { expect } from "vitest";
 import "relative/path/to/testUtils/matchers";
 ```

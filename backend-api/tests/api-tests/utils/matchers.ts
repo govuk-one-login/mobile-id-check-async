@@ -21,7 +21,7 @@ expect.extend({
   toBeValidUuid,
 });
 
-declare module "expect" {
+declare module "vitest" {
   interface AsymmetricMatchers {
     toBeValidUuid(): void;
   }
