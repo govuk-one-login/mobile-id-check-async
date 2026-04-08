@@ -4,7 +4,7 @@ import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { TEST_RESOURCES_API_INSTANCE } from "../utils/apiInstances";
 
 const ONE_SECOND = 1000;
-jest.setTimeout(45 * ONE_SECOND);
+vi.setTimeout(45 * ONE_SECOND);
 
 describe("GET /events", () => {
   describe("Given there are no events to dequeue", () => {

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { getEvent } from "../getEvent";
 import {
   eventNameMissingSQSRecord,

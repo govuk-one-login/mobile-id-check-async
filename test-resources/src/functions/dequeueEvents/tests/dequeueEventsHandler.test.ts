@@ -1,8 +1,16 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { expect } from "@jest/globals";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  MockInstance,
+  vi,
+} from "vitest";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
-import "aws-sdk-client-mock-jest";
+import "aws-sdk-client-mock-vitest";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 import "../../testUtils/matchers";
 import { buildLambdaContext } from "../../testUtils/mockContext";
@@ -32,24 +40,24 @@ describe("Dequeue Events", () => {
   let dependencies: IDequeueDependencies;
   let context: Context;
   const mockDbClient = mockClient(DynamoDBClient);
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     mockDbClient.on(PutItemCommand).rejects({});
     dependencies = {
       env,
       getEvent: mockGetEvent,
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
     mockDbClient.reset();
   });
 
@@ -230,13 +238,13 @@ describe("Dequeue Events", () => {
     it("Makes a call to the database client", async () => {
       expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 2);
       expect(mockDbClient).toHaveReceivedNthCommandWith(
-        1,
         PutItemCommand,
+        1,
         putItemInputForPassingSQSRecord,
       );
       expect(mockDbClient).toHaveReceivedNthCommandWith(
-        2,
         PutItemCommand,
+        2,
         putItemInputForPassingSQSRecordUnknownSessionId,
       );
     });

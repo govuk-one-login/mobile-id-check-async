@@ -6,119 +6,123 @@ import {
 } from "../utils/apiInstances";
 import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { AxiosResponse } from "axios";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-const ONE_SECOND = 1000;
-jest.setTimeout(45 * ONE_SECOND);
+const ONE_SECOND_IN_MILLISECONDS = 1000;
 
-describe("GET /credentialResult", () => {
-  describe("Given the request query is not valid", () => {
-    let response: AxiosResponse;
+describe(
+  "GET /credentialResult",
+  { timeout: ONE_SECOND_IN_MILLISECONDS * 45 },
+  () => {
+    describe("Given the request query is not valid", () => {
+      let response: AxiosResponse;
 
-    beforeEach(async () => {
-      const params = {
-        invalidKey: `SUB%23mockSub`,
-      };
-      response = await TEST_RESOURCES_API_INSTANCE.get("/credentialResult", {
-        params,
+      beforeEach(async () => {
+        const params = {
+          invalidKey: `SUB%23mockSub`,
+        };
+        response = await TEST_RESOURCES_API_INSTANCE.get("/credentialResult", {
+          params,
+        });
+      });
+
+      it("Returns a 400 Bad Request response", async () => {
+        expect(response.status).toBe(400);
+        expect(response.statusText).toEqual("Bad Request");
       });
     });
 
-    it("Returns a 400 Bad Request response", async () => {
-      expect(response.status).toBe(400);
-      expect(response.statusText).toEqual("Bad Request");
-    });
-  });
+    describe("Given there are no credential results to dequeue", () => {
+      let response: AxiosResponse;
 
-  describe("Given there are no credential results to dequeue", () => {
-    let response: AxiosResponse;
+      beforeEach(async () => {
+        const params = {
+          pk: "SUB%23mockSub",
+        };
+        response = await TEST_RESOURCES_API_INSTANCE.get("/credentialResult", {
+          params,
+        });
+      });
 
-    beforeEach(async () => {
-      const params = {
-        pk: "SUB%23mockSub",
-      };
-      response = await TEST_RESOURCES_API_INSTANCE.get("/credentialResult", {
-        params,
+      it("Returns a 404 Not Found response", async () => {
+        expect(response.status).toBe(404);
+        expect(response.statusText).toStrictEqual("Not Found");
       });
     });
 
-    it("Returns a 404 Not Found response", async () => {
-      expect(response.status).toBe(404);
-      expect(response.statusText).toStrictEqual("Not Found");
-    });
-  });
+    describe("Given there is a credential result", () => {
+      let sub: string;
+      let sessionId: string;
+      let response: CredentialResultResponse;
 
-  describe("Given there is a credential result", () => {
-    let sub: string;
-    let sessionId: string;
-    let response: CredentialResultResponse;
-
-    beforeEach(async () => {
-      sub = randomUUID();
-      await createSession(sub);
-      sessionId = await getActiveSessionId(sub);
-      await SESSIONS_API_INSTANCE.post("/async/abortSession", {
-        sessionId,
+      beforeEach(async () => {
+        sub = randomUUID();
+        await createSession(sub);
+        sessionId = await getActiveSessionId(sub);
+        await SESSIONS_API_INSTANCE.post("/async/abortSession", {
+          sessionId,
+        });
+        const pk = `SUB#${sub}`;
+        response = (await pollForCredentialResults(pk, 1))[0];
       });
-      const pk = `SUB#${sub}`;
-      response = (await pollForCredentialResults(pk, 1))[0];
-    });
 
-    it("Returns the credential result", async () => {
-      expect(response.pk).toEqual(`SUB#${sub}`);
-      expect(response.sk).toEqual(expect.stringContaining("SENT_TIMESTAMP#"));
-      expect(response.body).toEqual({
-        error: "access_denied",
-        error_description: "User aborted the session",
-        govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-        state: "testState",
-        sub,
-      });
-    });
-  });
-
-  describe("Given there are multiple credential results for the same sub", () => {
-    let sub: string;
-    let sessionId: string;
-    let response: CredentialResultResponse[];
-
-    beforeAll(async () => {
-      sub = randomUUID();
-      await createSession(sub);
-      sessionId = await getActiveSessionId(sub);
-      await SESSIONS_API_INSTANCE.post("/async/abortSession", {
-        sessionId,
-      });
-      await createSession(sub);
-      sessionId = await getActiveSessionId(sub);
-      await SESSIONS_API_INSTANCE.post("/async/abortSession", {
-        sessionId,
-      });
-      const pk = `SUB#${sub}`;
-      response = await pollForCredentialResults(pk, 2);
-    });
-
-    it("Returns the credential results", () => {
-      const testData = {
-        pk: `SUB#${sub}`,
-        sk: "SENT_TIMESTAMP#",
-        body: {
-          sub,
-          state: "testState",
-          govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+      it("Returns the credential result", async () => {
+        expect(response.pk).toEqual(`SUB#${sub}`);
+        expect(response.sk).toEqual(expect.stringContaining("SENT_TIMESTAMP#"));
+        expect(response.body).toEqual({
           error: "access_denied",
           error_description: "User aborted the session",
-        },
-      };
-
-      expect(response[0].pk).toEqual(testData.pk);
-      expect(response[0].sk).toContain(testData.sk);
-      expect(response[0].body).toStrictEqual(testData.body);
-      expect(response[1].pk).toEqual(testData.pk);
-      expect(response[1].sk).toContain(testData.sk);
-      expect(response[1].body).toStrictEqual(testData.body);
+          govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+          state: "testState",
+          sub,
+        });
+      });
     });
-  });
-});
+
+    describe("Given there are multiple credential results for the same sub", () => {
+      let sub: string;
+      let sessionId: string;
+      let response: CredentialResultResponse[];
+
+      beforeAll(async () => {
+        sub = randomUUID();
+        await createSession(sub);
+        sessionId = await getActiveSessionId(sub);
+        await SESSIONS_API_INSTANCE.post("/async/abortSession", {
+          sessionId,
+        });
+        await createSession(sub);
+        sessionId = await getActiveSessionId(sub);
+        await SESSIONS_API_INSTANCE.post("/async/abortSession", {
+          sessionId,
+        });
+        const pk = `SUB#${sub}`;
+        response = await pollForCredentialResults(pk, 2);
+      });
+
+      it("Returns the credential results", () => {
+        const testData = {
+          pk: `SUB#${sub}`,
+          sk: "SENT_TIMESTAMP#",
+          body: {
+            sub,
+            state: "testState",
+            govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+            error: "access_denied",
+            error_description: "User aborted the session",
+          },
+        };
+
+        expect(response[0].pk).toEqual(testData.pk);
+        expect(response[0].sk).toContain(testData.sk);
+        expect(response[0].body).toStrictEqual(testData.body);
+        expect(response[1].pk).toEqual(testData.pk);
+        expect(response[1].sk).toContain(testData.sk);
+        expect(response[1].body).toStrictEqual(testData.body);
+      });
+    });
+  },
+);
 
 type CredentialResultResponse = {
   pk: string;
