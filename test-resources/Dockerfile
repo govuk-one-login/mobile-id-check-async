@@ -11,7 +11,7 @@ COPY package.json package-lock.json ./
 RUN npm clean-install --ignore-scripts
 
 COPY tests/ ./tests/
-COPY vi.config.ts tsconfig.json ./
+COPY vitest.config.ts tsconfig.json testSetup.ts ./
 
 COPY run-tests.sh /
 RUN chmod 005 /run-tests.sh

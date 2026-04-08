@@ -4,9 +4,7 @@ import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { TEST_RESOURCES_API_INSTANCE } from "../utils/apiInstances";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const ONE_SECOND_IN_MILLISECONDS = 1000;
-
-describe("GET /events", { timeout: ONE_SECOND_IN_MILLISECONDS * 45 }, () => {
+describe("GET /events", () => {
   describe("Given there are no events to dequeue", () => {
     it("Returns a 404 Not Found response", async () => {
       const params = {
@@ -44,7 +42,7 @@ describe("GET /events", { timeout: ONE_SECOND_IN_MILLISECONDS * 45 }, () => {
         const sub = randomUUID();
         await createSession(sub);
         sessionId = await getActiveSessionId(sub);
-      });
+      }, 45000);
 
       it("Returns a 200 OK response", async () => {
         const pkPrefix = `SESSION#${sessionId}`;

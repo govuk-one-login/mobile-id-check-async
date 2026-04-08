@@ -8,12 +8,8 @@ import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { AxiosResponse } from "axios";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-const ONE_SECOND_IN_MILLISECONDS = 1000;
-
 describe(
-  "GET /credentialResult",
-  { timeout: ONE_SECOND_IN_MILLISECONDS * 45 },
-  () => {
+  "GET /credentialResult", () => {
     describe("Given the request query is not valid", () => {
       let response: AxiosResponse;
 
@@ -64,7 +60,7 @@ describe(
         });
         const pk = `SUB#${sub}`;
         response = (await pollForCredentialResults(pk, 1))[0];
-      });
+      }, 45000);
 
       it("Returns the credential result", async () => {
         expect(response.pk).toEqual(`SUB#${sub}`);
@@ -98,7 +94,7 @@ describe(
         });
         const pk = `SUB#${sub}`;
         response = await pollForCredentialResults(pk, 2);
-      });
+      }, 45000);
 
       it("Returns the credential results", () => {
         const testData = {
