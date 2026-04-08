@@ -10,10 +10,9 @@
     "format": "./node_modules/.bin/prettier --write '**/*.{ts,md}'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.{ts,md}'",
     "lint": "./node_modules/.bin/eslint ./src",
-    "test": "./node_modules/.bin/vitest --exclude api-tests/",
-    "test:api": "NODE_OPTIONS=--experimental-vm-modules ./node_modules/.bin/vitest run --dir tests/api-tests/ --outputFile.junit=results/api-report.xml --coverage.enabled --silent",
-    "test:infra": "./node_modules/.bin/vitest run --dir tests/infrastructure-tests/ --outputFile.junit=results/infra-report.xml --coverage.enabled --silent",
-    "test:unit": "./node_modules/.bin/vitest run --dir src/functions/ --exclude tests/infrastructure-tests --exclude tests/api-tests --outputFile.junit=results/unit-report.xml --coverage.enabled --silent"
+    "test:api": "VITEST_JUNIT_FILE=api-tests.xml ./node_modules/.bin/vitest run --dir tests/api-tests/ --coverage.enabled=false",
+    "test:infra": "VITEST_JUNIT_FILE=infra-tests.xml ./node_modules/.bin/vitest tests/infrastructure-tests/ --coverage.enabled=false",
+    "test:unit": "VITEST_JUNIT_FILE=unit-tests.xml ./node_modules/.bin/vitest src/functions/"
   },
   "engines": {
     "node": "22"
