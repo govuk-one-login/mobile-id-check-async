@@ -2,7 +2,6 @@ import {
   ClientRegistryService,
   IGetPartialRegisteredClientByClientId,
 } from "../services/clientRegistryService/clientRegistryService";
-import { EventService } from "../services/events/eventService";
 import {
   IDecodeToken,
   IVerifyTokenSignature,
@@ -12,23 +11,24 @@ import {
   ISessionService,
   SessionService,
 } from "../services/session/sessionService";
-import { IEventService } from "../services/events/types";
+import { ISendMessageToSqs } from "../adapters/aws/sqs/types";
+import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 
 export interface IAsyncCredentialDependencies {
-  eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
   clientRegistryService: (
     clientRegistryParameterName: string,
   ) => IGetPartialRegisteredClientByClientId;
   sessionService: (tableName: string) => ISessionService;
   env: NodeJS.ProcessEnv;
+  sendMessageToSqs: ISendMessageToSqs;
 }
 
 export const dependencies: IAsyncCredentialDependencies = {
   env: process.env,
-  eventService: (sqsQueue: string) => new EventService(sqsQueue),
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: () => new TokenService(),
   sessionService: (tableName: string) => new SessionService(tableName),
+  sendMessageToSqs,
 };

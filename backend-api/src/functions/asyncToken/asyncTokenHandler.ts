@@ -13,6 +13,7 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getHeader } from "../common/request/getHeader/getHeader";
 import { ErrorCategory } from "../utils/result";
+import { getClientCredentialsTokenIssuedTxmaEvent } from "./getClientCredentialsTokenIssuedEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -96,13 +97,12 @@ export async function lambdaHandlerConstructor(
   }
   const accessToken = mintTokenResult.value;
 
-  const eventWriter = dependencies.eventService(config.TXMA_SQS);
-  const writeEventResult = await eventWriter.writeCredentialTokenIssuedEvent({
-    componentId: config.ISSUER,
-    getNowInMilliseconds: Date.now,
-    eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-  });
-  if (writeEventResult.isError) {
+  const sendMessageToSqsResult = await dependencies.sendMessageToSqs(
+    config.TXMA_SQS,
+    getClientCredentialsTokenIssuedTxmaEvent(config.ISSUER),
+  );
+
+  if (sendMessageToSqsResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       errorMessage:
         "Unexpected error writing the DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event",
