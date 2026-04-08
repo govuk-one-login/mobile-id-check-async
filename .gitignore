@@ -1,7 +1,7 @@
 node_modules
 
 # Test reports
-results
+**/results/**/*.xml
 
 # Code coverage output
 coverage/
