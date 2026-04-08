@@ -11,7 +11,7 @@ export default defineConfig({
       exclude: [
         "**/types/*.ts",
         "**/tests/utils/**/*.ts",
-        "**/testUtils/**/*.ts"
+        "**/testUtils/**/*.ts",
       ],
       reportsDirectory: "coverage",
       enabled: true,
