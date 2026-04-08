@@ -17,6 +17,12 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/sts-mock/token/tokenHandler.ts
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       FunctionName: !Sub ${AWS::StackName}-sts-mock-token

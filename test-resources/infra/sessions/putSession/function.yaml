@@ -17,6 +17,12 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/sessions/putSessionHandler.ts
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
     Properties:
       Description: Lambda for putting items into the Sessions table
       Events:
