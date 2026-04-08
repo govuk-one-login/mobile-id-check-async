@@ -8,5 +8,8 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "tests/utils/matchers.ts"
+  ]
 }
