@@ -1,5 +1,4 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   mockPutItemInput,
@@ -12,23 +11,32 @@ import {
   IDequeueDynamoDbAdapter,
 } from "./dequeueDynamoDbAdapter";
 import { marshall } from "@aws-sdk/util-dynamodb";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  MockInstance,
+  vi,
+} from "vitest";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 let dequeueDynamoDbAdapter: IDequeueDynamoDbAdapter;
-let consoleDebugSpy: jest.SpyInstance;
-let consoleErrorSpy: jest.SpyInstance;
+let consoleDebugSpy: MockInstance;
+let consoleErrorSpy: MockInstance;
 
 describe("Dequeue DynamoDB adapter", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     dequeueDynamoDbAdapter = new DequeueDynamoDbAdapter("mock-table-name");
-    consoleDebugSpy = jest.spyOn(console, "debug");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleDebugSpy = vi.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("Put item", () => {

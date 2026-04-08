@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { logger } from "../../../common/logging/logger";
 import "../../../testUtils/matchers";
@@ -24,8 +24,8 @@ describe("Token Handler", () => {
   let event: APIGatewayProxyEvent;
   let dependencies: TokenDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
 
   const env = {
     STS_MOCK_BASE_URL: "dummyStsMocksBaseUrl",
@@ -45,8 +45,8 @@ describe("Token Handler", () => {
       tokenEncrypter: () => new MockTokenEncrypterSuccessResult(),
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {

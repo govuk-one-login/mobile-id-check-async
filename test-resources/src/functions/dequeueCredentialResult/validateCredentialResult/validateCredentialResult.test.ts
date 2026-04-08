@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { beforeEach, describe, expect, it } from "vitest";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
 import {

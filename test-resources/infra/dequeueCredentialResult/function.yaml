@@ -17,6 +17,12 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - src/functions/dequeueCredentialResult/dequeueCredentialResultHandler.ts
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Runtime: nodejs20.x

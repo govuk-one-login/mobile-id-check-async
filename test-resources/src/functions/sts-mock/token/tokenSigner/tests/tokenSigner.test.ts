@@ -3,6 +3,7 @@ import { decodeJwt, decodeProtectedHeader } from "jose";
 import { generateKeyPairSync } from "node:crypto";
 import { getMockSigningKey } from "../../../../testUtils/getMockSigningKey";
 import { ErrorCategory } from "../../../../common/utils/result";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("Token Signer", () => {
   const payload = {

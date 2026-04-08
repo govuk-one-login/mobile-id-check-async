@@ -3,6 +3,7 @@ import { schema } from "yaml-cfn";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { Mappings } from "./helpers/mappings";
+import { beforeEach, describe, expect, test } from "vitest";
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 

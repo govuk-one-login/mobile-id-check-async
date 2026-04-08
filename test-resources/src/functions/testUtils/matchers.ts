@@ -1,7 +1,7 @@
-import { expect } from "@jest/globals";
+import { expect, MockInstance } from "vitest";
 
 const toHaveBeenCalledWithLogFields = (
-  consoleSpy: jest.SpyInstance,
+  consoleSpy: MockInstance,
   logFields: Record<string, unknown>,
 ) => {
   const messages = consoleSpy.mock.calls.map((args) => args[0]);
@@ -36,12 +36,15 @@ function deepEquals(subject: unknown, target: unknown): boolean {
   return JSON.stringify(subject) === JSON.stringify(target);
 }
 
+interface CustomMatchers<R = unknown> {
+  toHaveBeenCalledWithLogFields: (logFields: Record<string, unknown>) => R;
+}
+declare module "vitest" {
+  interface Matchers<T> extends CustomMatchers<T> {
+    toHaveBeenCalledWithLogFields: (logFields: Record<string, unknown>) => T;
+  }
+}
+
 expect.extend({
   toHaveBeenCalledWithLogFields,
 });
-
-declare module "expect" {
-  interface Matchers<R> {
-    toHaveBeenCalledWithLogFields(logFields: object): R;
-  }
-}

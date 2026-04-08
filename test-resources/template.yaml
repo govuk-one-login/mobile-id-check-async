@@ -186,9 +186,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/dequeueCredentialResult/dequeueCredentialResultHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -302,9 +308,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/dequeueEvents/dequeueEventsHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -551,9 +563,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/sessions/putSessionHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -844,9 +862,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/sts-mock/token/tokenHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:

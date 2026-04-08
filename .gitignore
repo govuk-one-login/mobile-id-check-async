@@ -1,9 +1,9 @@
 node_modules
 
-# Jest test report
-report.xml
+# Test reports
+**/results/**/*.xml
 
-# Jest code coverage output
+# Code coverage output
 coverage/
 
 # AWS SAM

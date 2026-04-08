@@ -6,6 +6,7 @@ import {
 import { mockClient } from "aws-sdk-client-mock";
 import { KeyRetriever, SigningKey } from "../keyRetriever";
 import { ErrorCategory } from "../../../../common/utils/result";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 const mockS3Client = mockClient(S3Client);
 const mockS3Response = (content: string) => {

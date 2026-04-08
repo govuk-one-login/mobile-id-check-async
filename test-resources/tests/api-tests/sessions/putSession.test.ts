@@ -1,6 +1,7 @@
 import { AxiosResponse } from "axios";
 import { TEST_RESOURCES_API_INSTANCE } from "../utils/apiInstances";
 import { expectedSecurityHeaders } from "../utils/apiTestData";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("PUT /sessions/{sessionId}", () => {
   describe("Given there is no sessionId path parameter", () => {

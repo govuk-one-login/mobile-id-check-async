@@ -6,9 +6,7 @@ import {
 } from "../utils/apiInstances";
 import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { AxiosResponse } from "axios";
-
-const ONE_SECOND = 1000;
-jest.setTimeout(45 * ONE_SECOND);
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 describe("GET /credentialResult", () => {
   describe("Given the request query is not valid", () => {
@@ -61,7 +59,7 @@ describe("GET /credentialResult", () => {
       });
       const pk = `SUB#${sub}`;
       response = (await pollForCredentialResults(pk, 1))[0];
-    });
+    }, 45000);
 
     it("Returns the credential result", async () => {
       expect(response.pk).toEqual(`SUB#${sub}`);
@@ -95,7 +93,7 @@ describe("GET /credentialResult", () => {
       });
       const pk = `SUB#${sub}`;
       response = await pollForCredentialResults(pk, 2);
-    });
+    }, 45000);
 
     it("Returns the credential results", () => {
       const testData = {
