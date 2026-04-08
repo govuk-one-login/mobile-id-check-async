@@ -2,11 +2,11 @@ import { randomUUID } from "crypto";
 import "dotenv/config";
 import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { TEST_RESOURCES_API_INSTANCE } from "../utils/apiInstances";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const ONE_SECOND = 1000;
-vi.setTimeout(45 * ONE_SECOND);
+const ONE_SECOND_IN_MILLISECONDS = 1000;
 
-describe("GET /events", () => {
+describe("GET /events", { timeout: ONE_SECOND_IN_MILLISECONDS * 45 }, () => {
   describe("Given there are no events to dequeue", () => {
     it("Returns a 404 Not Found response", async () => {
       const params = {

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { STS_MOCK_API_INSTANCE } from "../utils/apiInstances";
 
 describe("POST /token", () => {
