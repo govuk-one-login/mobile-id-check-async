@@ -1,6 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
+    cooldown: 7
     directory: "/"
     schedule:
       interval: "daily"
@@ -16,6 +17,7 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "npm"
+    cooldown: 7
     directory: "backend-api"
     schedule:
       interval: "weekly"
@@ -44,6 +46,7 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@govuk-one-login/mobile-id-check-biometric-credential"
   - package-ecosystem: "npm"
+    cooldown: 7
     directory: "test-resources"
     schedule:
       interval: "weekly"
@@ -71,6 +74,7 @@ updates:
       - dependency-name: "jose"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: "npm"
+    cooldown: 7
     directory: "helper-scripts"
     schedule:
       interval: "weekly"
