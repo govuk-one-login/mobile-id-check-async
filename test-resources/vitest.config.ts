@@ -8,7 +8,11 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["**/*.ts"],
-      exclude: ["**/types/*.ts", "**/tests/utils/**/*.ts"],
+      exclude: [
+        "**/types/*.ts",
+        "**/tests/utils/**/*.ts",
+        "**/testUtils/**/*.ts"
+      ],
       reportsDirectory: "coverage",
       enabled: true,
       reportOnFailure: true,
