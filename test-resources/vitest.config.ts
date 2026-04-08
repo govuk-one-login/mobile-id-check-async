@@ -9,9 +9,9 @@ export default defineConfig({
       provider: "v8",
       include: ["**/*.ts"],
       exclude: [
-        "**/types/*.ts",
-        "**/tests/utils/**/*.ts",
-        "**/testUtils/**/*.ts",
+        "**/tests/api-tests/**/*.ts",
+        "**/tests/infrastructure-tests/**/*.ts",
+        "**/src/functions/testUtils/**/*.ts",
       ],
       reportsDirectory: "coverage",
       enabled: true,
