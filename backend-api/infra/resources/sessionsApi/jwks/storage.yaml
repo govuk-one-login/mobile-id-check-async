@@ -16,8 +16,10 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       LoggingConfiguration:
-        DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks-keys
+        DestinationBucketName: !ImportValue s3-access-logs-bucket-S3AccessLogsBucketName
+        TargetObjectKeyFormat:
+          PartitionedPrefix:
+            PartitionDateSource: EventTime
 
   JsonWebKeysBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -36,56 +38,6 @@ Resources:
             Condition:
               Bool:
                 aws:SecureTransport: false
-
-  JsonWebKeysBucketAccessLogs:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-keys-access-logs-${Environment}
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: ObjectWriter
-
-  JsonWebKeysBucketAccessLogsPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref JsonWebKeysBucketAccessLogs
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Action: '*'
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-            Effect: Deny
-            Principal:
-              AWS: '*'
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JsonWebKeysBucketAccessLogs
-          - Action:
-              - s3:PutObject
-            Condition:
-              ArnLike:
-                aws:SourceArn: !GetAtt JsonWebKeysBucket.Arn
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
-            Effect: Allow
-            Principal:
-              Service: logging.s3.amazonaws.com
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JsonWebKeysBucketAccessLogs
 
   JsonWebKeysBucketApiRole:
     Type: AWS::IAM::Role
