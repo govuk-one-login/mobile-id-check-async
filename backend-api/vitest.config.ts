@@ -1,5 +1,11 @@
 import { defineConfig } from "vitest/config";
 
+const reportName = process.env.VITEST_JUNIT_FILE || "report.xml";
+const reporters =
+  process.env.GITHUB_ACTIONS === "true"
+    ? ["default", "github-actions"]
+    : ["default", "junit"];
+
 export default defineConfig({
   test: {
     coverage: {
@@ -10,15 +16,10 @@ export default defineConfig({
     environment: "node",
     include: ["**/*.test.ts"],
     clearMocks: true,
-    reporters: [
-      "default",
-      [
-        "junit",
-        {
-          outputFile: "./results/report.xml",
-        },
-      ],
-    ],
+    reporters,
+    outputFile: {
+      junit: `results/${reportName}`,
+    },
   },
 });
 
