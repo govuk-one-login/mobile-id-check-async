@@ -17,6 +17,7 @@ import {
   pollForCredentialResults,
   pollForEvents,
 } from "./utils/apiTestHelpers";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("POST /async/abortSession", () => {
   describe("Given the request body is invalid", () => {

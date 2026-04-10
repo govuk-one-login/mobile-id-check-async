@@ -3,6 +3,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { TokenService } from "../tokenService";
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
 import { ErrorCategory } from "../../../utils/result";
+import { expect, it, describe } from "vitest";
 
 describe("Token Service", () => {
   describe("Verify token claims", () => {

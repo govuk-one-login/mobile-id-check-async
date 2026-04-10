@@ -1,4 +1,5 @@
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("GET /.well-known/jwks.json", () => {
   let jwksResponse: any;

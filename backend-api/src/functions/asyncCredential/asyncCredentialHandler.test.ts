@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import {
@@ -36,6 +35,14 @@ import {
   mockGovukSigninJourneyId,
   mockSessionId,
 } from "../testUtils/unitTestData";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -48,13 +55,13 @@ const env = {
 
 describe("Async Credential", () => {
   let dependencies: IAsyncCredentialDependencies;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let context: Context;
 
   beforeEach(() => {
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),

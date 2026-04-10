@@ -7,16 +7,23 @@ import {
 } from "@aws-sdk/client-kms";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { createKmsSignedJwt } from "./createKmsSignedJwt";
-import { expect } from "@jest/globals";
 import "../../../../../../tests/testUtils/matchers";
 import { emptyFailure, Result, successResult } from "../../../../utils/result";
 import { mockDerSignature } from "../../../../testUtils/unitTestData";
 import { JwtPayload } from "../../../../types/jwt";
 import { BiometricCredential } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 describe("createKmsSignedJwt", () => {
-  let consoleDebugSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleDebugSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let kmsMock: AwsStub<
     ServiceInputTypes,
     ServiceOutputTypes,
@@ -36,8 +43,8 @@ describe("createKmsSignedJwt", () => {
 
   beforeEach(() => {
     kmsMock = mockClient(KMSClient);
-    consoleDebugSpy = jest.spyOn(console, "debug");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleDebugSpy = vi.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {

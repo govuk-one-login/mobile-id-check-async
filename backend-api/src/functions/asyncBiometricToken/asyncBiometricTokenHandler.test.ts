@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
@@ -28,17 +27,25 @@ import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
 import { GetSessionAuthSessionCreated } from "../common/session/getOperations/GetSessionAuthSessionCreated/GetSessionAuthSessionCreated";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
-jest.mock("crypto", () => ({
-  ...jest.requireActual("crypto"),
+vi.mock("crypto", async () => ({
+  ...(await vi.importActual("node:crypto")),
   randomUUID: () => "mock_opaque_id",
 }));
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   const validRequest = buildRequest({
@@ -48,7 +55,7 @@ describe("Async Biometric Token", () => {
     }),
   });
 
-  const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
+  const mockGetSecretsSuccess = vi.fn().mockResolvedValue(
     successResult({
       mock_secret_path_passport: "mock_submitter_key_passport",
       mock_secret_path_brp: "mock_submitter_key_brp",
@@ -56,7 +63,7 @@ describe("Async Biometric Token", () => {
     }),
   );
 
-  const mockGetBiometricTokenSuccess = jest
+  const mockGetBiometricTokenSuccess = vi
     .fn()
     .mockResolvedValue(successResult("mockBiometricToken"));
 
@@ -79,8 +86,8 @@ describe("Async Biometric Token", () => {
       getEventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {
@@ -195,7 +202,7 @@ describe("Async Biometric Token", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.SESSION_NOT_FOUND,
               }),
@@ -212,7 +219,7 @@ describe("Async Biometric Token", () => {
           beforeEach(async () => {
             dependencies.getEventService = () => ({
               ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
+              writeGenericEvent: vi.fn().mockResolvedValue(
                 errorResult({
                   errorMessage: "mockError",
                 }),
@@ -276,7 +283,7 @@ describe("Async Biometric Token", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.SESSION_NOT_VALID,
                 data: invalidBiometricTokenGetSessionAttributesErrorData,
@@ -294,7 +301,7 @@ describe("Async Biometric Token", () => {
           beforeEach(async () => {
             dependencies.getEventService = () => ({
               ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
+              writeGenericEvent: vi.fn().mockResolvedValue(
                 errorResult({
                   errorMessage: "mockError",
                 }),
@@ -361,7 +368,7 @@ describe("Async Biometric Token", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
+          getSession: vi.fn().mockResolvedValue(
             errorResult({
               errorType: GetSessionError.INTERNAL_SERVER_ERROR,
             }),
@@ -378,7 +385,7 @@ describe("Async Biometric Token", () => {
         beforeEach(async () => {
           dependencies.getEventService = () => ({
             ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
+            writeGenericEvent: vi.fn().mockResolvedValue(
               errorResult({
                 errorMessage: "mockError",
               }),
@@ -443,7 +450,7 @@ describe("Async Biometric Token", () => {
 
   describe("When there is an error getting secrets", () => {
     beforeEach(async () => {
-      dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
+      dependencies.getSecrets = vi.fn().mockResolvedValue(emptyFailure());
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,
@@ -465,7 +472,7 @@ describe("Async Biometric Token", () => {
 
   describe("Given there is an error getting biometric token", () => {
     beforeEach(async () => {
-      dependencies.getBiometricToken = jest
+      dependencies.getBiometricToken = vi
         .fn()
         .mockResolvedValue(emptyFailure());
       result = await lambdaHandlerConstructor(
@@ -479,7 +486,7 @@ describe("Async Biometric Token", () => {
       beforeEach(async () => {
         dependencies.getEventService = () => ({
           ...mockInertEventService,
-          writeGenericEvent: jest.fn().mockResolvedValue(
+          writeGenericEvent: vi.fn().mockResolvedValue(
             errorResult({
               errorMessage: "mockError",
             }),
@@ -549,12 +556,12 @@ describe("Async Biometric Token", () => {
       describe("Given session was not found", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
-            getSession: jest.fn().mockResolvedValue(
+            getSession: vi.fn().mockResolvedValue(
               successResult({
                 validBaseSessionAttributes,
               }),
             ),
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.SESSION_NOT_FOUND,
               }),
@@ -571,7 +578,7 @@ describe("Async Biometric Token", () => {
           beforeEach(async () => {
             dependencies.getEventService = () => ({
               ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
+              writeGenericEvent: vi.fn().mockResolvedValue(
                 errorResult({
                   errorMessage: "mockError",
                 }),
@@ -635,7 +642,7 @@ describe("Async Biometric Token", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             getSession: mockBiometricTokenGetSessionSuccess,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                 attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
@@ -653,7 +660,7 @@ describe("Async Biometric Token", () => {
           beforeEach(async () => {
             dependencies.getEventService = () => ({
               ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
+              writeGenericEvent: vi.fn().mockResolvedValue(
                 errorResult({
                   errorMessage: "mockError",
                 }),
@@ -721,7 +728,7 @@ describe("Async Biometric Token", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           getSession: mockBiometricTokenGetSessionSuccess,
-          updateSession: jest.fn().mockResolvedValue(
+          updateSession: vi.fn().mockResolvedValue(
             errorResult({
               errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
             }),
@@ -738,7 +745,7 @@ describe("Async Biometric Token", () => {
         beforeEach(async () => {
           dependencies.getEventService = () => ({
             ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
+            writeGenericEvent: vi.fn().mockResolvedValue(
               errorResult({
                 errorMessage: "mockError",
               }),
@@ -847,7 +854,7 @@ describe("Async Biometric Token", () => {
       beforeEach(async () => {
         dependencies.getEventService = () => ({
           ...mockInertEventService,
-          writeBiometricTokenIssuedEvent: jest.fn().mockResolvedValue(
+          writeBiometricTokenIssuedEvent: vi.fn().mockResolvedValue(
             errorResult({
               errorMessage: "mockError",
             }),
@@ -926,20 +933,20 @@ describe("Async Biometric Token", () => {
 });
 
 const mockBiometricTokenSessionRegistrySuccess: SessionRegistry = {
-  updateSession: jest.fn().mockResolvedValue(
+  updateSession: vi.fn().mockResolvedValue(
     successResult({
       attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
     }),
   ),
 
-  getSession: jest
+  getSession: vi
     .fn()
     .mockResolvedValue(
       successResult(validBiometricTokenIssuedSessionAttributes),
     ),
 };
 
-const mockBiometricTokenGetSessionSuccess = jest.fn().mockResolvedValue(
+const mockBiometricTokenGetSessionSuccess = vi.fn().mockResolvedValue(
   successResult({
     attributes: validBaseSessionAttributes,
   }),

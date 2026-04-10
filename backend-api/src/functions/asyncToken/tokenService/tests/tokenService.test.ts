@@ -3,6 +3,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { TokenService } from "../tokenService";
 import { ErrorCategory } from "../../../utils/result";
 import { mockDerSignature } from "../../../testUtils/unitTestData";
+import { expect, it, describe, beforeEach, afterEach } from "vitest";
 
 const kmsMock = mockClient(KMSClient);
 

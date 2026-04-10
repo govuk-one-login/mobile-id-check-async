@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
@@ -31,6 +30,14 @@ import {
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
 } from "./mocks";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
@@ -44,8 +51,8 @@ const env = {
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   const jwtBuilder = new MockJWTBuilder();
@@ -62,8 +69,8 @@ describe("Async Active Session", () => {
       eventService: () => new MockEventWriterSuccess(),
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {
@@ -493,7 +500,7 @@ describe("Async Active Session", () => {
         beforeEach(async () => {
           dependencies.eventService = () => ({
             ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
+            writeGenericEvent: vi.fn().mockResolvedValue(
               errorResult({
                 errorMessage: "mockError",
               }),

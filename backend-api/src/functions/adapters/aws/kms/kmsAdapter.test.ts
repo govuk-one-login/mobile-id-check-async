@@ -10,6 +10,7 @@ import {
   ServiceOutputTypes,
 } from "@aws-sdk/client-kms";
 import { ClientError, IKmsAdapter, KMSAdapter } from "./kmsAdapter";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("KMS Adapter", () => {
   let mockKmsClient: AwsStub<

@@ -21,13 +21,14 @@ import {
   ValidateSessionErrorInvalidAttributesData,
 } from "../../SessionRegistry/types";
 import { GetSessionIssueBiometricCredential } from "./GetSessionIssueBiometricCredential";
+import { vi, expect, it, describe, beforeEach } from "vitest";
 
 describe("Get Session - Issue Biometric Credential operation", () => {
   let getSessionOperation: GetSessionIssueBiometricCredential;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     getSessionOperation = new GetSessionIssueBiometricCredential();
   });
 

@@ -14,6 +14,7 @@ import {
   activeSessionReadScope,
   mockKeyId,
 } from "../../../testUtils/unitTestData";
+import { vi, expect, it, describe, beforeAll, beforeEach } from "vitest";
 
 describe("Token Service", () => {
   let tokenService: ITokenService;
@@ -33,14 +34,14 @@ describe("Token Service", () => {
     x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
     y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
   };
-  const mockSuccessfulGetKeys: IGetKeys = jest.fn().mockResolvedValue(
+  const mockSuccessfulGetKeys: IGetKeys = vi.fn().mockResolvedValue(
     successResult({
       keys: [mockMatchingJwk],
     }),
   );
 
   beforeAll(() => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-03-10"));
+    vi.useFakeTimers().setSystemTime(new Date("2024-03-10"));
   });
 
   beforeEach(async () => {
@@ -175,7 +176,7 @@ describe("Token Service", () => {
 
   describe("Given public keys cannot be retrieved", () => {
     beforeEach(async () => {
-      dependencies.getKeys = jest.fn().mockResolvedValue(emptyFailure());
+      dependencies.getKeys = vi.fn().mockResolvedValue(emptyFailure());
       result = await tokenService.validateServiceToken(
         mockValidEncodedJwt,
         mockAudience,
@@ -195,7 +196,7 @@ describe("Token Service", () => {
 
   describe("Given no key is found matching provided key ID", () => {
     beforeEach(async () => {
-      dependencies.getKeys = jest.fn().mockResolvedValue(
+      dependencies.getKeys = vi.fn().mockResolvedValue(
         successResult({
           keys: [
             {
@@ -224,7 +225,7 @@ describe("Token Service", () => {
 
   describe("Given matching JWK cannot be parsed as a public key", () => {
     beforeEach(async () => {
-      dependencies.getKeys = jest.fn().mockResolvedValue(
+      dependencies.getKeys = vi.fn().mockResolvedValue(
         successResult({
           keys: [
             {

@@ -12,6 +12,7 @@ import {
   errorResult,
   successResult,
 } from "../utils/result";
+import { vi } from "vitest";
 
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
@@ -140,7 +141,7 @@ export const mockAuditWithFlags = {
   },
 };
 
-export const mockGetCredentialFromBiometricSessionWithFlags = jest
+export const mockGetCredentialFromBiometricSessionWithFlags = vi
   .fn()
   .mockReturnValue(
     successResult({
@@ -263,36 +264,36 @@ export const validResultSentAttributes = {
 };
 
 export const mockInertSessionRegistry: SessionRegistry = {
-  updateSession: jest.fn(() => {
+  updateSession: vi.fn(() => {
     throw new Error("Not implemented");
   }),
 
-  getSession: jest.fn(() => {
+  getSession: vi.fn(() => {
     throw new Error("Not implemented");
   }),
 };
 
 export const mockInertEventService: IEventService = {
-  writeGenericEvent: jest.fn(() => {
+  writeGenericEvent: vi.fn(() => {
     throw new Error("Not implemented");
   }),
-  writeCredentialTokenIssuedEvent: jest.fn(() => {
+  writeCredentialTokenIssuedEvent: vi.fn(() => {
     throw new Error("Not implemented");
   }),
-  writeBiometricTokenIssuedEvent: jest.fn(() => {
+  writeBiometricTokenIssuedEvent: vi.fn(() => {
     throw new Error("Not implemented");
   }),
 };
 
-export const mockWriteGenericEventSuccessResult = jest
+export const mockWriteGenericEventSuccessResult = vi
   .fn()
   .mockResolvedValue(emptySuccess());
 
-export const mockWriteGenericEventFailureResult = jest
+export const mockWriteGenericEventFailureResult = vi
   .fn()
   .mockResolvedValue(errorResult(new Error("Failed to write event")));
 
-export const mockWriteBiometricTokenIssuedEventSuccessResult = jest
+export const mockWriteBiometricTokenIssuedEventSuccessResult = vi
   .fn()
   .mockResolvedValue(emptySuccess());
 
@@ -310,7 +311,7 @@ export const mockFailingEventService = {
 
 export const mockFailingCriEventService = {
   ...mockInertEventService,
-  writeGenericEvent: jest.fn((params) => {
+  writeGenericEvent: vi.fn((params) => {
     if (params.eventName === "DCMAW_ASYNC_CRI_END") {
       return Promise.resolve(errorResult({ errorMessage: "Mock error" }));
     } else {
@@ -319,15 +320,15 @@ export const mockFailingCriEventService = {
   }),
 };
 
-export const mockSendMessageToSqsSuccess = jest
+export const mockSendMessageToSqsSuccess = vi
   .fn()
   .mockResolvedValue(successResult(mockSqsResponseMessageId));
 
-export const mockSendMessageToSqsFailure = jest
+export const mockSendMessageToSqsFailure = vi
   .fn()
   .mockResolvedValue(emptyFailure());
 
-export const mockGetBiometricSessionSuccess = jest
+export const mockGetBiometricSessionSuccess = vi
   .fn()
   .mockResolvedValue(successResult("mockBiometricSession"));
 

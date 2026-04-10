@@ -1,4 +1,5 @@
 import { getHeader } from "./getHeader";
+import { expect, it, describe } from "vitest";
 
 describe("Headers", () => {
   describe("getHeader", () => {

@@ -2,6 +2,7 @@ import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { Logger } from "../logger";
 import { RegisteredLogMessages } from "../types";
 import { MockLoggingAdapter } from "./mockLogger";
+import { expect, it, describe } from "vitest";
 
 describe("Logger", () => {
   describe("Given there is a message to log", () => {

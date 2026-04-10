@@ -9,6 +9,7 @@ import {
   MockAsymmetricDecrypterSuccess,
 } from "../../../adapters/aws/kms/mocks";
 import { ErrorCategory } from "../../../utils/result";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Decrypt JWE", () => {
   let dependencies: JweDecrypterDependencies;

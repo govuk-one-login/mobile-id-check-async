@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import "../../../../../../tests/testUtils/matchers";
 import { InMemoryJwksCache } from "../JwksCache";
 import { GetKeysResponse, JwksCacheDependencies } from "../types";
@@ -12,12 +11,21 @@ import {
   ISendHttpRequest,
   SuccessfulHttpResponse,
 } from "../../../../adapters/http/sendHttpRequest";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 let inMemoryJwksCache: InMemoryJwksCache;
 let dependencies: JwksCacheDependencies;
 let result: Result<GetKeysResponse, void>;
-let mockSendRequest: jest.Mock<ReturnType<ISendHttpRequest>>;
-let consoleDebugSpy: jest.SpyInstance;
+let mockSendRequest = vi.fn<ISendHttpRequest>();
+let consoleDebugSpy: MockInstance;
 
 const MAXIMUM_CACHE_DURATION_SECONDS = 15 * 60; // 15 minutes
 const MAXIMUM_CACHE_DURATION_MILLIS = MAXIMUM_CACHE_DURATION_SECONDS * 1000;
@@ -26,12 +34,12 @@ const serverDefinedMaxAgeInSeconds = MAXIMUM_CACHE_DURATION_SECONDS - 1;
 
 describe("InMemoryJwksCache - Caching", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
 
-    consoleDebugSpy = jest.spyOn(console, "debug");
+    consoleDebugSpy = vi.spyOn(console, "debug");
 
-    mockSendRequest = jest
+    mockSendRequest = vi
       .fn()
       .mockResolvedValue(
         buildSuccessfulJwksResponseWithKeyIdsAndMaxAge(
@@ -45,7 +53,7 @@ describe("InMemoryJwksCache - Caching", () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("getJwks", () => {
@@ -92,7 +100,7 @@ describe("InMemoryJwksCache - Caching", () => {
 
     describe("Given previous response from JWKS URI does not include Cache-Control header", () => {
       beforeEach(async () => {
-        mockSendRequest = jest.fn().mockResolvedValue(
+        mockSendRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: JSON.stringify({
@@ -123,7 +131,7 @@ describe("InMemoryJwksCache - Caching", () => {
 
     describe("Given the only previous response was from a different JWKS URI", () => {
       beforeEach(async () => {
-        mockSendRequest = jest
+        mockSendRequest = vi
           .fn()
           .mockResolvedValueOnce(
             buildSuccessfulJwksResponseWithKeyIdsAndMaxAge(
@@ -168,7 +176,7 @@ describe("InMemoryJwksCache - Caching", () => {
           beforeEach(async () => {
             inMemoryJwksCache = new InMemoryJwksCache(dependencies);
             await inMemoryJwksCache.getJwks("mock_jwks_uri");
-            jest.setSystemTime(
+            vi.setSystemTime(
               NOW_IN_MILLISECONDS + serverDefinedMaxAgeInSeconds * 1000,
             );
             result = await inMemoryJwksCache.getJwks("mock_jwks_uri");
@@ -191,7 +199,7 @@ describe("InMemoryJwksCache - Caching", () => {
 
         describe("Given Age header returned from previous response, and [max age - age] has elapsed", () => {
           beforeEach(async () => {
-            mockSendRequest = jest.fn().mockResolvedValue(
+            mockSendRequest = vi.fn().mockResolvedValue(
               successResult({
                 statusCode: 200,
                 body: JSON.stringify({
@@ -207,7 +215,7 @@ describe("InMemoryJwksCache - Caching", () => {
 
             inMemoryJwksCache = new InMemoryJwksCache(dependencies);
             await inMemoryJwksCache.getJwks("mock_jwks_uri");
-            jest.setSystemTime(NOW_IN_MILLISECONDS + 50000);
+            vi.setSystemTime(NOW_IN_MILLISECONDS + 50000);
             result = await inMemoryJwksCache.getJwks("mock_jwks_uri");
           });
 
@@ -228,7 +236,7 @@ describe("InMemoryJwksCache - Caching", () => {
 
         describe("Given Age header returned from previous response, and [max age - age] < 0", () => {
           beforeEach(async () => {
-            mockSendRequest = jest.fn().mockResolvedValue(
+            mockSendRequest = vi.fn().mockResolvedValue(
               successResult({
                 statusCode: 200,
                 body: JSON.stringify({
@@ -266,7 +274,7 @@ describe("InMemoryJwksCache - Caching", () => {
       describe("Given server-defined max-age returned from previous response was greater than maximum cache duration", () => {
         describe("Given maximum cache duration has elapsed", () => {
           beforeEach(async () => {
-            mockSendRequest = jest
+            mockSendRequest = vi
               .fn()
               .mockResolvedValue(
                 buildSuccessfulJwksResponseWithKeyIdsAndMaxAge(
@@ -279,7 +287,7 @@ describe("InMemoryJwksCache - Caching", () => {
             inMemoryJwksCache = new InMemoryJwksCache(dependencies);
             await inMemoryJwksCache.getJwks("mock_jwks_uri");
 
-            jest.setSystemTime(
+            vi.setSystemTime(
               NOW_IN_MILLISECONDS + MAXIMUM_CACHE_DURATION_MILLIS,
             );
             await inMemoryJwksCache.getJwks("mock_jwks_uri");
@@ -305,7 +313,7 @@ describe("InMemoryJwksCache - Caching", () => {
 
     describe("Given previous response from JWKS URI is fresh but contained a different key ID", () => {
       beforeEach(async () => {
-        mockSendRequest = jest
+        mockSendRequest = vi
           .fn()
           .mockResolvedValueOnce(
             buildSuccessfulJwksResponseWithKeyIdsAndMaxAge(
@@ -387,7 +395,7 @@ describe("InMemoryJwksCache - Caching", () => {
 });
 
 function expectJwksUriToHaveBeenCalledNTimes(
-  httpRequestMock: jest.Mock<ReturnType<ISendHttpRequest>>,
+  httpRequestMock: ReturnType<typeof vi.fn<ISendHttpRequest>>,
   jwksUri: string,
   numberOfCalls: number,
 ): void {

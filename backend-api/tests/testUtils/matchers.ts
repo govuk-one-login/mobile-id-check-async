@@ -1,9 +1,9 @@
-import { expect } from "@jest/globals";
 import { AssertionError, deepStrictEqual } from "node:assert";
 import { SQSMessageBody } from "../../src/functions/adapters/aws/sqs/types";
+import { expect, Mock, MockInstance } from "vitest";
 
 const toHaveBeenCalledNthWithSqsMessage = (
-  mockFn: jest.Mock,
+  mockFn: Mock,
   nthCall: number,
   expectedArguments: { sqsArn: string; expectedMessage: SQSMessageBody },
 ) => {
@@ -18,7 +18,7 @@ const toHaveBeenCalledNthWithSqsMessage = (
   if (mockCalls === undefined) {
     return {
       pass: false,
-      message: () => `Only ${mockCalls.length} messages found.`,
+      message: () => `Only ${mockFn.mock.calls.length} messages found.`,
     };
   }
   try {
@@ -38,7 +38,7 @@ const toHaveBeenCalledNthWithSqsMessage = (
 };
 
 const toHaveBeenCalledWithLogFields = (
-  consoleSpy: jest.SpyInstance,
+  consoleSpy: MockInstance,
   logFields: Record<string, unknown>,
 ) => {
   const messages = consoleSpy.mock.calls.map((args) => args[0]);
@@ -83,12 +83,15 @@ expect.extend({
   toHaveBeenCalledNthWithSqsMessage,
 });
 
-declare module "expect" {
-  interface Matchers<R> {
-    toHaveBeenCalledWithLogFields(logFields: object): R;
+declare module "vitest" {
+  interface Matchers<T = any> {
+    toHaveBeenCalledWithLogFields(logFields: Record<string, unknown>): T;
     toHaveBeenCalledNthWithSqsMessage(
       nthCall: number,
-      expectedArguments: { sqsArn: string; expectedMessage: SQSMessageBody },
-    ): R;
+      expectedArguments: {
+        sqsArn: string;
+        expectedMessage: SQSMessageBody;
+      },
+    ): void;
   }
 }

@@ -5,14 +5,21 @@ import {
   successResult,
 } from "../../utils/result";
 import { getBiometricToken } from "./getBiometricToken";
-import { expect } from "@jest/globals";
 import "../../../../tests/testUtils/matchers";
 import { ISendHttpRequest } from "../../adapters/http/sendHttpRequest";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 describe("getBiometricToken", () => {
   let result: Result<string, void>;
-  let consoleDebugSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleDebugSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let mockSendHttpRequest: ISendHttpRequest;
   const expectedHttpRequest = {
     headers: {
@@ -29,13 +36,13 @@ describe("getBiometricToken", () => {
   };
 
   beforeEach(() => {
-    consoleDebugSpy = jest.spyOn(console, "debug");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleDebugSpy = vi.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every call", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue(
+      mockSendHttpRequest = vi.fn().mockResolvedValue(
         successResult({
           statusCode: 200,
           body: "mockBody",
@@ -62,7 +69,7 @@ describe("getBiometricToken", () => {
 
   describe("Given an errorResult is returned when requesting token", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue(
+      mockSendHttpRequest = vi.fn().mockResolvedValue(
         errorResult({
           description: `Unexpected network error - ${new Error("mockError")}`,
         }),
@@ -93,7 +100,7 @@ describe("getBiometricToken", () => {
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: undefined,
@@ -128,7 +135,7 @@ describe("getBiometricToken", () => {
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: "Invalid JSON",
@@ -164,7 +171,7 @@ describe("getBiometricToken", () => {
 
   describe("Given valid request is made", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue(
+      mockSendHttpRequest = vi.fn().mockResolvedValue(
         successResult({
           statusCode: 200,
           body: JSON.stringify({

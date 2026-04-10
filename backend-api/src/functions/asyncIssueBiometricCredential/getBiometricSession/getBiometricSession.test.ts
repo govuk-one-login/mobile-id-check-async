@@ -4,14 +4,21 @@ import {
   BiometricSession,
   GetBiometricSessionError,
 } from "./getBiometricSession";
-import { expect } from "@jest/globals";
 import "../../../../tests/testUtils/matchers";
 import { ISendHttpRequest } from "../../adapters/http/sendHttpRequest";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 describe("getBiometricSession", () => {
   let result: Result<BiometricSession, GetBiometricSessionError>;
-  let consoleDebugSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleDebugSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let mockSendHttpRequest: ISendHttpRequest;
   const mockBiometricSessionId = "mockBiometricSessionId";
 
@@ -35,15 +42,15 @@ describe("getBiometricSession", () => {
   };
 
   beforeEach(() => {
-    consoleDebugSpy = jest.spyOn(console, "debug");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleDebugSpy = vi.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
 
-    jest.resetModules();
+    vi.resetModules();
   });
 
   describe("On every call", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue(
+      mockSendHttpRequest = vi.fn().mockResolvedValue(
         successResult({
           statusCode: 200,
           body: JSON.stringify({
@@ -74,7 +81,7 @@ describe("getBiometricSession", () => {
   describe("Given an error is returned when requesting session", () => {
     describe("Given a retryable error (5XX)", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           errorResult({
             statusCode: 503,
             message: "Service Unavailable",
@@ -109,7 +116,7 @@ describe("getBiometricSession", () => {
 
     describe("Given a non-retryable error (4XX)", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           errorResult({
             statusCode: 404,
             message: "Not Found",
@@ -144,7 +151,7 @@ describe("getBiometricSession", () => {
 
     describe("Given a network error (no status code)", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           errorResult({
             message: "Network Error",
           }),
@@ -169,7 +176,7 @@ describe("getBiometricSession", () => {
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: undefined,
@@ -208,7 +215,7 @@ describe("getBiometricSession", () => {
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: "Invalid JSON",
@@ -247,7 +254,7 @@ describe("getBiometricSession", () => {
 
     describe("Given response has invalid structure", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
+        mockSendHttpRequest = vi.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
             body: JSON.stringify({
@@ -290,7 +297,7 @@ describe("getBiometricSession", () => {
     };
 
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue(
+      mockSendHttpRequest = vi.fn().mockResolvedValue(
         successResult({
           statusCode: 200,
           body: JSON.stringify(mockSession),

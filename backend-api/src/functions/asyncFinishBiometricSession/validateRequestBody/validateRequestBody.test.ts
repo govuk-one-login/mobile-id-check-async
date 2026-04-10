@@ -4,6 +4,7 @@ import {
   mockInvalidUUID,
   mockSessionId,
 } from "../../testUtils/unitTestData";
+import { expect, it, describe } from "vitest";
 
 describe("Validate request body", () => {
   describe("Given body is invalid", () => {

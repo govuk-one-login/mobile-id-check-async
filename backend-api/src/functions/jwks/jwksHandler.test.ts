@@ -17,6 +17,7 @@ import {
   MockCustomResourceEventSenderErrorResult,
   MockCustomResourceEventSenderSuccessResult,
 } from "./customResourceEventSender/tests/mocks";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Json Web Keys", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;

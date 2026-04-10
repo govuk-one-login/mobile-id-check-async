@@ -1,14 +1,21 @@
 import { logger } from "../common/logging/logger";
-import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { getCredentialFromBiometricSessionLogger } from "./getCredentialFromBiometricSessionLogger";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 describe("getCredentialFromBiometricSessionLogger", () => {
-  let consoleErrorSpy: jest.SpyInstance;
-  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: MockInstance;
+  let consoleInfoSpy: MockInstance;
   beforeEach(() => {
-    consoleErrorSpy = jest.spyOn(console, "error");
-    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
   });
 
   it("Logs at error", () => {

@@ -4,6 +4,15 @@ import {
   sendHttpRequest,
   SuccessfulHttpResponse,
 } from "./sendHttpRequest";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 describe("Send HTTP request", () => {
   const MOCK_JITTER_MULTIPLIER = 0.5;
@@ -17,14 +26,14 @@ describe("Send HTTP request", () => {
     retryableStatusCodes: [503],
   };
 
-  let mockFetch: jest.SpyInstance;
-  let mockSetTimeout: jest.SpyInstance;
+  let mockFetch: MockInstance;
+  let mockSetTimeout: MockInstance;
   let response: Result<SuccessfulHttpResponse, HttpError>;
 
   beforeEach(() => {
-    jest.spyOn(Math, "random").mockImplementation(() => MOCK_JITTER_MULTIPLIER);
+    vi.spyOn(Math, "random").mockImplementation(() => MOCK_JITTER_MULTIPLIER);
 
-    mockSetTimeout = jest
+    mockSetTimeout = vi
       .spyOn(global, "setTimeout")
       .mockImplementation((callback, _) => {
         callback();
@@ -33,12 +42,12 @@ describe("Send HTTP request", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Given there is a network error", () => {
     beforeEach(async () => {
-      mockFetch = jest
+      mockFetch = vi
         .spyOn(global, "fetch")
         .mockImplementation(() => Promise.reject(new Error("mockError")));
 
@@ -60,7 +69,7 @@ describe("Send HTTP request", () => {
       "Given the status code is (%d)",
       (statusCode: number) => {
         beforeEach(async () => {
-          mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+          mockFetch = vi.spyOn(global, "fetch").mockImplementation(() =>
             Promise.resolve({
               status: statusCode,
               text: () => Promise.resolve("mockError"),
@@ -88,7 +97,7 @@ describe("Send HTTP request", () => {
 
   describe("Given the request fails with a retryable statusCode", () => {
     beforeEach(async () => {
-      mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+      mockFetch = vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 503,
           ok: false,
@@ -116,7 +125,7 @@ describe("Send HTTP request", () => {
 
   describe("Given there is an error on the first request attempt", () => {
     beforeEach(async () => {
-      mockFetch = jest
+      mockFetch = vi
         .spyOn(global, "fetch")
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
         .mockImplementationOnce(() =>
@@ -160,7 +169,7 @@ describe("Send HTTP request", () => {
 
   describe("Given there is an error on the second request attempt", () => {
     beforeEach(async () => {
-      mockFetch = jest
+      mockFetch = vi
         .spyOn(global, "fetch")
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
@@ -210,7 +219,7 @@ describe("Send HTTP request", () => {
 
   describe("Given there is an error on the third request attempt", () => {
     beforeEach(async () => {
-      mockFetch = jest
+      mockFetch = vi
         .spyOn(global, "fetch")
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
@@ -248,7 +257,7 @@ describe("Send HTTP request", () => {
 
   describe("Given a custom maxAttempts value is used - 4 maxAttempts", () => {
     beforeEach(async () => {
-      mockFetch = jest
+      mockFetch = vi
         .spyOn(global, "fetch")
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
         .mockImplementationOnce(() => Promise.reject(new Error("mockError")))

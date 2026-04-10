@@ -13,7 +13,7 @@ import {
   expiryGracePeriodEnabledDescribe,
 } from "../dvlaExpiryTestSetup";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import { beforeAll, it, expect } from "@jest/globals";
+import { beforeAll, it, describe, expect } from "vitest";
 
 expiryGracePeriodEnabledDescribe()(
   "Given DVLA document has expired and is beyond the grace period",
