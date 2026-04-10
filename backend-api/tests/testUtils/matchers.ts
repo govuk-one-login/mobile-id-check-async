@@ -84,14 +84,14 @@ expect.extend({
 });
 
 declare module "vitest" {
-  interface Assertion<T> {
-    toHaveBeenCalledWithLogFields(logFields: object): T;
+  interface Matchers<T = any> {
+    toHaveBeenCalledWithLogFields(logFields: Record<string, unknown>): T;
     toHaveBeenCalledNthWithSqsMessage(
       nthCall: number,
       expectedArguments: {
         sqsArn: string;
         expectedMessage: SQSMessageBody;
       },
-    ): T;
+    ): void;
   }
 }
