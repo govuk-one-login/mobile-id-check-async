@@ -9,9 +9,13 @@ const reporters =
 export default defineConfig({
   test: {
     coverage: {
+      provider: "v8",
+      ignoreEmptyLines: true,
       enabled: true,
       exclude: ["**/testUtils/**", "**/node-modules/**"],
+      reporter: ["lcov", "text-summary"],
     },
+    silent: "passed-only",
     setupFiles: ["testSetup.ts"],
     environment: "node",
     include: ["**/*.test.ts"],
