@@ -54,6 +54,11 @@ Resources:
 
   ProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: KMS encryption not required as log group will not contain sensitive data.
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
       RetentionInDays: 30
