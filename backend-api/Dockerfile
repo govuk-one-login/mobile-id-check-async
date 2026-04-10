@@ -16,7 +16,7 @@ RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
 
 # Copy the test files and the configuration files
 COPY tests/api-tests ./tests/api-tests
-COPY vitest.config.ts tsconfig.json ./
+COPY vitest.config.ts testSetup.ts tsconfig.json ./
 
 # Give user, 'test', permissions to execute test script and switch the user to 'test'
 COPY run-tests.sh /
