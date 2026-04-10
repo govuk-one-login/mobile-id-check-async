@@ -40,6 +40,7 @@ Resources:
               Bool:
                 "aws:SecureTransport": false
 
+# TODO: delete after 11 May (https://govukverify.atlassian.net/browse/DCMAW-19686)
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
