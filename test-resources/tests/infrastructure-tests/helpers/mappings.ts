@@ -1,4 +1,5 @@
 import { Template } from "aws-cdk-lib/assertions";
+import { expect } from "vitest";
 
 interface EnvironmentFlags {
   dev: string | boolean | number;

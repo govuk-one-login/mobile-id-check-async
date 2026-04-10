@@ -7,13 +7,13 @@ import {
   expectedSecurityHeaders,
   mockSessionId,
 } from "../testUtils/unitTestData";
-import { expect } from "@jest/globals";
+import { beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
 import "../testUtils/matchers";
 
 describe("Put session handler", () => {
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   const validRequest = buildRequest({
@@ -22,8 +22,8 @@ describe("Put session handler", () => {
 
   beforeEach(() => {
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {

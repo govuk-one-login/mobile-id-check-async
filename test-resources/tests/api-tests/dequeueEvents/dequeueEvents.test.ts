@@ -2,9 +2,7 @@ import { randomUUID } from "crypto";
 import "dotenv/config";
 import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { TEST_RESOURCES_API_INSTANCE } from "../utils/apiInstances";
-
-const ONE_SECOND = 1000;
-jest.setTimeout(45 * ONE_SECOND);
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("GET /events", () => {
   describe("Given there are no events to dequeue", () => {
@@ -44,7 +42,7 @@ describe("GET /events", () => {
         const sub = randomUUID();
         await createSession(sub);
         sessionId = await getActiveSessionId(sub);
-      });
+      }, 45000);
 
       it("Returns a 200 OK response", async () => {
         const pkPrefix = `SESSION#${sessionId}`;

@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorCategory } from "../../../../common/utils/result";
 import { TokenEncrypter } from "../tokenEncrypter";
 
@@ -11,7 +12,7 @@ describe("Token Encrypter", () => {
       "dummyUrl.gov.uk/.well-known/jwks.json",
     );
 
-    jest.spyOn(global, "fetch").mockImplementation(() =>
+    vi.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,
         ok: true,
@@ -33,12 +34,12 @@ describe("Token Encrypter", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Given an error happens when requesting the JWKS", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 500,
           ok: false,
@@ -57,7 +58,7 @@ describe("Token Encrypter", () => {
 
   describe("Given an unexpected network error happens when requesting the JWKS", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementationOnce(() => {
+      vi.spyOn(global, "fetch").mockImplementationOnce(() => {
         throw new Error("Unexpected network error");
       });
 
@@ -73,7 +74,7 @@ describe("Token Encrypter", () => {
 
   describe("Given the response body cannot be parsed as JSON", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 200,
           ok: true,
@@ -93,7 +94,7 @@ describe("Token Encrypter", () => {
 
   describe("Given 'keys' is missing from the response body", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 200,
           ok: true,
@@ -113,7 +114,7 @@ describe("Token Encrypter", () => {
 
   describe("Given 'keys' is not an array", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 200,
           ok: true,
@@ -133,7 +134,7 @@ describe("Token Encrypter", () => {
 
   describe("Given the JWKS does not contain an encryption JWK", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 200,
           ok: true,
@@ -153,7 +154,7 @@ describe("Token Encrypter", () => {
 
   describe("Given the encryption JWK is invalid (i.e. missing required fields) and cannot be parsed as a KeyObject", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 200,
           ok: true,
@@ -178,7 +179,7 @@ describe("Token Encrypter", () => {
   */
   describe("Given there is an unexpected error encrypting the JWT", () => {
     it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
+      vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 200,
           ok: true,

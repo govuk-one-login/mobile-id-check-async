@@ -1,6 +1,14 @@
-import { expect } from "@jest/globals";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  MockInstance,
+  vi,
+} from "vitest";
 import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
-import "aws-sdk-client-mock-jest";
+import "aws-sdk-client-mock-vitest";
 import { logger } from "../common/logging/logger";
 import { emptyFailure, emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
@@ -13,8 +21,8 @@ import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDbAdapter/dequeu
 describe("Dequeue credential result", () => {
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: SQSBatchResponse;
 
   beforeEach(() => {
@@ -26,12 +34,12 @@ describe("Dequeue credential result", () => {
       getCredentialResultRegistry: () => mockCredentialResultRegistrySuccess,
     };
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -289,9 +297,9 @@ describe("Dequeue credential result", () => {
 });
 
 const mockCredentialResultRegistrySuccess: IDequeueDynamoDbAdapter = {
-  putItem: jest.fn().mockResolvedValue(emptySuccess()),
+  putItem: vi.fn().mockResolvedValue(emptySuccess()),
 };
 
 const mockCredentialResultRegistryPutItemFailure: IDequeueDynamoDbAdapter = {
-  putItem: jest.fn().mockResolvedValue(emptyFailure()),
+  putItem: vi.fn().mockResolvedValue(emptyFailure()),
 };
