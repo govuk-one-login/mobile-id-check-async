@@ -17,8 +17,10 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       LoggingConfiguration:
-        DestinationBucketName: !Ref JwksBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-sts-mock-jwks
+        DestinationBucketName: !ImportValue s3-access-logs-bucket-S3AccessLogsBucketName
+        TargetObjectKeyFormat:
+          PartitionedPrefix:
+            PartitionDateSource: EventTime
 
   JwksBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -38,6 +40,7 @@ Resources:
               Bool:
                 "aws:SecureTransport": false
 
+# TODO: delete after 11 May (https://govukverify.atlassian.net/browse/DCMAW-19686)
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:

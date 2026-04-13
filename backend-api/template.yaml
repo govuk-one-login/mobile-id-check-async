@@ -5638,8 +5638,10 @@ Resources:
               SSEAlgorithm: AES256
       BucketName: !Sub ${AWS::StackName}-jwks-keys-${Environment}
       LoggingConfiguration:
-        DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks-keys
+        DestinationBucketName: !ImportValue s3-access-logs-bucket-S3AccessLogsBucketName
+        TargetObjectKeyFormat:
+          PartitionedPrefix:
+            PartitionDateSource: EventTime
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true

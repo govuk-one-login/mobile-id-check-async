@@ -448,8 +448,10 @@ Resources:
               SSEAlgorithm: AES256
       BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-${Environment}
       LoggingConfiguration:
-        DestinationBucketName: !Ref JwksBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-sts-mock-jwks
+        DestinationBucketName: !ImportValue s3-access-logs-bucket-S3AccessLogsBucketName
+        TargetObjectKeyFormat:
+          PartitionedPrefix:
+            PartitionDateSource: EventTime
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true

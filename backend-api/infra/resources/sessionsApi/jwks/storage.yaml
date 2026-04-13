@@ -16,8 +16,10 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       LoggingConfiguration:
-        DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks-keys
+        DestinationBucketName: !ImportValue s3-access-logs-bucket-S3AccessLogsBucketName
+        TargetObjectKeyFormat:
+          PartitionedPrefix:
+            PartitionDateSource: EventTime
 
   JsonWebKeysBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -37,6 +39,7 @@ Resources:
               Bool:
                 aws:SecureTransport: false
 
+# TODO: delete after 11 May (https://govukverify.atlassian.net/browse/DCMAW-19686)
   JsonWebKeysBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
