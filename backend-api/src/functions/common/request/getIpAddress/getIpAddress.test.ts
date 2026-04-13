@@ -1,11 +1,19 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { getIpAddress } from "./getIpAddress";
 import { buildRequest } from "../../../testUtils/mockRequest";
-import { expect } from "@jest/globals";
 import "../../../../../tests/testUtils/matchers";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 let request: APIGatewayProxyEvent;
-let consoleWarnSpy: jest.SpyInstance;
+let consoleWarnSpy: MockInstance;
 let result: string;
 
 const validCloudfrontHeaderScenarios = [
@@ -68,7 +76,7 @@ const validCloudfrontHeaderScenarios = [
 describe("getIpFromRequest", () => {
   beforeEach(() => {
     request = buildRequest();
-    consoleWarnSpy = jest.spyOn(console, "warn");
+    consoleWarnSpy = vi.spyOn(console, "warn");
   });
   afterEach(() => {
     consoleWarnSpy.mockRestore();

@@ -1,11 +1,11 @@
 # Testing
 
-## Custom Matchers in Jest
+## Custom Matchers in Vitest
 
-Jest allows the definition of custom matchers to facilitate complex test assertions. For example:
+Vitest allows the definition of custom matchers to facilitate complex test assertions. For example:
 
 ```typescript
-import { expect } from "@jest/globals";
+import { expect } from "vitest";
 
 const toHaveSameFirstLetterAs = function toHaveSameFirstLetterAs(
   word: string,
@@ -24,7 +24,7 @@ expect.extend({
   toHaveSameFirstLetterAs,
 });
 
-declare module "expect" {
+declare module "vitest" {
   interface Matchers<R> {
     toHaveSameFirstLetterAs(target: string): R;
   }
@@ -36,4 +36,4 @@ expect("apple").not.toHaveSameFirstLetterAs("banana");
 
 Our custom matchers are defined in `backend-api/src/functions/testUtils/matchers.ts`.
 
-See https://jestjs.io/docs/expect#expectextendmatchers for official documentation.
+See https://vitest.dev/guide/extending-matchers.html for official documentation.

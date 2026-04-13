@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { buildRequest } from "../../../testUtils/mockRequest";
 import { AuditData, getAuditData } from "./getAuditData";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Get audit data", () => {
   let event: APIGatewayProxyEvent;

@@ -1,4 +1,5 @@
 import { parseCacheControlHeader } from "./parseCacheControlHeader";
+import { expect, it, describe } from "vitest";
 
 const testData = [
   {

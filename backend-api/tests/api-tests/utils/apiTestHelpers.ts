@@ -18,6 +18,7 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
+import { expect } from "vitest";
 
 export interface ClientDetails {
   client_id: string;

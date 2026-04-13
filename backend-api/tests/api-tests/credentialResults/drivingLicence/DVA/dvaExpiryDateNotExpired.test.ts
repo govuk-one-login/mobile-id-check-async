@@ -1,4 +1,3 @@
-import { beforeAll, expect, it } from "@jest/globals";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
 import {
@@ -10,6 +9,7 @@ import {
   getVerifiedJwt,
   pollForEvents,
 } from "../../../utils/apiTestHelpers";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("Given DVA document has not expired", () => {
   let subjectIdentifier: string;

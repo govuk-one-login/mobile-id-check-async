@@ -7,7 +7,6 @@ import {
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
@@ -35,25 +34,34 @@ import {
 } from "../../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
 let sessionRegistry: SessionRegistry;
-let consoleErrorSpy: jest.SpyInstance;
-let consoleDebugSpy: jest.SpyInstance;
+let consoleErrorSpy: MockInstance;
+let consoleDebugSpy: MockInstance;
 
 describe("DynamoDbAdapter", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     sessionRegistry = new DynamoDbAdapter("mock_table_name");
-    consoleErrorSpy = jest.spyOn(console, "error");
-    consoleDebugSpy = jest.spyOn(console, "debug");
+    consoleErrorSpy = vi.spyOn(console, "error");
+    consoleDebugSpy = vi.spyOn(console, "debug");
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
-    jest.useRealTimers();
+    vi.resetAllMocks();
+    vi.useRealTimers();
   });
 
   describe("updateSession", () => {

@@ -13,13 +13,14 @@ import {
 } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { GetSessionBiometricTokenIssued } from "./GetSessionBiometricTokenIssued";
+import { vi, expect, it, describe, beforeEach } from "vitest";
 
 describe("TxMA event get session operation", () => {
   let getSessionOperation: GetSessionBiometricTokenIssued;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     getSessionOperation = new GetSessionBiometricTokenIssued();
   });
 

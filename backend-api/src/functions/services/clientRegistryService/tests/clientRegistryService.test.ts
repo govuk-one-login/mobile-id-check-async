@@ -5,6 +5,7 @@ import {
 import { mockClient } from "aws-sdk-client-mock";
 import { ClientRegistryService } from "../clientRegistryService";
 import { ErrorCategory } from "../../../utils/result";
+import { vi, expect, it, describe, beforeEach } from "vitest";
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientRegistryService;
@@ -637,7 +638,7 @@ describe("Client Credentials Service", () => {
           it("Refreshes cache after TTL expires", async () => {
             const ssmMock = mockClient(SecretsManagerClient);
 
-            jest.useFakeTimers();
+            vi.useFakeTimers();
 
             ssmMock.on(GetSecretValueCommand).resolves({
               SecretString: JSON.stringify([
@@ -659,7 +660,7 @@ describe("Client Credentials Service", () => {
               },
             );
             // Simulate time passing to exceed cache TTL
-            jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
+            vi.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
             // This call should refresh cache
             await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
               {
@@ -670,7 +671,7 @@ describe("Client Credentials Service", () => {
 
             // Expect SSM to have been called twice: once to populate, once to refresh after TTL
             expect(ssmMock.calls()).toHaveLength(2);
-            jest.useRealTimers();
+            vi.useRealTimers();
           });
         });
       });
@@ -1210,7 +1211,7 @@ describe("Client Credentials Service", () => {
           it("Refreshes cache after TTL expires", async () => {
             const ssmMock = mockClient(SecretsManagerClient);
 
-            jest.useFakeTimers();
+            vi.useFakeTimers();
 
             ssmMock.on(GetSecretValueCommand).resolves({
               SecretString: JSON.stringify([
@@ -1229,7 +1230,7 @@ describe("Client Credentials Service", () => {
               "mockRegisteredClientId",
             );
             // Simulate time passing to exceed cache TTL
-            jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
+            vi.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
             // This call should refresh cache
             await clientCredentialsService.getPartialRegisteredClientByClientId(
               "mockRegisteredClientId",
@@ -1237,7 +1238,7 @@ describe("Client Credentials Service", () => {
 
             // Expect SSM to have been called twice: once to populate, once to refresh after TTL
             expect(ssmMock.calls()).toHaveLength(2);
-            jest.useRealTimers();
+            vi.useRealTimers();
           });
         });
       });

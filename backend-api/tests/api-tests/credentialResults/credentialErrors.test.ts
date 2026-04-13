@@ -9,6 +9,7 @@ import {
   mockClientState,
   mockGovukSigninJourneyId,
 } from "../utils/apiTestData";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("Credential error results", () => {
   describe.each([

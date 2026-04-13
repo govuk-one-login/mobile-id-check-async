@@ -4,6 +4,7 @@ import { schema } from "yaml-cfn";
 import { deepMerge, walkSync } from "../testUtils/testFunctions";
 import { Template } from "aws-cdk-lib/assertions";
 import { load } from "js-yaml";
+import { expect, it, describe } from "vitest";
 
 const aggregatedTemplate = loadTemplateFromFile("./template.yaml");
 

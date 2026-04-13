@@ -9,10 +9,9 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { generateRandomString, mockClientState } from "./utils/apiTestData";
+import { expect, it, describe, beforeAll } from "vitest";
 
-jest.setTimeout(4 * 5000);
-
-describe("GET /async/activeSession", () => {
+describe("GET /async/activeSession", { timeout: 4 * 5000 }, () => {
   describe("Given there is no Authorization header", () => {
     it("Returns an error and 401 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession");

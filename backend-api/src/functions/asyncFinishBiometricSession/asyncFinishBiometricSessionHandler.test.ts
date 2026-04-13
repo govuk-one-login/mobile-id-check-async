@@ -1,5 +1,4 @@
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { IAsyncFinishBiometricSessionDependencies } from "./handlerDependencies";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -24,12 +23,21 @@ import {
   emptyFailure,
 } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry/types";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;
   let context: Context;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   // Constants for epoch timestamps
@@ -44,11 +52,11 @@ describe("Async Finish Biometric Session", () => {
     }),
   });
 
-  const mockWriteGenericEventSuccess = jest
+  const mockWriteGenericEventSuccess = vi
     .fn()
     .mockResolvedValue(emptySuccess());
 
-  const mockWriteGenericEventFaiilure = jest
+  const mockWriteGenericEventFaiilure = vi
     .fn()
     .mockResolvedValue(errorResult(new Error("Failed to write event")));
 
@@ -62,7 +70,7 @@ describe("Async Finish Biometric Session", () => {
     writeGenericEvent: mockWriteGenericEventFaiilure,
   };
 
-  const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
+  const mockSessionUpdateSuccess = vi.fn().mockResolvedValue(
     successResult({
       attributes: validBiometricSessionFinishedAttributesMobileApp,
     }),
@@ -73,13 +81,11 @@ describe("Async Finish Biometric Session", () => {
     updateSession: mockSessionUpdateSuccess,
   };
 
-  const mockSuccessfulSendMessageToSqs = jest
+  const mockSuccessfulSendMessageToSqs = vi
     .fn()
     .mockResolvedValue(emptySuccess());
 
-  const mockFailingSendMessageToSqs = jest
-    .fn()
-    .mockResolvedValue(emptyFailure());
+  const mockFailingSendMessageToSqs = vi.fn().mockResolvedValue(emptyFailure());
 
   beforeEach(() => {
     dependencies = {
@@ -95,15 +101,15 @@ describe("Async Finish Biometric Session", () => {
     };
 
     context = buildLambdaContext();
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
-    jest.useFakeTimers();
-    jest.setSystemTime(MOCK_CURRENT_TIME);
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
+    vi.useFakeTimers();
+    vi.setSystemTime(MOCK_CURRENT_TIME);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.clearAllMocks();
+    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   describe("On every invocation", () => {
@@ -218,7 +224,7 @@ describe("Async Finish Biometric Session", () => {
             getEventService: () => mockFailingEventService,
             getSessionRegistry: () => ({
               ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
+              updateSession: vi.fn().mockResolvedValue(
                 errorResult({
                   errorType: UpdateSessionError.SESSION_NOT_FOUND,
                 }),
@@ -244,7 +250,7 @@ describe("Async Finish Biometric Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.SESSION_NOT_FOUND,
               }),
@@ -284,7 +290,7 @@ describe("Async Finish Biometric Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                 attributes: expiredSessionAttributes,
@@ -324,7 +330,7 @@ describe("Async Finish Biometric Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                 attributes: validSessionAttributes,
@@ -367,7 +373,7 @@ describe("Async Finish Biometric Session", () => {
             getEventService: () => mockFailingEventService,
             getSessionRegistry: () => ({
               ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
+              updateSession: vi.fn().mockResolvedValue(
                 errorResult({
                   errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                   attributes: validSessionAttributes,
@@ -400,7 +406,7 @@ describe("Async Finish Biometric Session", () => {
             getEventService: () => mockFailingEventService,
             getSessionRegistry: () => ({
               ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
+              updateSession: vi.fn().mockResolvedValue(
                 errorResult({
                   errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
                 }),
@@ -427,7 +433,7 @@ describe("Async Finish Biometric Session", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
+            updateSession: vi.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
               }),

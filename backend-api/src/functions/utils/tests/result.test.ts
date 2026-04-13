@@ -6,6 +6,7 @@ import {
   Result,
   successResult,
 } from "../result";
+import { expect, it, describe } from "vitest";
 
 describe("Result", () => {
   describe("Given there is an error", () => {

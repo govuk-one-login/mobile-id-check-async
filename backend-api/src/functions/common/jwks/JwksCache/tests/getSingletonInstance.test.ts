@@ -1,4 +1,5 @@
 import { InMemoryJwksCache } from "../JwksCache";
+import { expect, it, describe } from "vitest";
 
 describe("InMemoryJwksCache - getSingletonInstance", () => {
   it("Returns same instance on repeated calls", () => {

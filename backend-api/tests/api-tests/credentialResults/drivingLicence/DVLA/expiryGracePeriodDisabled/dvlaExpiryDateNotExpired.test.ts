@@ -9,8 +9,8 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import { beforeAll, it, expect } from "@jest/globals";
 import { expiryGracePeriodDisabledDescribe } from "../dvlaExpiryTestSetup";
+import { expect, it, describe, beforeAll } from "vitest";
 
 expiryGracePeriodDisabledDescribe()(
   "Given DVLA document has not expired",

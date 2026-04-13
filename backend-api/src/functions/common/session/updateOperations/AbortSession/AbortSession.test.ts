@@ -10,18 +10,19 @@ import {
 import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { AbortSession } from "./AbortSession";
+import { vi, expect, it, describe, beforeEach, afterEach } from "vitest";
 
 describe("AbortSession", () => {
   let abortSession: AbortSession;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW_IN_MILLISECONDS);
     abortSession = new AbortSession(mockSessionId);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("When I request the DynamoDB UpdateExpression", () => {

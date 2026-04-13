@@ -13,6 +13,7 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
+import { expect, it, describe, beforeAll } from "vitest";
 
 const txmaBillingEventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",

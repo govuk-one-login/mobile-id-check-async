@@ -3,6 +3,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { JwksUploader } from "../jwksUploader";
 import { Jwks } from "../../../types/jwks";
 import { ErrorCategory } from "../../../utils/result";
+import { expect, it, describe, beforeEach, afterEach } from "vitest";
 
 const mockS3Client = mockClient(S3Client);
 

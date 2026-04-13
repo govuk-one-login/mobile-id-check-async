@@ -1,5 +1,6 @@
 import { IDecryptSymmetric, SymmetricDecrypter } from "../symmetricDecrypter";
 import { createCipheriv, randomBytes } from "node:crypto";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Symmetric Decrypter", () => {
   let symmetricDecrypter: IDecryptSymmetric;

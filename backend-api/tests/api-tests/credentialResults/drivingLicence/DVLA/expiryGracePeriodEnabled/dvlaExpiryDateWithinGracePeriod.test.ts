@@ -13,7 +13,7 @@ import {
   EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
   expiryGracePeriodEnabledDescribe,
 } from "../dvlaExpiryTestSetup";
-import { beforeAll, it, expect } from "@jest/globals";
+import { beforeAll, it, describe, expect } from "vitest";
 
 expiryGracePeriodEnabledDescribe()(
   "Given DVLA document has expired and is within the grace period",

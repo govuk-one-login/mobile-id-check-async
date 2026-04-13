@@ -2,8 +2,17 @@ import { CustomResourceEventSender } from "../customResourceEventSender";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { buildCloudFormationCustomResourceEvent } from "../../../testUtils/mockCloudFormationCustomResourceEvent";
 import { ErrorCategory } from "../../../utils/result";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
 
-let mockFetch: jest.SpyInstance;
+let mockFetch: MockInstance;
 
 describe("Custom Resource Event Sender", () => {
   let customResourceEventSender: CustomResourceEventSender;
@@ -13,7 +22,7 @@ describe("Custom Resource Event Sender", () => {
       buildCloudFormationCustomResourceEvent(),
       buildLambdaContext(),
     );
-    mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+    mockFetch = vi.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,
         ok: true,
@@ -22,12 +31,12 @@ describe("Custom Resource Event Sender", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Given an error happens when trying to send the event", () => {
     it("Returns an error response", async () => {
-      mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+      mockFetch = vi.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 500,
           ok: false,
@@ -47,7 +56,7 @@ describe("Custom Resource Event Sender", () => {
 
   describe("Given an unexpected network error happens when trying to send the event", () => {
     it("Returns an error response", async () => {
-      mockFetch = jest.spyOn(global, "fetch").mockImplementationOnce(() => {
+      mockFetch = vi.spyOn(global, "fetch").mockImplementationOnce(() => {
         throw new Error("Unexpected network error");
       });
 

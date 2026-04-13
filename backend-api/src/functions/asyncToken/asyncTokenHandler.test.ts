@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import {
@@ -23,12 +22,20 @@ import {
 } from "./tokenService/tests/mocks";
 import { RequestService } from "./requestService/requestService";
 import { logger } from "../common/logging/logger";
+import {
+  vi,
+  expect,
+  it,
+  describe,
+  beforeEach,
+  type MockInstance,
+} from "vitest";
 
 describe("Async Token", () => {
   let request: APIGatewayProxyEvent;
   let dependencies: IAsyncTokenRequestDependencies;
-  let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleInfoSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
   let context: Context;
 
   const env = {
@@ -42,8 +49,8 @@ describe("Async Token", () => {
     "Basic bW9ja0NsaWVudElkOm1vY2tDbGllbnRTZWNyZXQ="; // Header decodes to mockClientId:mockClientSecret
 
   beforeEach(() => {
-    consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
+    consoleInfoSpy = vi.spyOn(console, "info");
+    consoleErrorSpy = vi.spyOn(console, "error");
     context = buildLambdaContext();
     // Header decodes to base64encoded mockClientId:mockClientSecret
     request = buildTokenHandlerRequest({

@@ -1,5 +1,3 @@
-import { beforeAll, expect, it } from "@jest/globals";
-import { JWTVerifyResult, ResolvedKey } from "jose";
 import { getIsoStringDateNDaysFromToday } from "../utils/apiTestData";
 import {
   doAsyncJourney,
@@ -10,6 +8,8 @@ import {
   pollForEvents,
   Scenario,
 } from "../utils/apiTestHelpers";
+import { JWTVerifyResult, ResolvedKey } from "jose";
+import { expect, it, describe, beforeAll } from "vitest";
 
 describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
