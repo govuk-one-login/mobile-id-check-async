@@ -16,8 +16,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "3.1024.0",
-    "inquirer": "13.3.2",
+    "@aws-sdk/client-cloudformation": "3.1025.0",
+    "inquirer": "13.4.0",
     "zx": "8.8.5"
   },
   "devDependencies": {
