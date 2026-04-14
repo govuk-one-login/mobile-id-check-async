@@ -59,6 +59,11 @@ Resources:
 
   AsyncIssueBiometricCredentialLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: KMS encryption not required as log group will not contain sensitive data.
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential

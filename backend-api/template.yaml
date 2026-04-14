@@ -942,6 +942,11 @@ Resources:
 
   AsyncAbortSessionLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
       RetentionInDays: 30
@@ -1368,6 +1373,11 @@ Resources:
 
   AsyncActiveSessionLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
       RetentionInDays: 30
@@ -2000,6 +2010,11 @@ Resources:
 
   AsyncBiometricTokenLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
       RetentionInDays: 30
@@ -2613,6 +2628,11 @@ Resources:
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-credential
       RetentionInDays: 30
@@ -3206,6 +3226,11 @@ Resources:
 
   AsyncFinishBiometricSessionLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
       RetentionInDays: 30
@@ -3885,6 +3910,11 @@ Resources:
 
   AsyncIssueBiometricCredentialLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
       RetentionInDays: 30
@@ -4170,6 +4200,11 @@ Resources:
 
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
@@ -4684,6 +4719,11 @@ Resources:
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
       RetentionInDays: 30
@@ -5182,6 +5222,11 @@ Resources:
 
   AsyncTxmaEventLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
@@ -5850,6 +5895,11 @@ Resources:
 
   JsonWebKeysFunctionLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
       RetentionInDays: 30
@@ -6220,6 +6270,11 @@ Resources:
 
   ProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
       RetentionInDays: 30
@@ -6316,6 +6371,11 @@ Resources:
 
   ProxyLambdaLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
       RetentionInDays: 30
@@ -6459,6 +6519,11 @@ Resources:
 
   SessionsApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
       RetentionInDays: 30

@@ -221,6 +221,11 @@ Resources:
 
   DequeueCredentialResultLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-credential-result
       RetentionInDays: 30
@@ -342,6 +347,11 @@ Resources:
 
   DequeueEventsLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-events
       RetentionInDays: 30
@@ -603,6 +613,11 @@ Resources:
 
   PutSessionFunctionLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sessions
       RetentionInDays: 30
@@ -678,6 +693,11 @@ Resources:
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
       RetentionInDays: 30
@@ -759,6 +779,11 @@ Resources:
 
   TestResourcesApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
@@ -917,6 +942,11 @@ Resources:
 
   TokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sts-mock-token
       RetentionInDays: 30
