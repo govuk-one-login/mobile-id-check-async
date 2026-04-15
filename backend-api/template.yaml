@@ -144,7 +144,7 @@ Mappings:
       dev: 90
       integration: 0
       production: 0
-      staging: 0
+      staging: 90
     DynatraceSecretArn:
       build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       dev: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
