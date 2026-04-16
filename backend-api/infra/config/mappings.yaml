@@ -123,7 +123,7 @@ Mappings:
     DvlaDrivingLicenceExpiryGracePeriodInDays:
       dev: 90
       build: 0
-      staging: 0
+      staging: 90
       integration: 0
       production: 0
     EnableBiometricResidenceCard:
