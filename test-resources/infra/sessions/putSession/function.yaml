@@ -10,6 +10,8 @@ Resources:
         skip:
           - id: "CKV_AWS_116"
             comment: "Not needed for test resources."
+          - id: "CKV_AWS_173"
+            comment: "AWS-managed key used to encrypt environment variables by default is sufficient."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true

@@ -201,6 +201,8 @@ Resources:
         skip:
           - comment: Lambda is triggered by ipv-core-outbound queue, which has DLQ attached.
             id: CKV_AWS_116
+          - comment: AWS-managed key used to encrypt environment variables by default is sufficient.
+            id: CKV_AWS_173
     Properties:
       Environment:
         Variables:
@@ -328,6 +330,8 @@ Resources:
         skip:
           - comment: Lambda is triggered by txma queues, which has DLQ attached.
             id: CKV_AWS_116
+          - comment: AWS-managed key used to encrypt environment variables by default is sufficient.
+            id: CKV_AWS_173
     Properties:
       Environment:
         Variables:
@@ -590,6 +594,8 @@ Resources:
         skip:
           - comment: Not needed for test resources.
             id: CKV_AWS_116
+          - comment: AWS-managed key used to encrypt environment variables by default is sufficient.
+            id: CKV_AWS_173
     Properties:
       Description: Lambda for putting items into the Sessions table
       Events:
@@ -904,6 +910,8 @@ Resources:
         skip:
           - comment: Cannot have a DLQ for a function invoked by an API.
             id: CKV_AWS_116
+          - comment: AWS-managed key used to encrypt environment variables by default is sufficient.
+            id: CKV_AWS_173
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       Environment:

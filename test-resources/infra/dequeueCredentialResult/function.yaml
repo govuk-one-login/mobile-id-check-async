@@ -10,6 +10,8 @@ Resources:
         skip:
           - id: "CKV_AWS_116"
             comment: "Lambda is triggered by ipv-core-outbound queue, which has DLQ attached."
+          - id: "CKV_AWS_173"
+            comment: "AWS-managed key used to encrypt environment variables by default is sufficient."
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
