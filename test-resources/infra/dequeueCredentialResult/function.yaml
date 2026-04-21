@@ -27,7 +27,6 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
-      Runtime: nodejs20.x
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
       Environment:

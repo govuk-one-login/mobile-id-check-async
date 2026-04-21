@@ -211,7 +211,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
-      Runtime: nodejs20.x
       Timeout: 10
       VpcConfig:
         SecurityGroupIds:
