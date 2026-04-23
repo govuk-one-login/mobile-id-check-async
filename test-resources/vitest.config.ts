@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 
-const reportName = process.env.VITEST_JUNIT_FILE || "report.xml";
 const reporters =
   process.env.GITHUB_ACTIONS === "true"
     ? ["default", "github-actions"]
@@ -12,9 +11,6 @@ export default defineConfig({
     include: ["**/*.test.ts"],
     setupFiles: ["dotenv/config", "testSetup.ts"],
     reporters,
-    outputFile: {
-      junit: `results/${reportName}`,
-    },
     coverage: {
       provider: "v8",
       include: ["**/*.ts"],
@@ -23,7 +19,6 @@ export default defineConfig({
         "**/tests/infrastructure-tests/**/*.ts",
         "**/src/functions/testUtils/**/*.ts",
       ],
-      reportsDirectory: "coverage",
       enabled: true,
       reportOnFailure: true,
       reporter: ["lcov", "text-summary"],
