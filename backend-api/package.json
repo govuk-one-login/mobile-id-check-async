@@ -10,7 +10,7 @@
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
     "format": "prettier --write '**/*.{ts,md}'",
     "format:check": "prettier --check '**/*.{ts,md}'",
-    "lint": "prettier --check '**/*.{ts,md}'",
+    "lint": "eslint ./src/functions",
     "test": "vitest run --exclude **/api-tests",
     "test:api": "vitest run api-tests --coverage.enabled=false --outputFile.junit=results/api-report.xml",
     "test:infra": "vitest run infra-tests --coverage.enabled=false --outputFile.junit=results/infra-report.xml",
