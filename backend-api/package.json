@@ -8,17 +8,18 @@
     "deploy:dev": "cd ../helper-scripts && ./deploy_backend.sh",
     "build:infra": "./combine_template.sh",
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
-    "format": "./node_modules/.bin/prettier --write '**/*.{ts,md}'",
-    "format:check": "./node_modules/.bin/prettier --check '**/*.{ts,md}'",
-    "lint": "./node_modules/.bin/eslint ./src/functions",
+    "format": "prettier --write '**/*.{ts,md}'",
+    "format:check": "prettier --check '**/*.{ts,md}'",
+    "lint": "eslint ./src/functions",
     "test": "vitest run --exclude **/api-tests",
-    "test:api": "VITEST_JUNIT_FILE=api-report.xml vitest run api-tests --coverage.enabled=false",
-    "test:infra": "VITEST_JUNIT_FILE=infra-report.xml vitest run infra-tests --coverage.enabled=false",
-    "test:pact": "VITEST_JUNIT_FILE=pact-report.xml vitest run src/functions/tests/pact/ --coverage.enabled=false",
+    "test:api": "vitest run api-tests --coverage.enabled=false --outputFile.junit=results/api-report.xml",
+    "test:infra": "vitest run infra-tests --coverage.enabled=false --outputFile.junit=results/infra-report.xml",
+    "test:pact": "vitest run src/functions/tests/pact/ --coverage.enabled=false --outputFile.junit=results/pact-report.xml",
     "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
     "test:pact:ci": "npm run test:pact:authorize && npm run test:pact",
     "test:pact:local": ". ./src/functions/tests/pact/setPactCredentials/set_pact_credentials.sh && npm run test:pact",
-    "test:unit": "VITEST_JUNIT_FILE=unit-report.xml vitest run  --exclude **/pact --exclude **/api-tests --exclude **/infra-tests"
+    "test:unit": "vitest run --exclude **/pact --exclude **/api-tests --exclude **/infra-tests --outputFile.junit=results/unit-report.xml",
+    "test:unit:watch": "vitest watch --exclude **/pact --exclude **/api-tests --exclude **/infra-tests --outputFile.junit=results/unit-report.xml"
   },
   "engines": {
     "node": "22"

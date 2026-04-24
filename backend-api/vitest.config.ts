@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 
-const reportName = process.env.VITEST_JUNIT_FILE || "report.xml";
 const reporters =
   process.env.GITHUB_ACTIONS === "true"
     ? ["default", "github-actions"]
@@ -10,9 +9,9 @@ export default defineConfig({
   test: {
     coverage: {
       provider: "v8",
-      ignoreEmptyLines: true,
       enabled: true,
       exclude: ["**/testUtils/**", "**/node-modules/**"],
+      reportOnFailure: true,
       reporter: ["lcov", "text-summary"],
     },
     silent: "passed-only",
@@ -21,9 +20,6 @@ export default defineConfig({
     include: ["**/*.test.ts"],
     clearMocks: true,
     reporters,
-    outputFile: {
-      junit: `results/${reportName}`,
-    },
   },
 });
 
