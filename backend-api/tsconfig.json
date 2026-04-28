@@ -1,12 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "ES2022",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "Node",
+    "isolatedModules": true,
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "preserveConstEnums": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": false,
     "strict": true,
-    "skipLibCheck": true
+    "target": "es2022",
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "es2022"
+    }
   },
   "exclude": ["node_modules"]
 }
