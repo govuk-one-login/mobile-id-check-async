@@ -191,7 +191,6 @@ describe("Backend application infrastructure", () => {
         [
           "low-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
-        ["async-issue-biometric-credential-driving-licence-expired"],
         [
           "low-threshold-async-issue-biometric-credential-error-writing-audit-event",
         ],

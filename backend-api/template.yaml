@@ -3466,7 +3466,7 @@ Resources:
     DependsOn:
       - AsyncIssueBiometricCredentialMetricFilter
     Properties:
-      ActionsEnabled: true
+      ActionsEnabled: false
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
