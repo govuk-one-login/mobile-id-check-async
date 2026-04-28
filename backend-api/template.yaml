@@ -140,10 +140,10 @@ Mappings:
       production: 80
       staging: 15
     DvlaDrivingLicenceExpiryGracePeriodInDays:
-      build: 0
+      build: 90
       dev: 90
-      integration: 0
-      production: 0
+      integration: 90
+      production: 90
       staging: 90
     DynatraceSecretArn:
       build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
