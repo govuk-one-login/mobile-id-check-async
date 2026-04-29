@@ -75,10 +75,6 @@ jq --null-input \
     "ParameterValue": $originCloakingHeader
   },
   {
-    "ParameterKey": "StandardLoggingEnabled",
-    "ParameterValue": "false"
-  },
-  {
     "ParameterKey": "LogDestination",
     "ParameterValue": "none"
   }
