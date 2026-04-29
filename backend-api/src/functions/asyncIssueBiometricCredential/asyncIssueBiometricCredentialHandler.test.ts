@@ -1297,7 +1297,8 @@ describe("Async Issue Biometric Credential", () => {
           .fn()
           .mockResolvedValueOnce(successResult(mockSqsResponseMessageId))
           .mockResolvedValueOnce(emptyFailure());
-        dependencies.sendMessageToSqs = mockFailedToSendVCIssuedMessage;
+        dependencies.sendMessageToSqs =
+          mockFailedToSendVCIssuedMessage as typeof dependencies.sendMessageToSqs;
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });

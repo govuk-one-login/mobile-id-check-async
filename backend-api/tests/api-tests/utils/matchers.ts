@@ -22,7 +22,7 @@ expect.extend({
 });
 
 declare module "vitest" {
-  interface AsymmetricMatchers {
-    toBeValidUuid(): void;
+  interface AsymmetricMatchersContaining {
+    toBeValidUuid(): any;
   }
 }
