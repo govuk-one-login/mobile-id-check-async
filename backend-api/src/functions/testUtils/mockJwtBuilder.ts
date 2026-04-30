@@ -105,6 +105,7 @@ const MOCK_SIGNING_KEY = {
   kty: "EC",
   x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
   y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
+  alg: "ES256",
 };
 
 interface IMockJwt {
@@ -133,4 +134,5 @@ interface IMockPrivateKey {
   kty: string;
   x: string;
   y: string;
+  alg: string;
 }
