@@ -4631,9 +4631,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncToken/asyncTokenHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
