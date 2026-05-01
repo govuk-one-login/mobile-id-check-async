@@ -255,7 +255,11 @@ describe("Token Service", () => {
 
   describe("Given the token signature cannot be verified using matching JWK", () => {
     beforeEach(async () => {
-      const mockInvalidSignatureJwt = mockValidEncodedJwt + "arbitrarySuffix";
+      // Create an invalid signature with the same length as the valid one while keeping the header and payload intact
+      const parts = mockValidEncodedJwt.split(".");
+      const sigLen = Buffer.from(parts[2], "base64url").length;
+      parts[2] = Buffer.alloc(sigLen, 0x00).toString("base64url");
+      const mockInvalidSignatureJwt = parts.join(".");
       result = await tokenService.validateServiceToken(
         mockInvalidSignatureJwt,
         mockAudience,
