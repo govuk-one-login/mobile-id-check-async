@@ -47,19 +47,22 @@ type RequestOptions = {
   body?: string | Record<string, unknown>;
 };
 
+const serialiseBody = (
+  body: string | Record<string, unknown> | undefined,
+): string | undefined => {
+  if (body === undefined) return undefined;
+  if (typeof body === "string") return body;
+  return JSON.stringify(body);
+};
+
 const sendRequest = async (options: RequestOptions): Promise<HttpResponse> => {
   const url = `${options.baseUrl}${options.path}`;
   const { method } = options;
   const headers: Record<string, string> = { ...options.headers };
+  const body = serialiseBody(options.body);
 
-  let body: string | undefined;
-  if (options.body !== undefined) {
-    if (typeof options.body === "string") {
-      body = options.body;
-    } else {
-      body = JSON.stringify(options.body);
-      headers["content-type"] ??= "application/json";
-    }
+  if (body !== undefined && typeof options.body !== "string") {
+    headers["content-type"] ??= "application/json";
   }
 
   let attempt = 0;
@@ -112,12 +115,7 @@ const signRequestOptions = async (
 ): Promise<RequestOptions> => {
   const url = new URL(`${options.baseUrl}${options.path}`);
 
-  const body =
-    options.body === undefined
-      ? undefined
-      : typeof options.body === "string"
-        ? options.body
-        : JSON.stringify(options.body);
+  const body = serialiseBody(options.body);
 
   const signed = await signer.sign({
     method: options.method,
