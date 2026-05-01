@@ -96,6 +96,17 @@ const sendRequest = async (options: RequestOptions): Promise<HttpResponse> => {
   return request();
 };
 
+const signer = new SignatureV4({
+  service: "execute-api",
+  region: "eu-west-2",
+  credentials: fromNodeProviderChain({
+    timeout: 1000,
+    maxRetries: 1,
+    profile: process.env.AWS_PROFILE,
+  }),
+  sha256: sha256Constructor,
+});
+
 const signRequestOptions = async (
   options: RequestOptions,
 ): Promise<RequestOptions> => {
@@ -107,17 +118,6 @@ const signRequestOptions = async (
       : typeof options.body === "string"
         ? options.body
         : JSON.stringify(options.body);
-
-  const signer = new SignatureV4({
-    service: "execute-api",
-    region: "eu-west-2",
-    credentials: fromNodeProviderChain({
-      timeout: 1000,
-      maxRetries: 1,
-      profile: process.env.AWS_PROFILE,
-    }),
-    sha256: sha256Constructor,
-  });
 
   const signed = await signer.sign({
     method: options.method,
