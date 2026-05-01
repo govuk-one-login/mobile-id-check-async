@@ -2,8 +2,7 @@ import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { expect, it, describe, test } from "vitest";
-
-const { schema } = require("yaml-cfn");
+import { schema } from "yaml-cfn";
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 

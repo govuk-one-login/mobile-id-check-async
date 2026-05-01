@@ -13,6 +13,12 @@ Resources:
       BuildProperties:
         Minify: true
         Target: es2022
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: false
         EntryPoints:
           - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
