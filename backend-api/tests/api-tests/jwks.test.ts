@@ -1,11 +1,14 @@
-import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
+import { sendSessionsApiRequest } from "./utils/httpClient";
 import { expect, it, describe, beforeAll } from "vitest";
 
 describe("GET /.well-known/jwks.json", () => {
   let jwksResponse: any;
 
   beforeAll(async () => {
-    jwksResponse = await SESSIONS_API_INSTANCE.get("/.well-known/jwks.json");
+    jwksResponse = await sendSessionsApiRequest({
+      method: "GET",
+      path: "/.well-known/jwks.json",
+    });
   });
 
   it("returns 200 status code, cache-control header, and the Json Web Key Set", () => {

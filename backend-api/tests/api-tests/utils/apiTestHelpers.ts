@@ -12,11 +12,11 @@ import {
 } from "jose";
 import {
   PROXY_API_INSTANCE,
-  READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
+import { sendReadIdMockApiRequest } from "./httpClient";
 import { mockClientState } from "./apiTestData";
 import { expect } from "vitest";
 
@@ -138,9 +138,10 @@ export async function setupBiometricSessionByScenario(
   creationDate: string,
   drivingLicence?: DrivingLicenceOverrides,
 ) {
-  const result = await READ_ID_MOCK_API_INSTANCE.post(
-    `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
-    JSON.stringify({
+  const result = await sendReadIdMockApiRequest({
+    method: "POST",
+    path: `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
+    body: JSON.stringify({
       scenario,
       overrides: {
         opaqueId,
@@ -148,7 +149,7 @@ export async function setupBiometricSessionByScenario(
         drivingLicence,
       },
     }),
-  );
+  });
   if (result.status !== 201) {
     throw new Error(
       `Failed to setup biometric session (${result.status}): ${JSON.stringify(result.data)}`,
