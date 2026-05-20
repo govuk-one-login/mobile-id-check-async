@@ -140,10 +140,10 @@ Mappings:
       production: 80
       staging: 15
     DvlaDrivingLicenceExpiryGracePeriodInDays:
-      build: 0
+      build: 90
       dev: 90
-      integration: 0
-      production: 0
+      integration: 90
+      production: 90
       staging: 90
     DynatraceSecretArn:
       build: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
@@ -826,9 +826,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncAbortSession/asyncAbortSessionHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -1235,9 +1241,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -1855,9 +1867,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncBiometricToken/asyncBiometricTokenHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -2492,9 +2510,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncCredential/asyncCredentialHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -3110,9 +3134,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -3466,7 +3496,7 @@ Resources:
     DependsOn:
       - AsyncIssueBiometricCredentialMetricFilter
     Properties:
-      ActionsEnabled: true
+      ActionsEnabled: false
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
@@ -3686,9 +3716,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncIssueBiometricCredential/asyncIssueBiometricCredentialHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -4595,9 +4631,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncToken/asyncTokenHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -5127,9 +5169,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/asyncTxmaEvent/asyncTxmaEventHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:
@@ -5803,11 +5851,17 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/jwks/jwksHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
-        Target: es2020
+        Target: es2022
       checkov:
         skip:
           - comment: Function is manually triggered locally. No need for a DLQ.
@@ -6344,9 +6398,15 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/functions/proxy/proxyHandler.ts
+        Format: esm
         Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
         Sourcemap: false
         Target: es2022
       checkov:

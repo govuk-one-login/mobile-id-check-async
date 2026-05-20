@@ -121,10 +121,10 @@ EnvironmentVariables:
   # Feature Flags
   DvlaDrivingLicenceExpiryGracePeriodInDays:
     dev: 90
-    build: 0
+    build: 90
     staging: 90
-    integration: 0
-    production: 0
+    integration: 90
+    production: 90
   EnableBiometricResidenceCard:
     dev: "true"
     build: "true"
