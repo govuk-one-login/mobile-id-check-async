@@ -32,6 +32,7 @@
     "aws4-axios": "3.4.0",
     "axios": "1.16.0",
     "axios-retry": "4.5.0",
+    "brace-expansion": ">=5.0.6",
     "dotenv": "17.4.2",
     "eslint": "10.3.0",
     "js-yaml": "4.1.1",
