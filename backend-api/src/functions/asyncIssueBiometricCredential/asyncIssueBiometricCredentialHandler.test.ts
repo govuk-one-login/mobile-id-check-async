@@ -2234,7 +2234,7 @@ describe("Async Issue Biometric Credential", () => {
             });
           });
 
-          describe("Given credential has expired driving license advisory", () => {
+          describe("Given credential has expired driving license but no expired DL advisory", () => {
             describe.each([
               ["2020-01-01", "2020-01-01"],
               [null, ""],
@@ -2269,9 +2269,7 @@ describe("Async Issue Biometric Credential", () => {
                       credential: mockCredentialWithExpiredDrivingLicense,
                       analytics: mockAnalyticsData,
                       audit: mockAuditData,
-                      advisories: [
-                        Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                      ],
+                      advisories: [],
                     }),
                   );
 
@@ -2673,10 +2671,7 @@ describe("Async Issue Biometric Credential", () => {
                         },
                         analytics: mockAnalyticsData,
                         audit: mockAuditData,
-                        advisories: [
-                          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                          advisory,
-                        ],
+                        advisories: [advisory],
                       }),
                     );
 
@@ -2780,10 +2775,7 @@ describe("Async Issue Biometric Credential", () => {
                         },
                         analytics: mockAnalyticsData,
                         audit: mockAuditData,
-                        advisories: [
-                          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-                          advisory,
-                        ],
+                        advisories: [advisory],
                       }),
                     );
 
