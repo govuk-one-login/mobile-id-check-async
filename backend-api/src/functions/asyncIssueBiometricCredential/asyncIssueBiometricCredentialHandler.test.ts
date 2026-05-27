@@ -2285,8 +2285,8 @@ describe("Async Issue Biometric Credential", () => {
                   );
                 });
 
-                it("Logs expired driving license message with expiry date", () => {
-                  expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+                it("No longer logs expired driving license message with expiry date", () => {
+                  expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
                     messageCode:
                       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
                     data: { expiryDate: expectedExpiryDateLogData },
