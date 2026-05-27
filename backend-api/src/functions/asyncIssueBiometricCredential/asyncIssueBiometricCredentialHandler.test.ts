@@ -2235,14 +2235,9 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           describe("Given credential has expired driving license but no expired DL advisory", () => {
-            describe.each([
-              ["2020-01-01"],
-              [null],
-            ])(
+            describe.each([["2020-01-01"], [null]])(
               "Given driving licence expiry date in credential is %s",
-              (
-                expiryDate: string | null,
-              ) => {
+              (expiryDate: string | null) => {
                 const drivingPermit: DrivingPermit[] = [
                   {
                     personalNumber: "mockPersonalNumber",
