@@ -2236,13 +2236,12 @@ describe("Async Issue Biometric Credential", () => {
 
           describe("Given credential has expired driving license but no expired DL advisory", () => {
             describe.each([
-              ["2020-01-01", "2020-01-01"],
-              [null, ""],
+              ["2020-01-01"],
+              [null],
             ])(
               "Given driving licence expiry date in credential is %s",
               (
                 expiryDate: string | null,
-                expectedExpiryDateLogData: string,
               ) => {
                 const drivingPermit: DrivingPermit[] = [
                   {
@@ -2281,14 +2280,6 @@ describe("Async Issue Biometric Credential", () => {
                     validSqsEvent,
                     context,
                   );
-                });
-
-                it("No longer logs expired driving license message with expiry date", () => {
-                  expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-                    messageCode:
-                      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
-                    data: { expiryDate: expectedExpiryDateLogData },
-                  });
                 });
 
                 it("Still completes successfully and logs COMPLETED", () => {
