@@ -657,7 +657,6 @@ const writeVcIssuedEvent = async (
     credential,
     audit,
     sessionAttributes,
-    dvlaDrivingLicenceExpiryGracePeriodInDays,
     advisories,
   );
   if (vcIssuedEventResult.isError) {
