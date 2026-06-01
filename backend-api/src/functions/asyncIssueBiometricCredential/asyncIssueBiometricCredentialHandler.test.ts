@@ -1618,8 +1618,7 @@ describe("Async Issue Biometric Credential", () => {
 
           it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED with documentType, message properties and persistent identifiers", async () => {
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-              messageCode:
-                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
+              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
               documentType: "NFC_PASSPORT",
               vendorProcessingQueueToVcIssuanceElapsedTimeInMs:
                 NOW_IN_MILLISECONDS - ONE_HOUR_AGO_IN_MILLISECONDS,
@@ -1725,27 +1724,27 @@ describe("Async Issue Biometric Credential", () => {
           });
 
           it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
-            expect(
-              mockWriteGenericEventSuccessResult,
-            ).toHaveBeenNthCalledWith(1, {
-              eventName: "DCMAW_ASYNC_CRI_END",
-              componentId: mockIssuer,
-              getNowInMilliseconds: Date.now,
-              sessionId: mockSessionId,
-              transactionId: mockBiometricSessionId,
-              govukSigninJourneyId: mockGovukSigninJourneyId,
-              ipAddress: undefined,
-              redirect_uri: undefined,
-              sub: mockSubjectIdentifier,
-              suspected_fraud_signal: undefined,
-              txmaAuditEncoded: undefined,
-            });
+            expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
+              1,
+              {
+                eventName: "DCMAW_ASYNC_CRI_END",
+                componentId: mockIssuer,
+                getNowInMilliseconds: Date.now,
+                sessionId: mockSessionId,
+                transactionId: mockBiometricSessionId,
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+                ipAddress: undefined,
+                redirect_uri: undefined,
+                sub: mockSubjectIdentifier,
+                suspected_fraud_signal: undefined,
+                txmaAuditEncoded: undefined,
+              },
+            );
           });
 
           it("Logs COMPLETED with documentType, message properties, persistent identifiers, and SQS response MessageId", () => {
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-              messageCode:
-                "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
               sqsMessageProperties: {
                 messageId: mockSqsInboundMessageId,
                 approximateReceiveCount: "1",
@@ -2480,10 +2479,7 @@ describe("Async Issue Biometric Credential", () => {
             },
           ])(
             "Given the advisory is $advisory",
-            ({
-              advisory,
-              gracePeriodGreaterThanZeroScenario,
-            }) => {
+            ({ advisory, gracePeriodGreaterThanZeroScenario }) => {
               describe("Given the grace period is greater than 0", () => {
                 const { evidenceType, evidence, evaluationResultCode } =
                   gracePeriodGreaterThanZeroScenario;
