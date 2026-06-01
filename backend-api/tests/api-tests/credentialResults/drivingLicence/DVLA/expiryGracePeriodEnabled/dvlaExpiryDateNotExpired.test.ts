@@ -9,10 +9,9 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import { expiryGracePeriodEnabledDescribe } from "../dvlaExpiryTestSetup";
 import { beforeAll, it, describe, expect } from "vitest";
 
-expiryGracePeriodEnabledDescribe()(
+describe(
   "Given DVLA document has not expired",
   () => {
     let subjectIdentifier: string;

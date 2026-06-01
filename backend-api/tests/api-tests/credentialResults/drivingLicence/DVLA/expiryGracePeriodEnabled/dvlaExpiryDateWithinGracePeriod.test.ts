@@ -9,13 +9,10 @@ import {
   pollForEvents,
 } from "../../../../utils/apiTestHelpers";
 import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import {
-  EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-  expiryGracePeriodEnabledDescribe,
-} from "../dvlaExpiryTestSetup";
+import { EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS } from "../dvlaExpiryTestSetup";
 import { beforeAll, it, describe, expect } from "vitest";
 
-expiryGracePeriodEnabledDescribe()(
+describe(
   "Given DVLA document has expired and is within the grace period",
   () => {
     let subjectIdentifier: string;
