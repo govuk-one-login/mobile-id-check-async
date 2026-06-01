@@ -7,17 +7,6 @@ export const EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: number =
 export const EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 =
   EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS + 1;
 
-export function expiryGracePeriodDisabledDescribe() {
-  throwIfExpiryGracePeriodNotValid(
-    EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
-  );
-  if (EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS > 0) {
-    return describe.skip;
-  }
-
-  return describe;
-}
-
 export function expiryGracePeriodEnabledDescribe() {
   throwIfExpiryGracePeriodNotValid(
     EXPECTED_DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS,
