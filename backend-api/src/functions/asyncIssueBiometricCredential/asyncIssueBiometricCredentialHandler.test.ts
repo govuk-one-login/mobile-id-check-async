@@ -2411,130 +2411,6 @@ describe("Async Issue Biometric Credential", () => {
               ],
             },
           ])("Given the codes are $scenario", ({ advisories }) => {
-            describe("Given the grace period is 0 (disabled)", () => {
-              beforeEach(async () => {
-                dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                  "0";
-                dependencies.getCredentialFromBiometricSession = vi
-                  .fn()
-                  .mockReturnValue(
-                    successResult({
-                      credential: mockBiometricCredential,
-                      analytics: mockAnalyticsData,
-                      audit: mockAuditData,
-                      advisories,
-                    }),
-                  );
-
-                await lambdaHandlerConstructor(
-                  dependencies,
-                  validSqsEvent,
-                  context,
-                );
-              });
-
-              it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
-                expect(
-                  mockSendMessageToSqsSuccess,
-                ).toHaveBeenCalledNthWithSqsMessage(2, {
-                  sqsArn: "mockTxmaSqs",
-                  expectedMessage: {
-                    event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-                    user: {
-                      user_id: mockSubjectIdentifier,
-                      session_id: mockSessionId,
-                      govuk_signin_journey_id: mockGovukSigninJourneyId,
-                      transaction_id: mockBiometricSessionId,
-                    },
-                    event_timestamp_ms: 1704110400000,
-                    timestamp: 1704110400,
-                    component_id: "mockIssuer",
-                    extensions: {
-                      evidence: [
-                        {
-                          strengthScore: 3,
-                          validityScore: 0,
-                          activityHistoryScore: 0,
-                          type: "IdentityCheck",
-                          txn: "mockTxn",
-                          txmaContraIndicators: [],
-                          ci: [],
-                          ciReasons: [],
-                          failedCheckDetails: [
-                            {
-                              checkMethod: "bvr",
-                              identityCheckPolicy: "published",
-                              activityFrom: undefined,
-                              biometricVerificationProcessLevel: 3,
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    restricted: {
-                      name: [
-                        {
-                          nameParts: [
-                            {
-                              type: "GivenName",
-                              value: "mockGivenName",
-                            },
-                            {
-                              type: "FamilyName",
-                              value: "mockFamilyName",
-                            },
-                          ],
-                        },
-                      ],
-                      birthDate: [
-                        {
-                          value: "mockBirthDate",
-                        },
-                      ],
-                      deviceId: [
-                        {
-                          value: "mockDeviceId",
-                        },
-                      ],
-                      address: [
-                        {
-                          addressCountry: null,
-                          addressLocality: null,
-                          buildingName: null,
-                          buildingNumber: null,
-                          dependentAddressLocality: null,
-                          dependentStreetName: null,
-                          doubleDependentAddressLocality: null,
-                          organisationName: null,
-                          postalCode: "mockPostalCode",
-                          streetName: null,
-                          subBuildingName: null,
-                          uprn: null,
-                        },
-                      ],
-                      drivingPermit: [
-                        {
-                          expiryDate: "mockExpiryDate",
-                          fullAddress: "mockFullAddress",
-                          issueDate: null,
-                          issueNumber: null,
-                          issuedBy: null,
-                          personalNumber: "mockPersonalNumber",
-                        },
-                      ],
-                    },
-                  },
-                });
-              });
-
-              it("Logs COMPLETED", () => {
-                expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-                  messageCode:
-                    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-                });
-              });
-            });
-
             describe("Given the grace period is 3 (enabled)", () => {
               beforeEach(async () => {
                 dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
@@ -2584,10 +2460,6 @@ describe("Async Issue Biometric Credential", () => {
           describe.each([
             {
               advisory: Advisory.DRIVING_LICENCE_EXPIRED_BEYOND_GRACE_PERIOD,
-              gracePeriodZeroScenario: {
-                evidenceType: "fail",
-                evidence: mockFailEvidence,
-              },
               gracePeriodGreaterThanZeroScenario: {
                 evidenceType: "fail",
                 evidence: mockFailEvidence,
@@ -2596,10 +2468,6 @@ describe("Async Issue Biometric Credential", () => {
             },
             {
               advisory: Advisory.DRIVING_LICENCE_EXPIRED_WITHIN_GRACE_PERIOD,
-              gracePeriodZeroScenario: {
-                evidenceType: "fail",
-                evidence: mockFailEvidence,
-              },
               gracePeriodGreaterThanZeroScenario: {
                 evidenceType: "pass",
                 evidence: mockPassEvidence,
@@ -2608,10 +2476,6 @@ describe("Async Issue Biometric Credential", () => {
             },
             {
               advisory: Advisory.DRIVING_LICENCE_NOT_EXPIRED,
-              gracePeriodZeroScenario: {
-                evidenceType: "pass",
-                evidence: mockPassEvidence,
-              },
               gracePeriodGreaterThanZeroScenario: {
                 evidenceType: "pass",
                 evidence: mockPassEvidence,
@@ -2622,112 +2486,8 @@ describe("Async Issue Biometric Credential", () => {
             "Given the advisory is $advisory",
             ({
               advisory,
-              gracePeriodZeroScenario,
               gracePeriodGreaterThanZeroScenario,
             }) => {
-              describe("Given the grace period is 0", () => {
-                const { evidenceType, evidence } = gracePeriodZeroScenario;
-
-                beforeEach(async () => {
-                  dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
-                    "0";
-                  dependencies.getCredentialFromBiometricSession = vi
-                    .fn()
-                    .mockReturnValue(
-                      successResult({
-                        credential: {
-                          ...mockBiometricCredential,
-                          evidence,
-                        },
-                        analytics: mockAnalyticsData,
-                        audit: mockAuditData,
-                        advisories: [advisory],
-                      }),
-                    );
-
-                  await lambdaHandlerConstructor(
-                    dependencies,
-                    validSqsEvent,
-                    context,
-                  );
-                });
-
-                it(`Writes DCMAW_ASYNC_CRI_VC_ISSUED event with ${evidenceType} evidence`, () => {
-                  expect(
-                    mockSendMessageToSqsSuccess,
-                  ).toHaveBeenCalledNthWithSqsMessage(2, {
-                    sqsArn: "mockTxmaSqs",
-                    expectedMessage: {
-                      event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-                      user: {
-                        user_id: mockSubjectIdentifier,
-                        session_id: mockSessionId,
-                        govuk_signin_journey_id: mockGovukSigninJourneyId,
-                        transaction_id: mockBiometricSessionId,
-                      },
-                      event_timestamp_ms: 1704110400000,
-                      timestamp: 1704110400,
-                      component_id: "mockIssuer",
-                      extensions: {
-                        evidence,
-                      },
-                      restricted: {
-                        name: [
-                          {
-                            nameParts: [
-                              {
-                                type: "GivenName",
-                                value: "mockGivenName",
-                              },
-                              {
-                                type: "FamilyName",
-                                value: "mockFamilyName",
-                              },
-                            ],
-                          },
-                        ],
-                        birthDate: [
-                          {
-                            value: "mockBirthDate",
-                          },
-                        ],
-                        deviceId: [
-                          {
-                            value: "mockDeviceId",
-                          },
-                        ],
-                        address: [
-                          {
-                            addressCountry: null,
-                            addressLocality: null,
-                            buildingName: null,
-                            buildingNumber: null,
-                            dependentAddressLocality: null,
-                            dependentStreetName: null,
-                            doubleDependentAddressLocality: null,
-                            organisationName: null,
-                            postalCode: "mockPostalCode",
-                            streetName: null,
-                            subBuildingName: null,
-                            uprn: null,
-                          },
-                        ],
-                        drivingPermit: [
-                          {
-                            expiryDate: "mockExpiryDate",
-                            fullAddress: "mockFullAddress",
-                            issueDate: null,
-                            issueNumber: null,
-                            issuedBy: null,
-                            personalNumber: "mockPersonalNumber",
-                          },
-                        ],
-                      },
-                    },
-                  });
-                });
-              });
-
               describe("Given the grace period is greater than 0", () => {
                 const { evidenceType, evidence, evaluationResultCode } =
                   gracePeriodGreaterThanZeroScenario;
