@@ -2406,7 +2406,7 @@ describe("Async Issue Biometric Credential", () => {
               ],
             },
           ])("Given the codes are $scenario", ({ advisories }) => {
-            describe("Given the grace period is 3 (enabled)", () => {
+            describe("Given the grace period is set to 3 days", () => {
               beforeEach(async () => {
                 dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS =
                   "3";
