@@ -7,8 +7,8 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../../../utils/apiTestHelpers";
-import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+} from "../../../utils/apiTestHelpers";
+import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
 import { beforeAll, it, describe, expect } from "vitest";
 
 describe("Given DVLA document has not expired", () => {

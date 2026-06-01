@@ -7,9 +7,9 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../../../utils/apiTestHelpers";
-import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "../dvlaExpiryTestSetup";
-import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
+} from "../../../utils/apiTestHelpers";
+import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "./dvlaExpiryTestSetup";
+import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
 import { beforeAll, it, describe, expect } from "vitest";
 
 describe("Given DVLA document has expired and is beyond the grace period", () => {
