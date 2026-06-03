@@ -74,7 +74,6 @@ export const getVcIssuedEvent = (
   credential: BiometricCredential,
   audit: AuditData,
   session: BiometricSessionFinishedAttributes,
-  dvlaDrivingLicenceExpiryGracePeriodInDays: number,
   advisories: Advisory[],
 ): Result<VcIssuedTxMAEvent, void> => {
   const { contraIndicatorReasons, flaggedRecord, flags, txmaContraIndicators } =
@@ -83,15 +82,12 @@ export const getVcIssuedEvent = (
   const timestamp_ms = Date.now();
   const timestamp = Math.floor(timestamp_ms / 1000);
 
-  let evaluationResultCode: EvaluationResultCodeExtension | undefined =
-    undefined;
-  if (dvlaDrivingLicenceExpiryGracePeriodInDays > 0) {
-    const evaluationResultCodeResult =
-      getEvaluationResultCodeExtensionResult(advisories);
-    if (evaluationResultCodeResult.isError) return evaluationResultCodeResult;
-
-    evaluationResultCode = evaluationResultCodeResult.value;
+  const evaluationResultCodeResult =
+    getEvaluationResultCodeExtensionResult(advisories);
+  if (evaluationResultCodeResult.isError) {
+    return evaluationResultCodeResult;
   }
+  const evaluationResultCode = evaluationResultCodeResult.value;
 
   return successResult({
     event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",

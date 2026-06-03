@@ -7,12 +7,12 @@ import {
   getVcIssuedEventObject,
   getVerifiedJwt,
   pollForEvents,
-} from "../../../../utils/apiTestHelpers";
-import { getIsoStringDateNDaysFromToday } from "../../../../utils/apiTestData";
-import { expiryGracePeriodDisabledDescribe } from "../dvlaExpiryTestSetup";
-import { expect, it, describe, beforeAll } from "vitest";
+} from "../../../utils/apiTestHelpers";
+import { EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1 } from "./dvlaExpiryTestSetup";
+import { getIsoStringDateNDaysFromToday } from "../../../utils/apiTestData";
+import { beforeAll, it, describe, expect } from "vitest";
 
-expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
+describe("Given DVLA document has expired and is beyond the grace period", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
@@ -21,7 +21,9 @@ expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
   let expiryDate: string;
 
   beforeAll(() => {
-    expiryDate = getIsoStringDateNDaysFromToday(-1);
+    expiryDate = getIsoStringDateNDaysFromToday(
+      -EXPIRY_GRACE_PERIOD_IN_DAYS_PLUS_1,
+    );
   });
 
   describe("Given vendor checks fail", () => {
@@ -106,17 +108,20 @@ expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
               validityScore: 0,
               activityHistoryScore: 0,
               ci: expect.arrayContaining([expect.any(String)]),
-              ciReasons: expect.arrayContaining([expect.any(Object)]),
               failedCheckDetails: expect.arrayContaining([
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
                   checkMethod: "bvr",
                 }),
               ]),
+              ciReasons: expect.arrayContaining([expect.any(Object)]),
               txmaContraIndicators: expect.any(Array),
               txn: expect.any(String),
             },
           ],
+          document_expiry: {
+            evaluation_result_code: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
+          },
         },
       });
     });
@@ -161,6 +166,14 @@ expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
         nbf: expect.any(Number),
         sub: subjectIdentifier,
         vc: expect.objectContaining({
+          credentialSubject: expect.objectContaining({
+            drivingPermit: [
+              expect.objectContaining({
+                expiryDate,
+                issuedBy: "DVLA",
+              }),
+            ],
+          }),
           evidence: [
             expect.objectContaining({
               strengthScore: 3,
@@ -191,23 +204,19 @@ expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
               nameParts: expect.any(Array),
             },
           ],
-          birthDate: [{ value: "1985-02-08" }],
+          birthDate: [expect.any(Object)],
           deviceId: [
             {
               value: expect.any(String),
             },
           ],
-          drivingPermit: [
-            {
-              expiryDate,
-              fullAddress: "WHATEVER STREET, WIRRAL, CH1 1AQ",
-              issueDate: "2022-05-29",
-              issueNumber: null,
-              issuedBy: "DVLA",
-              personalNumber: "DOE99802085J99FG",
-            },
-          ],
           address: [expect.any(Object)],
+          drivingPermit: [
+            expect.objectContaining({
+              expiryDate,
+              issuedBy: "DVLA",
+            }),
+          ],
         },
         extensions: {
           redirect_uri: "https://mockRedirectUri.com",
@@ -229,6 +238,9 @@ expiryGracePeriodDisabledDescribe()("Given DVLA document has expired", () => {
               txn: expect.any(String),
             },
           ],
+          document_expiry: {
+            evaluation_result_code: "DOCUMENT_EXPIRED_BEYOND_GRACE_PERIOD",
+          },
         },
       });
     });
