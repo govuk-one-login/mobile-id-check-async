@@ -6,7 +6,7 @@ import {
   getVerifiedJwt,
   pollForEvents,
   Scenario,
-} from "../utils/apiTestHelpers";
+} from "../../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect, it, describe, beforeAll } from "vitest";
 

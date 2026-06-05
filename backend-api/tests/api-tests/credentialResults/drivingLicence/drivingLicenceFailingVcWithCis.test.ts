@@ -1,3 +1,4 @@
+import { getIsoStringDateNDaysFromToday } from "../../utils/apiTestData";
 import {
   doAsyncJourney,
   EventResponse,
@@ -6,21 +7,28 @@ import {
   getVerifiedJwt,
   pollForEvents,
   Scenario,
-} from "../utils/apiTestHelpers";
+} from "../../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect, it, describe, beforeAll } from "vitest";
 
-describe("Passport failed credential result", () => {
+describe("Driving licence failed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
+  let expiryDate: string;
 
-  describe("Given the vendor returns a passport failure with cis biometric session", () => {
+  describe("Given the vendor returns a driving licence failure with cis biometric session", () => {
     beforeAll(async () => {
+      expiryDate = getIsoStringDateNDaysFromToday(0);
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.PASSPORT_FAILURE_WITH_CIS));
+        await doAsyncJourney(Scenario.DRIVING_LICENCE_FAILURE_WITH_CIS, {
+          drivingLicence: {
+            issuedBy: "DVA",
+            validUntil: expiryDate,
+          },
+        }));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -49,8 +57,9 @@ describe("Passport failed credential result", () => {
         vc: expect.objectContaining({
           evidence: [
             expect.objectContaining({
-              strengthScore: 4,
+              strengthScore: 3,
               validityScore: 0,
+              activityHistoryScore: 0,
             }),
           ],
         }),
@@ -61,15 +70,15 @@ describe("Passport failed credential result", () => {
       const actualEvent = getVcIssuedEventObject(criTxmaEvents);
 
       expect(actualEvent).toStrictEqual({
+        timestamp: expect.any(Number),
         user: {
           user_id: subjectIdentifier,
           session_id: sessionId,
           govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
           transaction_id: biometricSessionId,
         },
-        timestamp: expect.any(Number),
-        event_timestamp_ms: expect.any(Number),
         event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+        event_timestamp_ms: expect.any(Number),
         component_id: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
         restricted: {
           name: [
@@ -77,28 +86,22 @@ describe("Passport failed credential result", () => {
               nameParts: expect.any(Array),
             },
           ],
-          birthDate: [expect.any(Object)],
+          birthDate: [],
           deviceId: [
             {
               value: expect.any(String),
             },
           ],
-          passport: [
-            {
-              documentNumber: expect.any(String),
-              expiryDate: expect.any(String),
-              icaoIssuerCode: expect.any(String),
-            },
-          ],
+          address: [expect.any(Object)],
         },
         extensions: {
           redirect_uri: "https://mockRedirectUri.com",
           evidence: [
             {
               type: "IdentityCheck",
-              txn: expect.any(String),
-              strengthScore: 4,
+              strengthScore: 3,
               validityScore: 0,
+              activityHistoryScore: 0,
               ci: expect.arrayContaining([expect.any(String)]),
               failedCheckDetails: expect.arrayContaining([
                 expect.objectContaining({
@@ -108,6 +111,7 @@ describe("Passport failed credential result", () => {
               ]),
               ciReasons: expect.arrayContaining([expect.any(Object)]),
               txmaContraIndicators: expect.any(Array),
+              txn: expect.any(String),
             },
           ],
         },

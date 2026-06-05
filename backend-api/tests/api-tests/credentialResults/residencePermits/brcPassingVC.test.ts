@@ -6,21 +6,21 @@ import {
   getVerifiedJwt,
   pollForEvents,
   Scenario,
-} from "../utils/apiTestHelpers";
+} from "../../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect, it, describe, beforeAll } from "vitest";
 
-describe("BRP passed credential result", () => {
+describe("BRC passed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
-  describe("Given the vendor returns a brp success biometric session", () => {
+  describe("Given the vendor returns a brc success biometric session", () => {
     beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.BRP_SUCCESS));
+        await doAsyncJourney(Scenario.BRC_SUCCESS));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -88,7 +88,7 @@ describe("BRP passed credential result", () => {
               documentNumber: expect.any(String),
               expiryDate: expect.any(String),
               icaoIssuerCode: expect.any(String),
-              documentType: "IR",
+              documentType: "CR",
             },
           ],
           flaggedRecord: [
