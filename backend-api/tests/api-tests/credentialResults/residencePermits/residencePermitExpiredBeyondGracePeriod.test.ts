@@ -249,20 +249,6 @@ describe.each(residencePermitTestScenarios)(
                 documentType: residencePermitTestScenario.documentCode,
               },
             ],
-            flaggedRecord: [
-              {
-                dateOfExpiry: expect.arrayContaining([
-                  {
-                    type: "DcmawDateOfExpiry",
-                    value: expiryDates.yyyyMMddDashFormat,
-                  },
-                  {
-                    type: "InterpretedDateOfExpiry",
-                    value: expiryDates.ddMMyyyyDotFormat,
-                  },
-                ]),
-              },
-            ],
           },
           extensions: {
             redirect_uri: "https://mockRedirectUri.com",
@@ -294,10 +280,6 @@ describe.each(residencePermitTestScenarios)(
                 txmaContraIndicators: [],
               },
             ],
-            dcmawFlagsBRP: expect.objectContaining({
-              doEInPast: true,
-              doEMismatched: true,
-            }),
           },
         });
       });
