@@ -1,8 +1,4 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import {
-  EXPECTED_RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS,
-  residencePermitTestScenarios,
-} from "./residencePermitTestSetup";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import {
   EventResponse,
@@ -12,6 +8,10 @@ import {
   getVcIssuedEventObject,
 } from "../../utils/apiTestHelpers";
 import { getDateNMonthsAndDaysFromToday } from "../../utils/apiTestData";
+import { residencePermitTestScenarios } from "./residencePermitTestSetup";
+
+// this isn't a valid test scenario as the latest expiry date for residence permits is 31-Dec-2024
+// this test documents our system behaviour if an 'in-date' document is used
 
 describe.each(residencePermitTestScenarios)(
   "$documentType",
@@ -21,10 +21,7 @@ describe.each(residencePermitTestScenarios)(
       yyyyMMddDashFormat: string;
     };
     beforeAll(() => {
-      expiryDates = getDateNMonthsAndDaysFromToday(
-        -EXPECTED_RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS,
-        -1,
-      );
+      expiryDates = getDateNMonthsAndDaysFromToday(0);
     });
 
     describe("Given vendor checks are successful", () => {
@@ -51,7 +48,7 @@ describe.each(residencePermitTestScenarios)(
         });
       }, 60000);
 
-      it("Writes verified credential with failed evidence to the IPV Core outbound queue", () => {
+      it("Writes verified credential with passing evidence to the IPV Core outbound queue", () => {
         const { protectedHeader, payload } = verifiedJwt;
 
         expect(protectedHeader).toEqual({
@@ -70,7 +67,7 @@ describe.each(residencePermitTestScenarios)(
             evidence: [
               expect.objectContaining({
                 strengthScore: 4,
-                validityScore: 0,
+                validityScore: 3,
               }),
             ],
           }),
@@ -133,16 +130,8 @@ describe.each(residencePermitTestScenarios)(
                 type: "IdentityCheck",
                 txn: expect.any(String),
                 strengthScore: 4,
-                validityScore: 0,
-                ci: [expect.any(String)],
-                ciReasons: [
-                  {
-                    ci: expect.any(String),
-                    reason: expect.any(String),
-                    reasonCode: null,
-                  },
-                ],
-                failedCheckDetails: expect.arrayContaining([
+                validityScore: 3,
+                checkDetails: expect.arrayContaining([
                   {
                     checkMethod: "vcrypt",
                     identityCheckPolicy: "published",
@@ -156,10 +145,10 @@ describe.each(residencePermitTestScenarios)(
                 txmaContraIndicators: [],
               },
             ],
-            dcmawFlagsBRP: expect.objectContaining({
-              doEInPast: true,
+            dcmawFlagsBRP: {
               doEMismatched: true,
-            }),
+              doEGreaterThan31Dec2024: true,
+            },
           },
         });
       });
@@ -272,14 +261,6 @@ describe.each(residencePermitTestScenarios)(
                 txn: expect.any(String),
                 strengthScore: 4,
                 validityScore: 0,
-                ci: [expect.any(String)],
-                ciReasons: [
-                  {
-                    ci: expect.any(String),
-                    reason: expect.any(String),
-                    reasonCode: null,
-                  },
-                ],
                 failedCheckDetails: expect.arrayContaining([
                   {
                     checkMethod: "vcrypt",
@@ -291,13 +272,11 @@ describe.each(residencePermitTestScenarios)(
                     biometricVerificationProcessLevel: 3,
                   },
                 ]),
+                ci: [],
+                ciReasons: [],
                 txmaContraIndicators: [],
               },
             ],
-            dcmawFlagsBRP: expect.objectContaining({
-              doEInPast: true,
-              doEMismatched: true,
-            }),
           },
         });
       });
