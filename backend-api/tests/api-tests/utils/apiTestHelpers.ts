@@ -137,6 +137,7 @@ export async function setupBiometricSessionByScenario(
   opaqueId: string,
   creationDate: string,
   drivingLicence?: DrivingLicenceOverrides,
+  residencePermit?: ResidencePermitOverrides,
 ) {
   const result = await READ_ID_MOCK_API_INSTANCE.post(
     `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
@@ -146,6 +147,7 @@ export async function setupBiometricSessionByScenario(
         opaqueId,
         creationDate,
         drivingLicence,
+        residencePermit,
       },
     }),
   );
@@ -417,11 +419,17 @@ export enum Scenario {
   BRP_SUCCESS = "BRP_SUCCESS",
   BRC_SUCCESS = "BRC_SUCCESS",
   INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
+  BRP_FAILURE = "BRP_FAILURE",
+  BRC_FAILURE = "BRC_FAILURE",
 }
 
 interface DrivingLicenceOverrides {
   validUntil: string;
   issuedBy: "DVA" | "DVLA";
+}
+
+interface ResidencePermitOverrides {
+  interpretedDateOfExpiry: string;
 }
 
 export async function doAsyncJourney(
@@ -430,6 +438,7 @@ export async function doAsyncJourney(
     creationDate?: string;
     opaqueId?: string;
     drivingLicence?: DrivingLicenceOverrides;
+    residencePermit?: ResidencePermitOverrides;
   },
 ): Promise<{
   biometricSessionId: string;
@@ -455,6 +464,7 @@ export async function doAsyncJourney(
     opaqueId,
     creationDate,
     biometricSessionOverrides?.drivingLicence,
+    biometricSessionOverrides?.residencePermit,
   );
 
   await finishBiometricSession(sessionId, biometricSessionId);

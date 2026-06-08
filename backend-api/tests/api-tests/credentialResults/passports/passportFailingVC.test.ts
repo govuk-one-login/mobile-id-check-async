@@ -6,21 +6,21 @@ import {
   getVerifiedJwt,
   pollForEvents,
   Scenario,
-} from "../utils/apiTestHelpers";
+} from "../../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect, it, describe, beforeAll } from "vitest";
 
-describe("BRC passed credential result", () => {
+describe("Passport failed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
-  describe("Given the vendor returns a brc success biometric session", () => {
+  describe("Given the vendor returns a passport failure with cis biometric session", () => {
     beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.BRC_SUCCESS));
+        await doAsyncJourney(Scenario.PASSPORT_FAILURE_WITH_CIS));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -31,7 +31,7 @@ describe("BRC passed credential result", () => {
       });
     }, 60000);
 
-    it("Writes verified credential with passed evidence to the IPV Core outbound queue", () => {
+    it("Writes verified credential with failed evidence to the IPV Core outbound queue", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
@@ -50,7 +50,7 @@ describe("BRC passed credential result", () => {
           evidence: [
             expect.objectContaining({
               strengthScore: 4,
-              validityScore: 3,
+              validityScore: 0,
             }),
           ],
         }),
@@ -83,18 +83,12 @@ describe("BRC passed credential result", () => {
               value: expect.any(String),
             },
           ],
-          residencePermit: [
+          passport: [
             {
               documentNumber: expect.any(String),
               expiryDate: expect.any(String),
               icaoIssuerCode: expect.any(String),
-              documentType: "CR",
             },
-          ],
-          flaggedRecord: [
-            expect.objectContaining({
-              dateOfExpiry: expect.any(Object),
-            }),
           ],
         },
         extensions: {
@@ -104,17 +98,18 @@ describe("BRC passed credential result", () => {
               type: "IdentityCheck",
               txn: expect.any(String),
               strengthScore: 4,
-              validityScore: 3,
-              checkDetails: expect.arrayContaining([
+              validityScore: 0,
+              ci: expect.arrayContaining([expect.any(String)]),
+              failedCheckDetails: expect.arrayContaining([
                 expect.objectContaining({
                   biometricVerificationProcessLevel: 3,
                   checkMethod: "bvr",
                 }),
               ]),
-              txmaContraIndicators: [],
+              ciReasons: expect.arrayContaining([expect.any(Object)]),
+              txmaContraIndicators: expect.any(Array),
             },
           ],
-          dcmawFlagsBRP: { doEInPast: true, doEGreaterThan31Dec2024: true },
         },
       });
     });

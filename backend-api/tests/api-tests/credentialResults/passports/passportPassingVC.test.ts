@@ -6,21 +6,21 @@ import {
   getVerifiedJwt,
   pollForEvents,
   Scenario,
-} from "../utils/apiTestHelpers";
+} from "../../utils/apiTestHelpers";
 import { JWTVerifyResult, ResolvedKey } from "jose";
 import { expect, it, describe, beforeAll } from "vitest";
 
-describe("BRP passed credential result", () => {
+describe("Passport passed credential result", () => {
   let subjectIdentifier: string;
   let sessionId: string;
   let biometricSessionId: string;
   let criTxmaEvents: EventResponse[];
   let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
-  describe("Given the vendor returns a brp success biometric session", () => {
+  describe("Given the vendor returns a passport success biometric session", () => {
     beforeAll(async () => {
       ({ biometricSessionId, sessionId, subjectIdentifier } =
-        await doAsyncJourney(Scenario.BRP_SUCCESS));
+        await doAsyncJourney(Scenario.PASSPORT_SUCCESS));
 
       verifiedJwt = await getVerifiedJwt(subjectIdentifier);
 
@@ -83,18 +83,12 @@ describe("BRP passed credential result", () => {
               value: expect.any(String),
             },
           ],
-          residencePermit: [
+          passport: [
             {
               documentNumber: expect.any(String),
               expiryDate: expect.any(String),
               icaoIssuerCode: expect.any(String),
-              documentType: "IR",
             },
-          ],
-          flaggedRecord: [
-            expect.objectContaining({
-              dateOfExpiry: expect.any(Object),
-            }),
           ],
         },
         extensions: {
@@ -114,7 +108,6 @@ describe("BRP passed credential result", () => {
               txmaContraIndicators: [],
             },
           ],
-          dcmawFlagsBRP: { doEInPast: true, doEGreaterThan31Dec2024: true },
         },
       });
     });
