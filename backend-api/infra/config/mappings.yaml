@@ -126,6 +126,12 @@ Mappings:
       staging: 90
       integration: 90
       production: 90
+    ResidencePermitExpiryGracePeriodInMonths:
+      dev: 18
+      build: 18
+      staging: 18
+      integration: 18
+      production: 18
     EnableBiometricResidenceCard:
       dev: "true"
       build: "true"

@@ -262,6 +262,12 @@ Mappings:
     ReadIdMockBaseUrl:
       build: https://readid-mock.review-b-async.build.account.gov.uk/v2
       dev: https://readid-mock.review-b-async.dev.account.gov.uk/v2
+    ResidencePermitExpiryGracePeriodInMonths:
+      build: 18
+      dev: 18
+      integration: 18
+      production: 18
+      staging: 18
     SessionDurationInSeconds:
       build: 86400
       dev: 86400
@@ -3748,6 +3754,10 @@ Resources:
               - EnvironmentVariables
               - ReadIdBaseUrl
               - !Ref Environment
+          RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS: !FindInMap
+            - EnvironmentVariables
+            - ResidencePermitExpiryGracePeriodInMonths
+            - !Ref Environment
           VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
