@@ -1584,7 +1584,8 @@ describe("Async Issue Biometric Credential", () => {
                 enableNfcPassport: true,
                 enableBiometricResidencePermit: true,
                 enableBiometricResidenceCard: true,
-                dvlaDrivingLicenceExpiryGracePeriodInDays: dvlaDrivingLicenceGracePeriodInDays,
+                dvlaDrivingLicenceExpiryGracePeriodInDays:
+                  dvlaDrivingLicenceGracePeriodInDays,
                 residencePermitExpiryGracePeriodInMonths: 18,
               },
               getCredentialFromBiometricSessionLogger,
