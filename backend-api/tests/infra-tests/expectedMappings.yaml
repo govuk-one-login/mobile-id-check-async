@@ -156,9 +156,9 @@ EnvironmentVariables:
     integration: "true"
     production: "false"
   ResidencePermitExpiryGracePeriodInMonths:
-    dev: 18
+    dev: 24
     build: 18
-    staging: 18
+    staging: 24
     integration: 18
     production: 18
 
