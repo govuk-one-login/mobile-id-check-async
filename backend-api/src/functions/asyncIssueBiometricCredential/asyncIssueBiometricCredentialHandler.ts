@@ -74,10 +74,28 @@ export async function lambdaHandlerConstructor(
 
   if (Number.isNaN(dvlaDrivingLicenceExpiryGracePeriodInDays)) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG, {
-      data: { invalidExpiryGracePeriod: "NaN" },
+      data: { invalidDvlaDrivingLicenceExpiryGracePeriod: "NaN" },
     });
     throw new RetainMessageOnQueue("Invalid config");
   }
+
+  const residencePermitExpiryGracePeriodInMonths = Number(
+    config.RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS,
+  );
+
+  if (Number.isNaN(residencePermitExpiryGracePeriodInMonths)) {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG, {
+      data: { invalidResidencePermitExpiryGracePeriod: "NaN" },
+    });
+    throw new RetainMessageOnQueue("Invalid config");
+  }
+
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD, {
+    data: {
+      residencePermitExpiryGracePeriod:
+        config.RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS,
+    },
+  });
 
   const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
@@ -210,6 +228,7 @@ export async function lambdaHandlerConstructor(
     enableNfcPassport: config.ENABLE_NFC_PASSPORT === "true",
     enableUtopiaTestDocument: config.ENABLE_UTOPIA_TEST_DOCUMENT === "true",
     dvlaDrivingLicenceExpiryGracePeriodInDays,
+    residencePermitExpiryGracePeriodInMonths,
   };
 
   let getCredentialFromBiometricSessionResult;

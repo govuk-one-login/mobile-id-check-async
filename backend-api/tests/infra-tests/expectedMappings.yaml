@@ -155,6 +155,12 @@ EnvironmentVariables:
     staging: "true"
     integration: "true"
     production: "false"
+  ResidencePermitExpiryGracePeriodInMonths:
+    dev: 18
+    build: 18
+    staging: 18
+    integration: 18
+    production: 18
 
   # API Configuration
   PrivateApiBurstLimit:

@@ -208,6 +208,7 @@ describe("Async Issue Biometric Credential", () => {
         VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID:
           "mockVerifiableCredentialSigningKeyId",
         DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS: "0",
+        RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS: "18",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
@@ -263,6 +264,7 @@ describe("Async Issue Biometric Credential", () => {
       ["ENABLE_UTOPIA_TEST_DOCUMENT"],
       ["VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID"],
       ["DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS"],
+      ["RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -304,7 +306,7 @@ describe("Async Issue Biometric Credential", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
           data: {
-            invalidExpiryGracePeriod: "NaN",
+            invalidDvlaDrivingLicenceExpiryGracePeriod: "NaN",
           },
         });
       });
@@ -313,6 +315,49 @@ describe("Async Issue Biometric Credential", () => {
         expect(lambdaError).toStrictEqual(
           new RetainMessageOnQueue("Invalid config"),
         );
+      });
+    });
+  });
+
+  describe("Given the RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS is invalid", () => {
+    beforeEach(async () => {
+      dependencies.env.RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS =
+        "INVALID";
+      try {
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      } catch (error: unknown) {
+        lambdaError = error;
+      }
+    });
+
+    it("Logs INVALID_CONFIG", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+        data: {
+          invalidResidencePermitExpiryGracePeriod: "NaN",
+        },
+      });
+    });
+
+    it("Throws RetainMessageOnQueue", async () => {
+      expect(lambdaError).toStrictEqual(
+        new RetainMessageOnQueue("Invalid config"),
+      );
+    });
+  });
+
+  describe("Expiry grace period log", () => {
+    beforeEach(async () => {
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+
+    it("Logs RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
+        data: {
+          residencePermitExpiryGracePeriod: "18",
+        },
       });
     });
   });
@@ -1430,10 +1475,10 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
-      describe("Given the grace period is 3 days", () => {
-        const gracePeriodDays = 3;
+      describe("Given the DVLA Driving Licence grace period is 3 days", () => {
+        const dvlaDrivingLicenceGracePeriodInDays = 3;
         beforeEach(() => {
-          dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS = `${gracePeriodDays}`;
+          dependencies.env.DVLA_DRIVING_LICENCE_EXPIRY_GRACE_PERIOD_IN_DAYS = `${dvlaDrivingLicenceGracePeriodInDays}`;
         });
 
         describe("Given user is on a mobile-app-mobile journey", () => {
@@ -1582,7 +1627,9 @@ describe("Async Issue Biometric Credential", () => {
                 enableNfcPassport: true,
                 enableBiometricResidencePermit: true,
                 enableBiometricResidenceCard: true,
-                dvlaDrivingLicenceExpiryGracePeriodInDays: gracePeriodDays,
+                dvlaDrivingLicenceExpiryGracePeriodInDays:
+                  dvlaDrivingLicenceGracePeriodInDays,
+                residencePermitExpiryGracePeriodInMonths: 18,
               },
               getCredentialFromBiometricSessionLogger,
             );
