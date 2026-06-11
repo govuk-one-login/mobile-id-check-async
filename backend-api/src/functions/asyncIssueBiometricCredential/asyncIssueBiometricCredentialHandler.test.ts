@@ -319,6 +319,22 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
+  describe("Expiry grace period log", () => {
+    beforeEach(async () => {
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+
+    it("Logs RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_EXPIRY_GRACE_PERIOD",
+        data: {
+          residencePermitExpiryGracePeriod: "18",
+        },
+      });
+    });
+  });
+
   describe("SQS Event validation", () => {
     describe("Given event does not contain exactly 1 record", () => {
       describe.each([
