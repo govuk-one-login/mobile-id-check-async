@@ -319,6 +319,33 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
+  describe("Given the RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS is invalid", () => {
+    beforeEach(async () => {
+      dependencies.env.RESIDENCE_PERMIT_EXPIRY_GRACE_PERIOD_IN_MONTHS =
+        "INVALID";
+      try {
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      } catch (error: unknown) {
+        lambdaError = error;
+      }
+    });
+
+    it("Logs INVALID_CONFIG", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+        data: {
+          invalidResidencePermitExpiryGracePeriod: "NaN",
+        },
+      });
+    });
+
+    it("Throws RetainMessageOnQueue", async () => {
+      expect(lambdaError).toStrictEqual(
+        new RetainMessageOnQueue("Invalid config"),
+      );
+    });
+  });
+
   describe("Expiry grace period log", () => {
     beforeEach(async () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
