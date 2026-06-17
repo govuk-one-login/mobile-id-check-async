@@ -1,5 +1,12 @@
 name: Validate, Build, and Upload Artifact to S3
 
+description: {
+  "name": "upload-sam-artifact",
+  "version": "v1.0.0",
+  "message":
+    "This update adds versioning to the upload-sam-artifact job."
+  }
+
 on:
   workflow_call:
     inputs:

@@ -26,7 +26,7 @@ jobs:
   ci-checks:
     name: Pre-deployment
     uses:
-      ./.github/workflows/job_ci-checks.yml
+      govuk-one-login/mobile-id-check-async/.github/workflows/jobs_ci-checks.yml@ci-checks/v1.0.0
     with:
       PRIVATE_PACKAGES_REQUIRED: true
       WORKING_DIRECTORY: backend-api
@@ -34,7 +34,7 @@ jobs:
   run-test-suite:
     name: Pre-deployment
     uses:
-      ./.github/workflows/job_test-suite.yml
+      govuk-one-login/mobile-id-check-async/.github/workflows/jobs_test-suite.yml@test-suite/v1.0.0
     with:
       PRIVATE_PACKAGES_REQUIRED: true
       RUN_PACT_TESTS: true
