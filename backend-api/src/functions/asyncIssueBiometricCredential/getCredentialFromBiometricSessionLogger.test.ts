@@ -18,16 +18,13 @@ describe("getCredentialFromBiometricSessionLogger", () => {
     consoleInfoSpy = vi.spyOn(console, "info");
   });
 
-  it("Logs at error", () => {
+  it("Give that error is deprecated, it does not log", () => {
     logger.appendPersistentKeys({ mockKey: "mockValue" });
     getCredentialFromBiometricSessionLogger.error(
       "DRIVING_LICENCE_INVALID_ISSUER",
       {},
     );
-    expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-      message: "DRIVING_LICENCE_INVALID_ISSUER",
-      mockKey: "mockValue",
-    });
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
     expect(consoleInfoSpy).not.toHaveBeenCalled();
   });
 
