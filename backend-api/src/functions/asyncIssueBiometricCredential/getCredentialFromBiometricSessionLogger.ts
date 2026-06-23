@@ -8,7 +8,4 @@ export const getCredentialFromBiometricSessionLogger: Logger = {
   info: (message: LogMessageName, data: Record<string, unknown>): void => {
     logger.info(message, data);
   },
-  error: (message: LogMessageName, data: Record<string, unknown>): void => {
-    logger.error(message, data);
-  },
 };
