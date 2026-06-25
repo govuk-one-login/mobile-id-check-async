@@ -263,10 +263,10 @@ Mappings:
       build: https://readid-mock.review-b-async.build.account.gov.uk/v2
       dev: https://readid-mock.review-b-async.dev.account.gov.uk/v2
     ResidencePermitExpiryGracePeriodInMonths:
-      build: 18
+      build: 24
       dev: 24
-      integration: 18
-      production: 18
+      integration: 24
+      production: 24
       staging: 24
     SessionDurationInSeconds:
       build: 86400
