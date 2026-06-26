@@ -46,7 +46,7 @@ jobs:
       SAM_CLI_TELEMETRY: 0
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
         with:
           submodules: true
           fetch-depth: 0
@@ -89,7 +89,7 @@ jobs:
         run: sam build --cached --template ${{ inputs.TEMPLATE_NAME }}
 
       - name: Upload SAM Artifact into the Artifact Bucket
-        uses: govuk-one-login/devplatform-upload-action@v3.14.0
+        uses: govuk-one-login/devplatform-upload-action@v4.1.0
         with:
           artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
