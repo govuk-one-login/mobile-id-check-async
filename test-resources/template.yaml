@@ -461,7 +461,7 @@ Resources:
               SSEAlgorithm: AES256
       BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-${Environment}
       LoggingConfiguration:
-        DestinationBucketName: !ImportValue s3-access-logs-bucket-S3AccessLogsBucketName
+        DestinationBucketName: !Sub di-s3-access-logs-${AWS::AccountId}-${AWS::Region}
         TargetObjectKeyFormat:
           PartitionedPrefix:
             PartitionDateSource: EventTime
