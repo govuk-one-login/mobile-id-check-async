@@ -767,6 +767,21 @@ describe("Backend application infrastructure", () => {
       });
     });
 
+    describe("Issue Biometric Credential lambda has a non-zero DVLA expiry grace period environment variable set", () => {
+      const envs = Object.keys(
+        yamltemplate.Mappings.EnvironmentVariables
+          .DvlaDrivingLicenceExpiryGracePeriodInDays,
+      );
+      envs.forEach((env) => {
+        test(`For environment ${env} `, () => {
+          expect(
+            yamltemplate.Mappings.EnvironmentVariables
+              .DvlaDrivingLicenceExpiryGracePeriodInDays[env],
+          ).toBeGreaterThan(0);
+        });
+      });
+    });
+
     test("All lambdas are attached to a VPC ", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambda_list = Object.keys(lambdas);
