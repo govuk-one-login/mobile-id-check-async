@@ -46,7 +46,7 @@ jobs:
       SAM_CLI_TELEMETRY: 0
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
         with:
           submodules: true
           fetch-depth: 0
@@ -72,7 +72,7 @@ jobs:
         run: npm clean-install
 
       - name: Authenticate with AWS
-        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b #v6.2.0
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b #v6.2.1
         with:
           aws-region: ${{ inputs.AWS_REGION }}
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
@@ -89,7 +89,7 @@ jobs:
         run: sam build --cached --template ${{ inputs.TEMPLATE_NAME }}
 
       - name: Upload SAM Artifact into the Artifact Bucket
-        uses: govuk-one-login/devplatform-upload-action@v3.14.0
+        uses: govuk-one-login/devplatform-upload-action@v4.1.0
         with:
           artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
