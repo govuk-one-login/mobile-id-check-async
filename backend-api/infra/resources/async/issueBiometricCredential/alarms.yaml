@@ -327,7 +327,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "The number of Async Issue Biometric Credential Lambda errors is greater than or equal to 10% for the latest function version"
+      AlarmDescription: "The number of Async Issue Biometric Credential Lambda errors, not including not ready errors, is greater than or equal to 10% for the latest function version"
       AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-error-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -337,8 +337,22 @@ Resources:
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
-      Threshold: 60
+      Threshold: 10
       Metrics:
+        - Id: notReadyLogs
+          Label: "Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY messageCodes for latest Lambda version"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+            Period: 60
+            Stat: Sum
         - Id: lambdaInvocations
           Label: "Sum of invocations for latest Lambda version"
           ReturnData: false
@@ -371,10 +385,14 @@ Resources:
                   Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
             Period: 60
             Stat: Sum
-        - Id: lambdaErrorPercentage
-          Label: "Percentage of invocations that result in a function error"
+        - Id: lambdaErrorsWithoutNotReady
+          Label: "Sum of function errors for latest Lambda version, not including not ready errors"
           ReturnData: false
-          Expression: (lambdaErrors/lambdaInvocations)*100
+          Expression: (lambdaErrors - notReadyLogs)
+        - Id: lambdaErrorPercentage
+          Label: "Percentage of invocations that result in a function error, not including not ready errors"
+          ReturnData: false
+          Expression: ((lambdaErrorsWithoutNotReady)/lambdaInvocations)*100
         - Id: lambdaErrorRate
           Label: "Error threshold calculation"
           ReturnData: true
