@@ -5,8 +5,8 @@ import {
   JwksCacheDependencies,
 } from "./types";
 import { getJwksFromJwksUri } from "./getJwksFromJwksUri";
-import { sendHttpRequest } from "../http/sendHttpRequest";
-import { Result, successResult } from "../utils/result";
+import { sendHttpRequest } from "../../http/sendHttpRequest";
+import { Result, successResult } from "../../utils/result";
 
 export class InMemoryJwksCache implements JwksCache {
   private static INSTANCE: JwksCache;
@@ -26,6 +26,17 @@ export class InMemoryJwksCache implements JwksCache {
 
   constructor(private readonly dependencies: JwksCacheDependencies) {}
 
+  /**
+   * Fetches the JWKS from the given URI, returning the keys from either the
+   * in-memory cache or a fresh HTTP request. The response is validated to
+   * ensure a 200 status, a parseable JSON body, and that the body contains a
+   * `keys` array of non-null objects. Cache duration is derived from the
+   * `Cache-Control` and `Age` response headers, capped at 15 minutes.
+   *
+   * @param jwksUri - The URL serving the JSON Web Key Set (JWKS)
+   * @param keyId - If provided, busts the cache when the Key ID is absent from the cached JWKS
+   * @returns The keys from the JWKS, or an empty failure if the request or validation fails
+   */
   async getJwks(
     jwksUri: string,
     keyId?: string,

@@ -1,4 +1,4 @@
-import "../../../testUtils/matchers";
+import "../../../../testUtils/matchers";
 
 import {
   vi,
@@ -12,11 +12,11 @@ import {
 import {
   ISendHttpRequest,
   SuccessfulHttpResponse,
-} from "../../http/sendHttpRequest";
-import { Result, successResult, SuccessWithValue } from "../../utils/result";
+} from "../../../http/sendHttpRequest";
+import { Result, successResult, SuccessWithValue } from "../../../utils/result";
 import { InMemoryJwksCache } from "../JwksCache";
 import { JwksCacheDependencies, GetKeysResponse } from "../types";
-import { NOW_IN_MILLISECONDS } from "../../../testUtils/unitTestData";
+import { NOW_IN_MILLISECONDS } from "../../../../testUtils/unitTestData";
 
 let inMemoryJwksCache: InMemoryJwksCache;
 let dependencies: JwksCacheDependencies;

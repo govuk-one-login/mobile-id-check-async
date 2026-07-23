@@ -4,13 +4,13 @@ import {
   JwksCacheDependencies,
 } from "./types";
 
-import { logger } from "../logging/logger";
-import { emptyFailure, Result, successResult } from "../utils/result";
-import { HttpRequest, SuccessfulHttpResponse } from "../http/sendHttpRequest";
-import { LogMessage } from "../logging/LogMessage";
-import { getHeader } from "../request/getHeader/getHeader";
-import { parseAgeHeader } from "../request/parseAgeHeader/parseAgeHeader";
-import { parseCacheControlHeader } from "../request/parseCacheControlHeader/parseCacheControlHeader";
+import { logger } from "../../logging/logger";
+import { emptyFailure, Result, successResult } from "../../utils/result";
+import { HttpRequest, SuccessfulHttpResponse } from "../../http/sendHttpRequest";
+import { LogMessage } from "../../logging/LogMessage";
+import { getHeader } from "../../request/getHeader/getHeader";
+import { parseAgeHeader } from "../../request/parseAgeHeader/parseAgeHeader";
+import { parseCacheControlHeader } from "../../request/parseCacheControlHeader/parseCacheControlHeader";
 
 export const getJwksFromJwksUri: IGetJwksFromJwksUri = async (
   jwksUri: string,

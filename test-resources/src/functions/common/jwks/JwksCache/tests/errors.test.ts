@@ -1,4 +1,4 @@
-import "../../../testUtils/matchers";
+import "../../../../testUtils/matchers";
 
 import {
   vi,
@@ -9,13 +9,13 @@ import {
   afterEach,
   type MockInstance,
 } from "vitest";
-import { NOW_IN_MILLISECONDS } from "../../../testUtils/unitTestData";
+import { NOW_IN_MILLISECONDS } from "../../../../testUtils/unitTestData";
 import {
   Result,
   errorResult,
   emptyFailure,
   successResult,
-} from "../../utils/result";
+} from "../../../utils/result";
 import { InMemoryJwksCache } from "../JwksCache";
 import { JwksCacheDependencies, GetKeysResponse } from "../types";
 
