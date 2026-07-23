@@ -1,132 +1,41 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ErrorCategory } from "../../../../common/utils/result";
+import { describe, expect, it, vi } from "vitest";
+import {
+  emptyFailure,
+  ErrorCategory,
+  successResult,
+} from "../../../../common/utils/result";
 import { TokenEncrypter } from "../tokenEncrypter";
+import { IGetKeys } from "../../../../common/jwks/JwksCache/types";
+
+const mockMatchingJwk = {
+  kty: "RSA",
+  n: "0wLh4PMAjSt17zLNFw9nnBdV901AWp0uuHQzGaz1-Wz1lAs-jN7nI90sQAyiv8MDlYWLrfUZKcQAAA0yjISp9UyTr8qgqsyAKiFBIcnoH7l4qV-U-VXe3rcMjr5BzrKdVK664YiF9coGaal-QDDd1VY0fvvom3DhGnh8MoezBQPKl6pynIaSiDHZUdSe8B9LdsjsKHt4SujGRR_QlERYISC0s4pCQu2gA9qsP-pFDfcklbLtskFtWa_utiPe48Y5xgrhj5r-hMz9Zi4R55mX6nymC9gypk7q6iiXGEQcMzxPMy0kgF4437PqA-0GmjJE24pGmVhnr33UL2i0tsfviw",
+  e: "AQAB",
+  use: "enc",
+  alg: "RSA-OAEP-256",
+  kid: "456d2da6-9ca8-4e1d-b8c8-081109d73015",
+};
+
+const mockSuccessfulGetKeys: IGetKeys = vi
+  .fn()
+  .mockResolvedValue(successResult({ keys: [mockMatchingJwk] }));
 
 describe("Token Encrypter", () => {
-  let tokenEncrypter: TokenEncrypter;
+  const mockJwksUri = "mockUrl.gov.uk/.well-known/jwks.json";
+  const mockJwt = "header.payload.signature";
 
-  const dummyJwt = "header.payload.signature";
-
-  beforeEach(() => {
-    tokenEncrypter = new TokenEncrypter(
-      "dummyUrl.gov.uk/.well-known/jwks.json",
-    );
-
-    vi.spyOn(global, "fetch").mockImplementation(() =>
-      Promise.resolve({
-        status: 200,
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            keys: [
-              {
-                kty: "RSA",
-                n: "0wLh4PMAjSt17zLNFw9nnBdV901AWp0uuHQzGaz1-Wz1lAs-jN7nI90sQAyiv8MDlYWLrfUZKcQAAA0yjISp9UyTr8qgqsyAKiFBIcnoH7l4qV-U-VXe3rcMjr5BzrKdVK664YiF9coGaal-QDDd1VY0fvvom3DhGnh8MoezBQPKl6pynIaSiDHZUdSe8B9LdsjsKHt4SujGRR_QlERYISC0s4pCQu2gA9qsP-pFDfcklbLtskFtWa_utiPe48Y5xgrhj5r-hMz9Zi4R55mX6nymC9gypk7q6iiXGEQcMzxPMy0kgF4437PqA-0GmjJE24pGmVhnr33UL2i0tsfviw",
-                e: "AQAB",
-                use: "enc",
-                alg: "RSA-OAEP-256",
-                kid: "456d2da6-9ca8-4e1d-b8c8-081109d73015",
-              },
-            ],
-          }),
-      } as Response),
-    );
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  describe("Given an error happens when requesting the JWKS", () => {
+  describe("Given getJwks returns an error", () => {
     it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 500,
-          ok: false,
-        } as Response),
+      const tokenEncrypter = new TokenEncrypter(
+        mockJwksUri,
+        vi.fn().mockResolvedValue(emptyFailure()),
       );
 
-      const result = await tokenEncrypter.encrypt(dummyJwt);
+      const result = await tokenEncrypter.encrypt(mockJwt);
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error fetching JWKS",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    });
-  });
-
-  describe("Given an unexpected network error happens when requesting the JWKS", () => {
-    it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementationOnce(() => {
-        throw new Error("Unexpected network error");
-      });
-
-      const result = await tokenEncrypter.encrypt(dummyJwt);
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage: "Unexpected network error fetching JWKS",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    });
-  });
-
-  describe("Given the response body cannot be parsed as JSON", () => {
-    it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () => Promise.reject("notAValidJSON"),
-        } as Response),
-      );
-
-      const result = await tokenEncrypter.encrypt(dummyJwt);
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage: "Response body cannot be parsed as JSON",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    });
-  });
-
-  describe("Given 'keys' is missing from the response body", () => {
-    it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () => Promise.resolve({}),
-        } as Response),
-      );
-
-      const result = await tokenEncrypter.encrypt(dummyJwt);
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage: "Not a valid JWKS",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    });
-  });
-
-  describe("Given 'keys' is not an array", () => {
-    it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () => Promise.resolve({ keys: "notAnArray" }),
-        } as Response),
-      );
-
-      const result = await tokenEncrypter.encrypt(dummyJwt);
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage: "Not a valid JWKS",
+        errorMessage: "Failed to get JWKS",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
@@ -134,15 +43,16 @@ describe("Token Encrypter", () => {
 
   describe("Given the JWKS does not contain an encryption JWK", () => {
     it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () => Promise.resolve({ keys: [{ kty: "RSA", use: "sig" }] }),
-        } as Response),
+      const tokenEncrypter = new TokenEncrypter(
+        mockJwksUri,
+        vi
+          .fn()
+          .mockResolvedValue(
+            successResult({ keys: [{ kty: "RSA", use: "sig" }] }),
+          ),
       );
 
-      const result = await tokenEncrypter.encrypt(dummyJwt);
+      const result = await tokenEncrypter.encrypt(mockJwt);
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
@@ -152,17 +62,18 @@ describe("Token Encrypter", () => {
     });
   });
 
-  describe("Given the encryption JWK is invalid (i.e. missing required fields) and cannot be parsed as a KeyObject", () => {
+  describe("Given the encryption JWK is invalid and cannot be parsed as a KeyObject", () => {
     it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () => Promise.resolve({ keys: [{ kty: "RSA", use: "enc" }] }),
-        } as Response),
+      const tokenEncrypter = new TokenEncrypter(
+        mockJwksUri,
+        vi
+          .fn()
+          .mockResolvedValue(
+            successResult({ keys: [{ kty: "RSA", use: "enc" }] }),
+          ),
       );
 
-      const result = await tokenEncrypter.encrypt(dummyJwt);
+      const result = await tokenEncrypter.encrypt(mockJwt);
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
@@ -179,28 +90,26 @@ describe("Token Encrypter", () => {
   */
   describe("Given there is an unexpected error encrypting the JWT", () => {
     it("Returns an error response", async () => {
-      vi.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              keys: [
-                {
-                  kty: "EC",
-                  x: "-JBGGl6V4K-9VJZ_UfPljiHlteQCqTwbbMHEAxv0_NA",
-                  y: "ZgDwVZCrtEHfdrJwgq3n7a2pdPUFLabCYLUu6Un3VXE",
-                  crv: "P-256",
-                  kid: "SNFJEFlxy-FxCkRtvj1VD38VuotQ-ta6a2w7p4j6jhY",
-                  use: "enc",
-                  alg: "ES256",
-                },
-              ],
-            }),
-        } as Response),
+      const tokenEncrypter = new TokenEncrypter(
+        mockJwksUri,
+        vi.fn().mockResolvedValue(
+          successResult({
+            keys: [
+              {
+                kty: "EC",
+                x: "-JBGGl6V4K-9VJZ_UfPljiHlteQCqTwbbMHEAxv0_NA",
+                y: "ZgDwVZCrtEHfdrJwgq3n7a2pdPUFLabCYLUu6Un3VXE",
+                crv: "P-256",
+                kid: "SNFJEFlxy-FxCkRtvj1VD38VuotQ-ta6a2w7p4j6jhY",
+                use: "enc",
+                alg: "ES256",
+              },
+            ],
+          }),
+        ),
       );
 
-      const result = await tokenEncrypter.encrypt(dummyJwt);
+      const result = await tokenEncrypter.encrypt(mockJwt);
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
@@ -210,9 +119,13 @@ describe("Token Encrypter", () => {
     });
   });
 
-  describe("Given the JWT is encrypted", () => {
+  describe("Given the JWT is encrypted successfully", () => {
     it("Returns a success response with the JWE", async () => {
-      const result = await tokenEncrypter.encrypt(dummyJwt);
+      const tokenEncrypter = new TokenEncrypter(
+        mockJwksUri,
+        mockSuccessfulGetKeys,
+      );
+      const result = await tokenEncrypter.encrypt(mockJwt);
 
       const resultValue = result.value as string;
 
@@ -222,7 +135,7 @@ describe("Token Encrypter", () => {
         resultValue.startsWith(
           "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIn0",
         ),
-      ).toBeTruthy();
+      ).toBe(true);
     });
   });
 });
