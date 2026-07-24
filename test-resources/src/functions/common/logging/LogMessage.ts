@@ -1,7 +1,7 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class LogMessage implements LogAttributes {
-  // STS mock
+  // STS mock - token lambda
   static readonly STS_MOCK_STARTED = new LogMessage(
     "TEST_RESOURCES_STS_MOCK_STARTED",
     "Lambda handler processing has started.",
@@ -31,7 +31,7 @@ export class LogMessage implements LogAttributes {
     "Lambda handler processing has completed successfully.",
   );
 
-  // Dequeue Events
+  // Dequeue events lambda
   static readonly DEQUEUE_EVENTS_STARTED = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_EVENTS_STARTED",
     "Lambda handler processing has started.",
@@ -57,7 +57,7 @@ export class LogMessage implements LogAttributes {
     "Lambda handler processing has completed successfully.",
   );
 
-  // Dequeue credential result
+  // Dequeue credential result lambda
   static readonly DEQUEUE_CREDENTIAL_RESULT_STARTED = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
     "Lambda handler processing has started.",
@@ -80,7 +80,7 @@ export class LogMessage implements LogAttributes {
     "Lambda handler processing has completed successfully.",
   );
 
-  // Put session
+  // Common - Dynamo put session
   static readonly PUT_SESSION_STARTED = new LogMessage(
     "MOBILE_ASYNC_PUT_SESSION_STARTED",
     "Test sessions lambda started.",
@@ -101,7 +101,7 @@ export class LogMessage implements LogAttributes {
     "The sessionId path parameter is missing or invalid",
   );
 
-  // Dequeue DynamoDB adapter
+  // Common - Dynamo put item
   static readonly DEQUEUE_PUT_ITEM_ATTEMPT = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_PUT_ITEM_ATTEMPT",
     "Attempting to put an item into DynamoDB",
@@ -113,6 +113,24 @@ export class LogMessage implements LogAttributes {
   static readonly DEQUEUE_PUT_ITEM_SUCCESS = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_PUT_ITEM_SUCCESS",
     "Successfully put item into DynamoDB",
+  );
+
+  // Common - Get JWKS
+  static readonly GET_JWKS_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_GET_JWKS_ATTEMPT",
+    "Attempting to retrieve JWKS",
+  );
+  static readonly GET_JWKS_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_GET_JWKS_FAILURE",
+    "An error has occurred while calling JWKS URI",
+  );
+  static readonly MALFORMED_JWKS_RESPONSE = new LogMessage(
+    "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
+    "The request to the JWKS URI was successful, but the response is not as expected",
+  );
+  static readonly GET_JWKS_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_GET_JWKS_SUCCESS",
+    "Successfully retrieved JWKS",
   );
 
   private constructor(

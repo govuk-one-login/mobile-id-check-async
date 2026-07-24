@@ -7,20 +7,33 @@ import {
 import { createPublicKey, JsonWebKey, KeyObject } from "node:crypto";
 import { CompactEncrypt } from "jose";
 import { JWT } from "../tokenSigner/tokenSigner";
+import {
+  GetKeysResponse,
+  IGetKeys,
+} from "../../../common/jwks/JwksCache/types";
+import { InMemoryJwksCache } from "../../../common/jwks/JwksCache/JwksCache";
 
 export type JWE = `${string}.${string}.${string}.${string}.${string}`;
 
+const defaultGetJwksImpl = (jwksUri: string) =>
+  InMemoryJwksCache.getSingletonInstance().getJwks(jwksUri);
+
 export class TokenEncrypter implements ITokenEncrypter {
+  private readonly getJwks: IGetKeys;
   private readonly jwksUri: string;
 
-  constructor(jwksUri: string) {
+  constructor(jwksUri: string, getJwks: IGetKeys = defaultGetJwksImpl) {
     this.jwksUri = jwksUri;
+    this.getJwks = getJwks;
   }
 
   async encrypt(jwt: JWT): Promise<Result<JWE>> {
-    const getJwksResult = await this.getJwks();
+    const getJwksResult = await this.getJwks(this.jwksUri);
     if (getJwksResult.isError) {
-      return getJwksResult;
+      return errorResult({
+        errorMessage: "Failed to get JWKS",
+        errorCategory: ErrorCategory.SERVER_ERROR,
+      });
     }
 
     const extractEncryptionKeyResult = this.getEncryptionKey(
@@ -52,44 +65,12 @@ export class TokenEncrypter implements ITokenEncrypter {
     }
   }
 
-  private async getJwks(): Promise<Result<object>> {
-    let response;
-    try {
-      response = await fetch(this.jwksUri, { method: "GET" });
-      if (!response.ok) {
-        return errorResult({
-          errorMessage: "Error fetching JWKS",
-          errorCategory: ErrorCategory.SERVER_ERROR,
-        });
-      }
-    } catch {
-      return errorResult({
-        errorMessage: "Unexpected network error fetching JWKS",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    }
-
-    let body: object;
-    try {
-      body = await response.json();
-      return successResult(body);
-    } catch {
-      return errorResult({
-        errorMessage: "Response body cannot be parsed as JSON",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    }
-  }
-
-  private getEncryptionKey(responseBody: object): Result<KeyObject> {
-    if (!("keys" in responseBody) || !Array.isArray(responseBody.keys)) {
-      return errorResult({
-        errorMessage: "Not a valid JWKS",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    }
-
-    const jwk = responseBody.keys.find((key: JsonWebKey) => key.use === "enc");
+  private getEncryptionKey(Jwks: GetKeysResponse): Result<KeyObject> {
+    const jwk = Jwks.keys.find(
+      (key): key is JsonWebKey =>
+        typeof (key as Record<string, unknown>).use === "string" &&
+        (key as Record<string, unknown>).use === "enc",
+    );
     if (!jwk) {
       return errorResult({
         errorMessage: "No encryption key in JWKS",

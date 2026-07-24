@@ -7,3 +7,5 @@ export const expectedSecurityHeaders = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
 };
+
+export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00.000
