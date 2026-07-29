@@ -396,14 +396,14 @@ Resources:
         - Id: lambdaErrorRate
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF(lambdaErrors >= 10, lambdaErrorPercentage)
+          Expression: IF(lambdaErrorsWithoutNotReady >= 10, lambdaErrorPercentage)
 
   AsyncIssueBiometricCredentialNotReadyRateAlarm:
     Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "The number of Async Issue Biometric Credential Lambda NOT_READY codes is greater than or equal to 80% for the latest function version"
+      AlarmDescription: "The number of Async Issue Biometric Credential Lambda NOT_READY codes is greater than or equal to 20% for the latest function version"
       AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-not-ready-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -413,7 +413,7 @@ Resources:
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
-      Threshold: 50
+      Threshold: 20
       Metrics:
         - Id: notReadyLogs
           Label: "Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY messageCodes for latest Lambda version"
