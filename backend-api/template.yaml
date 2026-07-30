@@ -3503,12 +3503,26 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: The number of Async Issue Biometric Credential Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmDescription: The number of Async Issue Biometric Credential Lambda errors, not including not ready errors, is greater than or equal to 10% for the latest function version
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-error-rate
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
       Metrics:
+        - Id: notReadyLogs
+          Label: Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
         - Id: lambdaInvocations
           Label: Sum of invocations for latest Lambda version
           MetricStat:
@@ -3541,17 +3555,21 @@ Resources:
             Period: 60
             Stat: Sum
           ReturnData: false
-        - Expression: (lambdaErrors/lambdaInvocations)*100
-          Id: lambdaErrorPercentage
-          Label: Percentage of invocations that result in a function error
+        - Expression: (lambdaErrors - notReadyLogs)
+          Id: lambdaErrorsWithoutNotReady
+          Label: Sum of function errors for latest Lambda version, not including not ready errors
           ReturnData: false
-        - Expression: IF(lambdaErrors >= 10, lambdaErrorPercentage)
+        - Expression: ((lambdaErrorsWithoutNotReady)/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error, not including not ready errors
+          ReturnData: false
+        - Expression: IF(lambdaErrorsWithoutNotReady >= 10, lambdaErrorPercentage)
           Id: lambdaErrorRate
           Label: Error threshold calculation
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Threshold: 60
+      Threshold: 10
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
@@ -4002,6 +4020,62 @@ Resources:
           MetricName: AsyncIssueBiometricCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncIssueBiometricCredentialNotReadyRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Issue Biometric Credential Lambda NOT_READY codes is greater than or equal to 20% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-not-ready-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: notReadyLogs
+          Label: Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncIssueBiometricCredentialFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncIssueBiometricCredentialFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (notReadyLogs/lambdaInvocations)*100
+          Id: notReadyPercentage
+          Label: Percentage of invocations that result in a NOT_READY log
+          ReturnData: false
+        - Expression: IF(notReadyLogs >= 10, notReadyPercentage)
+          Id: lambdaNotReadyRate
+          Label: Not Ready threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 20
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialParseFailureHighThresholdAlarm:
