@@ -5,8 +5,7 @@ import {
 import { RegisteredLogMessages } from "../services/logging/types";
 
 export type MessageName =
-  | "BIOMETRIC_TOKEN_REQUEST_BODY_INVALID"
-  | CommonMessageNames;
+  "BIOMETRIC_TOKEN_REQUEST_BODY_INVALID" | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   BIOMETRIC_TOKEN_REQUEST_BODY_INVALID: {

@@ -31,8 +31,7 @@ interface SessionUpdateFailedSessionNotFound {
 }
 
 export type UpdateOperationDataToLog =
-  | UpdateExpressionDataToLog
-  | UpdateSessionValidateSessionErrorData;
+  UpdateExpressionDataToLog | UpdateSessionValidateSessionErrorData;
 
 interface UpdateExpressionDataToLog {
   updateExpression: string;
