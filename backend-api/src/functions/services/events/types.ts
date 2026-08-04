@@ -102,9 +102,7 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
 }
 
 export type TxmaEvents =
-  | GenericTxmaEvent
-  | CredentialTokenIssuedEvent
-  | BiometricTokenIssuedEvent;
+  GenericTxmaEvent | CredentialTokenIssuedEvent | BiometricTokenIssuedEvent;
 
 export interface IEventService {
   writeCredentialTokenIssuedEvent: (
