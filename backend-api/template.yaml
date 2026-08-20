@@ -499,7 +499,7 @@ Globals:
         TXMA_SQS: !GetAtt TxMASqs.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSqs.QueueUrl
     Layers:
-      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_325_7_20250925-155144_with_collector_nodejs:1
+      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_329_73_20260123-140641_with_collector_nodejs_arm:1
     LoggingConfig:
       ApplicationLogLevel: !FindInMap
         - EnvironmentVariables
