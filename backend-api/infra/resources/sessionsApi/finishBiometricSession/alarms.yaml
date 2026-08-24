@@ -322,7 +322,7 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: [ ]
-      AlarmDescription: "A large proportion of Async Finish Biometric Session requests have not completed successfully."
+      AlarmDescription: "At least 20% of Async Finish Biometric Session requests have not completed successfully."
       AlarmName: !Sub "${AWS::StackName}-finish-biometric-session-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1

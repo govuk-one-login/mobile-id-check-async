@@ -1408,7 +1408,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Active Session requests have not completed successfully.
+      AlarmDescription: At least 20% of Async Active Session requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-active-session-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -2051,7 +2051,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Biometric Token requests have not completed successfully.
+      AlarmDescription: At least 45% of Async Biometric Token requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -2675,7 +2675,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Credential requests have not completed successfully.
+      AlarmDescription: At least 20% of Async Credential requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-credential-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -3279,7 +3279,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Finish Biometric Session requests have not completed successfully.
+      AlarmDescription: At least 20% of Async Finish Biometric Session requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -3959,7 +3959,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Issue Biometric Credential requests have not completed successfully.
+      AlarmDescription: At least 20% of Async Issue Biometric Credential requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -4830,7 +4830,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Token requests have not completed successfully.
+      AlarmDescription: At least 20% of Async Token requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-token-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5413,7 +5413,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async TxMA Event requests have not completed successfully.
+      AlarmDescription: At least 20% of Async TxMA Event requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-txma-event-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
