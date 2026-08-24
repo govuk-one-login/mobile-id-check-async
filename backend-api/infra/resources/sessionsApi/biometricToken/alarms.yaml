@@ -322,7 +322,7 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: [ ]
-      AlarmDescription: "A large proportion of Async Biometric Token requests have not completed successfully."
+      AlarmDescription: "At least 45% of Async Biometric Token requests have not completed successfully."
       AlarmName: !Sub "${AWS::StackName}-biometric-token-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1

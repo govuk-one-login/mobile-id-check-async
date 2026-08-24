@@ -318,7 +318,7 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: [ ]
-      AlarmDescription: "A large proportion of Async TxMA Event requests have not completed successfully."
+      AlarmDescription: "At least 20% of Async TxMA Event requests have not completed successfully."
       AlarmName: !Sub "${AWS::StackName}-txma-event-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
