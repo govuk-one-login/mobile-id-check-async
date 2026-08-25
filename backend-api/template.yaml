@@ -5311,6 +5311,14 @@ Resources:
           - comment: Cannot have a DLQ for a function invoked by an API.
             id: CKV_AWS_116
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AsyncTxmaEventErrorRateAlarm
+            - !Ref AsyncTxmaEventLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncTxmaEvent:
           Properties:
