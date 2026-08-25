@@ -34,6 +34,14 @@ Resources:
             Path: /async/txmaEvent
             Method: post
             RestApiId: !Ref SessionsApi
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AsyncTxmaEventErrorRateAlarm
+            - !Ref AsyncTxmaEventLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
