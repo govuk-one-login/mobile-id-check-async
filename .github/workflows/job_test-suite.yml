@@ -15,6 +15,10 @@ on:
         description: Whether to run unit tests using `test:unit` npm script
         type: string
         default: true
+      CHECK_GOLDENS:
+        description: Whether to check golden files during unit test runs using `test:unit` npm script
+        type: string
+        default: "1"
       SONARQUBE_CONTINUE_ON_ERROR:
         description: Whether to continue running the workflow if SonarQube quality gate fails
         type: string
