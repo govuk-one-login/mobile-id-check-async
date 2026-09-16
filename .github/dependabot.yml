@@ -27,6 +27,11 @@ updates:
       time: "03:00"
     open-pull-requests-limit: 5
     groups:
+      backend-api-vitest:
+        applies-to: version-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       backend-api-minor-patch:
         applies-to: version-updates
         patterns:
@@ -34,6 +39,11 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      backend-api-vitest-security:
+        applies-to: security-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       backend-api-security:
         applies-to: security-updates
         patterns:
@@ -57,6 +67,11 @@ updates:
       time: "03:00"
     open-pull-requests-limit: 5
     groups:
+      test-resources-vitest:
+        applies-to: version-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       test-resources-minor-patch:
         applies-to: version-updates
         patterns:
@@ -64,6 +79,11 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      test-resources-vitest-security:
+        applies-to: security-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       test-resources-security:
         applies-to: security-updates
         patterns:
