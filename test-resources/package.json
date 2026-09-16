@@ -19,8 +19,8 @@
     "node": "22"
   },
   "devDependencies": {
-    "@aws-sdk/client-secrets-manager": "3.1127.0",
-    "@aws-sdk/credential-providers": "3.1127.0",
+    "@aws-sdk/client-secrets-manager": "3.1128.0",
+    "@aws-sdk/credential-providers": "3.1128.0",
     "@eslint/js": "10.0.1",
     "@types/aws-lambda": "8.10.163",
     "@types/js-yaml": "4.0.9",
@@ -44,8 +44,8 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "2.35.0",
-    "@aws-sdk/client-dynamodb": "3.1127.0",
-    "@aws-sdk/client-s3": "3.1127.0",
+    "@aws-sdk/client-dynamodb": "3.1128.0",
+    "@aws-sdk/client-s3": "3.1128.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
     "@smithy/node-http-handler": "4.12.1",
     "esbuild": "0.28.2",
