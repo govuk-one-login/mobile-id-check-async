@@ -25,7 +25,7 @@
     "node": "22"
   },
   "devDependencies": {
-    "@aws-sdk/credential-providers": "3.1127.0",
+    "@aws-sdk/credential-providers": "3.1128.0",
     "@eslint/js": "10.0.1",
     "@pact-foundation/pact": "17.1.4",
     "@types/aws-lambda": "8.10.163",
@@ -53,12 +53,12 @@
   "dependencies": {
     "@aws-lambda-powertools/logger": "2.35.0",
     "@aws-lambda-powertools/parameters": "2.35.0",
-    "@aws-sdk/client-dynamodb": "3.1127.0",
-    "@aws-sdk/client-kms": "3.1127.0",
-    "@aws-sdk/client-s3": "3.1127.0",
-    "@aws-sdk/client-secrets-manager": "3.1127.0",
-    "@aws-sdk/client-sqs": "3.1127.0",
-    "@aws-sdk/client-ssm": "3.1127.0",
+    "@aws-sdk/client-dynamodb": "3.1128.0",
+    "@aws-sdk/client-kms": "3.1128.0",
+    "@aws-sdk/client-s3": "3.1128.0",
+    "@aws-sdk/client-secrets-manager": "3.1128.0",
+    "@aws-sdk/client-sqs": "3.1128.0",
+    "@aws-sdk/client-ssm": "3.1128.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "@aws-sdk/util-dynamodb": "3.996.9",
     "@govuk-one-login/mobile-id-check-biometric-credential": "6.0.17",
