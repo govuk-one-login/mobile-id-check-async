@@ -1,4 +1,4 @@
-import { errorResult, Result, successResult } from "../../common/utils/result";
+import { errorResult, Result, successResult } from "../../common/utils/result.js";
 
 export interface IValidCredentialResultData {
   sub: string;

@@ -8,17 +8,17 @@ import {
 import {
   IDequeueDynamoDbAdapter,
   IDequeueDynamoDbPutItemInput,
-} from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
-import { setupLogger } from "../common/logging/setupLogger";
-import { emptySuccess, errorResult, Result } from "../common/utils/result";
-import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
+} from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter.js";
+import { logger } from "../common/logging/logger.js";
+import { LogMessage } from "../common/logging/LogMessage.js";
+import { setupLogger } from "../common/logging/setupLogger.js";
+import { emptySuccess, errorResult, Result } from "../common/utils/result.js";
+import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig.js";
 import {
   handlerDependencies,
   IDequeueCredentialResultDependencies,
-} from "./handlerDependencies";
-import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
+} from "./handlerDependencies.js";
+import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult.js";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueCredentialResultDependencies,

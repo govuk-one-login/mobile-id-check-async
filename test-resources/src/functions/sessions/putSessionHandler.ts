@@ -4,13 +4,13 @@ import {
   Context,
 } from "aws-lambda";
 
-import { setupLogger } from "../common/logging/setupLogger";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger.js";
+import { logger } from "../common/logging/logger.js";
+import { LogMessage } from "../common/logging/LogMessage.js";
 import {
   badRequestResponse,
   notImplementedResponse,
-} from "../common/lambdaResponses";
+} from "../common/lambdaResponses.js";
 
 export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,

@@ -1,5 +1,5 @@
-import { ISendHttpRequest } from "../../http/sendHttpRequest";
-import { Result } from "../../utils/result";
+import { ISendHttpRequest } from "../../http/sendHttpRequest.js";
+import { Result } from "../../utils/result.js";
 
 export type IGetJwksFromJwksUri = (
   jwksUri: string,
