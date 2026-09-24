@@ -240,6 +240,12 @@ EnvironmentVariables:
     staging: INFO
     integration: INFO
     production: INFO
+  LogRetentionInDays:
+    dev: 7
+    build: 30
+    staging: 30
+    integration: 30
+    production: 90
   KmsPendingDeletionInDays:
     dev: 7
     build: 30
