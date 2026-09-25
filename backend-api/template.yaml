@@ -217,6 +217,12 @@ Mappings:
       integration: INFO
       production: INFO
       staging: INFO
+    LogRetentionInDays:
+      build: 30
+      dev: 7
+      integration: 30
+      production: 90
+      staging: 30
     PerfTesterRoleArn:
       build: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
       dev: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
@@ -961,7 +967,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncAbortSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1398,7 +1407,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncActiveSessionLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2041,7 +2053,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncBiometricTokenLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2665,7 +2680,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-credential
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncCredentialLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3269,7 +3287,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncFinishBiometricSessionLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3949,7 +3970,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncIssueBiometricCredentialLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4295,7 +4319,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncPrivateApiSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -4820,7 +4847,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncTokenLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5411,7 +5441,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncTxmaEventLowCompletionAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -6097,7 +6130,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   JsonWebKeysFunctionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -6472,7 +6508,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
     Condition: ProxyApiDeployment
 
   ProxyApiBasePathMapping:
@@ -6579,7 +6618,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
     Condition: ProxyApiDeployment
 
   ProxyLambdaPermission:
@@ -6727,7 +6769,10 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   SessionsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
