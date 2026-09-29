@@ -1,5 +1,12 @@
 name: Run Test Suite
 
+description: {
+  "name": "test-suite",
+  "version": "v1.0.0",
+  "message":
+    "This update adds versioning to the test-suite job."
+  }
+
 on:
   workflow_call:
     inputs:

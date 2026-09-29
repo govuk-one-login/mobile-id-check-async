@@ -1,5 +1,12 @@
 name: Build, Push, Sign and Tag Test Image
 
+description: {
+  "name": "push-docker-image",
+  "version": "v1.0.0",
+  "message":
+    "This update adds versioning to the push-docker-image job."
+  }
+
 on:
   workflow_call:
     inputs:

@@ -1,0 +1,117 @@
+name: GitHub Jobs Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+    paths:
+      - ".github/workflows/job_**"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  get-file-names:
+    name: Get Names of Files Changed
+    runs-on: ubuntu-24.04
+    env:
+      SAM_CLI_TELEMETRY: 0
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+    outputs:
+      FILE_NAMES: ${{ steps.get-files.outputs.NAMES }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+# This is ugly but can't get anything else to work
+      - name: Get File Names
+        id: get-files
+        run: |
+          files=$( git diff origin/main --name-only -- ./.github/workflows/job_** )
+
+          JSON="["
+          for file in ${files[@]}; do
+              echo $file
+              JSONline="\"$file\","
+              if [[ "$JSON" != *"$JSONline"* ]]; then
+                  JSON="$JSON$JSONline"
+              fi
+          done
+
+          if [[ $JSON == *, ]]; then
+              JSON="${JSON%?}"
+          fi
+          JSON="$JSON]"
+
+          echo $JSON
+          echo "NAMES=$( echo "$JSON" )" >> $GITHUB_OUTPUT
+
+  create-tags:
+    name: Validate Versions and Create Tags
+    runs-on: ubuntu-24.04
+    needs: get-file-names
+    strategy:
+      matrix:
+        file_name:  ${{ fromJSON(needs.get-file-names.outputs.FILE_NAMES) }}
+    env:
+      SAM_CLI_TELEMETRY: 0
+      FILE_NAME: ${{ matrix.file_name }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: jobs
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: npm
+          cache-dependency-path: jobs/package-lock.json
+          node-version-file: jobs/.nvmrc
+
+      - name: Install Dependencies
+        run: |
+          npm clean-install
+
+      - name: Validate Job Name
+        id: job-name
+        run: |
+          name=$( yq .description ../$FILE_NAME | jq .name | tr -d '"' )
+
+          if [[ $FILE_NAME == ".github/workflows/job_$name" ]]; then
+            echo "Error: Job name does not match file name."
+            exit 1
+          fi
+
+          if [[ "$name" =~ ^[a-z0-9-]+$ ]]; then
+            echo "Valid job name."
+            echo "NAME=$name" >> $GITHUB_OUTPUT
+          else
+            echo "Error: Invalid job name."
+            exit 1
+          fi
+
+      - name: Validate Version
+        run: |
+          npm run validate-version $FILE_NAME
+
