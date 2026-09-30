@@ -84,8 +84,8 @@ expect.extend({
 });
 
 declare module "vitest" {
-  interface Matchers<T = any> {
-    toHaveBeenCalledWithLogFields(logFields: Record<string, unknown>): T;
+  interface Matchers<R> {
+    toHaveBeenCalledWithLogFields(logFields: Record<string, unknown>): R;
     toHaveBeenCalledNthWithSqsMessage(
       nthCall: number,
       expectedArguments: {
