@@ -3,7 +3,7 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../common/utils/result";
+} from "../../../common/utils/result.js";
 
 export interface Config {
   STS_MOCK_BASE_URL: string;

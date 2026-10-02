@@ -3,7 +3,7 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../common/utils/result";
+} from "../../../common/utils/result.js";
 import { JWTPayload, SignJWT } from "jose";
 import { KeyObject } from "node:crypto";
 
