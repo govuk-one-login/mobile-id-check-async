@@ -124,7 +124,13 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group has a retention period", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
+        RetentionInDays: {
+          "Fn::FindInMap": [
+            "EnvironmentVariables",
+            "LogRetentionInDays",
+            { Ref: "Environment" },
+          ],
+        },
         LogGroupName: {
           "Fn::Sub":
             "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
@@ -511,7 +517,13 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group has a retention period", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
+        RetentionInDays: {
+          "Fn::FindInMap": [
+            "EnvironmentVariables",
+            "LogRetentionInDays",
+            { Ref: "Environment" },
+          ],
+        },
         LogGroupName: {
           "Fn::Sub":
             "/aws/apigateway/${AWS::StackName}-sessions-api-access-logs",
@@ -588,7 +600,13 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group has a retention period", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
+        RetentionInDays: {
+          "Fn::FindInMap": [
+            "EnvironmentVariables",
+            "LogRetentionInDays",
+            { Ref: "Environment" },
+          ],
+        },
         LogGroupName: {
           "Fn::Sub": "/aws/apigateway/${AWS::StackName}-proxy-api-access-logs",
         },
@@ -724,7 +742,13 @@ describe("Backend application infrastructure", () => {
       const logGroups = template.findResources("AWS::Logs::LogGroup");
       const logGroupList = Object.keys(logGroups);
       logGroupList.forEach((logGroup) => {
-        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual({
+          "Fn::FindInMap": [
+            "EnvironmentVariables",
+            "LogRetentionInDays",
+            { Ref: "Environment" },
+          ],
+        });
       });
     });
 

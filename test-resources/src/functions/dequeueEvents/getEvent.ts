@@ -29,7 +29,7 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
 
   const sessionId = txmaEvent.user?.session_id;
   if (!sessionId) {
-    if (!allowedTxmaEventNamesWithoutSessionId.includes(eventName)) {
+    if (!allowedTxmaEventNamesWithoutSessionId.has(eventName)) {
       return errorResult({
         errorMessage: "Missing session_id",
         eventName,
@@ -74,8 +74,8 @@ export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_CRI_VC_ISSUED",
 ];
 
-const allowedTxmaEventNamesWithoutSessionId = [
+const allowedTxmaEventNamesWithoutSessionId = new Set([
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
   "DCMAW_ASYNC_CRI_4XXERROR",
   "DCMAW_ASYNC_CRI_5XXERROR",
-];
+]);

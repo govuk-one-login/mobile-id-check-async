@@ -66,7 +66,7 @@ Resources:
           - id: CKV_AWS_158
             comment: KMS encryption not required as log group will not contain sensitive data.
     Properties:
-      RetentionInDays: 30
+      RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
 
   AsyncAbortSessionSubscriptionFilter:
