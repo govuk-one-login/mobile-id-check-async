@@ -139,6 +139,12 @@ Mappings:
       integration: 15
       production: 80
       staging: 15
+    DisableBrpJourney:
+      build: "false"
+      dev: "false"
+      integration: "false"
+      production: "false"
+      staging: "false"
     DvlaDrivingLicenceExpiryGracePeriodInDays:
       build: 90
       dev: 90
@@ -274,6 +280,12 @@ Mappings:
       integration: 24
       production: 24
       staging: 24
+    ReturnFlagsInActiveSessionResponse:
+      build: "true"
+      dev: "true"
+      integration: "false"
+      production: "false"
+      staging: "true"
     SessionDurationInSeconds:
       build: 86400
       dev: 86400
@@ -1283,7 +1295,15 @@ Resources:
       Environment:
         Variables:
           AUDIENCE: !Sub https://${SessionsApiDomainName}
+          DISABLE_BRP_JOURNEY: !FindInMap
+            - EnvironmentVariables
+            - DisableBrpJourney
+            - !Ref Environment
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
+          RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE: !FindInMap
+            - EnvironmentVariables
+            - ReturnFlagsInActiveSessionResponse
+            - !Ref Environment
           STS_BASE_URL: !If
             - UseDevOverrideStsBaseUrl
             - !Ref DevOverrideStsBaseUrl

@@ -162,6 +162,18 @@ Mappings:
       staging: "true"
       integration: "true"
       production: "false"
+    DisableBrpJourney:
+      dev: "false"
+      build: "false"
+      staging: "false"
+      integration: "false"
+      production: "false"
+    ReturnFlagsInActiveSessionResponse:
+      dev: "true"
+      build: "true"
+      staging: "true"
+      integration: "false"
+      production: "false"
 
     # API Configuration
     PrivateApiBurstLimit:

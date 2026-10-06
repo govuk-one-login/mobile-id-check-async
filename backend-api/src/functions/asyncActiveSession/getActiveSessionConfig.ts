@@ -14,6 +14,8 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "STS_BASE_URL",
   "TXMA_SQS",
   "ISSUER",
+  "DISABLE_BRP_JOURNEY",
+  "RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE",
 ] as const;
 
 export type ActiveSessionConfig = Config<

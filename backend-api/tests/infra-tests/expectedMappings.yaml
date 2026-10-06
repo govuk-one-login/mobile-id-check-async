@@ -119,6 +119,12 @@ EnvironmentVariables:
     production: 900
 
   # Feature Flags
+  DisableBrpJourney:
+    dev: "false"
+    build: "false"
+    staging: "false"
+    integration: "false"
+    production: "false"
   DvlaDrivingLicenceExpiryGracePeriodInDays:
     dev: 90
     build: 90
@@ -161,6 +167,12 @@ EnvironmentVariables:
     staging: 24
     integration: 24
     production: 24
+  ReturnFlagsInActiveSessionResponse:
+    dev: "true"
+    build: "true"
+    staging: "true"
+    integration: "false"
+    production: "false"
 
   # API Configuration
   PrivateApiBurstLimit:

@@ -46,6 +46,8 @@ const env = {
   STS_BASE_URL: "https://mockUrl.com/",
   TXMA_SQS: "mockTxmaSqs",
   ISSUER: "https://mockIssuer.com/",
+  DISABLE_BRP_JOURNEY: "false",
+  RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE: "true",
 };
 
 describe("Async Active Session", () => {
