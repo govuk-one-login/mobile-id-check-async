@@ -216,7 +216,7 @@ async function handleOkResponse(
     sessionId,
     redirectUri,
     state,
-    flags
+    flags,
   };
 
   return {
