@@ -177,6 +177,12 @@ describe("GET /async/activeSession", { timeout: 4 * 5000 }, () => {
       expect(response.data["redirectUri"]).toBe("https://mockRedirectUri.com");
       expect(response.data["state"]).toBe(mockClientState);
     });
+
+    it("Returns flags.disableBrpJourney as a boolean", async () => {
+      expect(response.data["flags"]["disableBrpJourney"]).toEqual(
+        expect.any(Boolean),
+      );
+    });
   });
 
   describe("Given the request is valid and there are two sessions with the requested subject ID", () => {

@@ -103,11 +103,17 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: session.govukSigninJourneyId,
   });
 
+  const flags: ActiveSessionFlags | undefined =
+    config.RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE === "true"
+      ? { disableBrpJourney: config.DISABLE_BRP_JOURNEY === "true" }
+      : undefined;
+
   return await handleOkResponse(eventService, {
     session,
     auditData: getAuditData(event),
     sub,
     issuer: config.ISSUER,
+    flags,
   });
 }
 
@@ -153,16 +159,28 @@ const notFoundResponse: APIGatewayProxyResult = {
   }),
 };
 
+interface ActiveSessionFlags {
+  disableBrpJourney: boolean;
+}
+
+interface ActiveSessionResponseBody {
+  sessionId: string;
+  redirectUri?: string;
+  state: string;
+  flags?: ActiveSessionFlags;
+}
+
 interface HandleOkResponseData {
   session: Session;
   auditData: AuditData;
   sub: string;
   issuer: string;
+  flags: ActiveSessionFlags | undefined;
 }
 
 async function handleOkResponse(
   eventService: IEventService,
-  { session, auditData, sub, issuer }: HandleOkResponseData,
+  { session, auditData, sub, issuer, flags }: HandleOkResponseData,
 ) {
   const { ipAddress, txmaAuditEncoded } = auditData;
   const { govukSigninJourneyId, redirectUri, sessionId, state } = session;
@@ -194,13 +212,16 @@ async function handleOkResponse(
     activeSessionFound: true,
   });
 
+  const responseBody: ActiveSessionResponseBody = {
+    sessionId,
+    redirectUri,
+    state,
+    flags,
+  };
+
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,
-    body: JSON.stringify({
-      sessionId,
-      redirectUri,
-      state,
-    }),
+    body: JSON.stringify(responseBody),
   };
 }

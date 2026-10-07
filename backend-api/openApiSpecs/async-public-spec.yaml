@@ -102,7 +102,8 @@ paths:
                     {
                       "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
                       "redirectUri": "https://example/redirect",
-                      "state": "11112222333344445555666677778888"
+                      "state": "11112222333344445555666677778888",
+                      "flags": { "disableBrpJourney": false }
                     }
               schema:
                 type: object
@@ -119,9 +120,22 @@ paths:
                     type: string
                     description: |
                       Registered client redirect_uri where app should attempt to get the user back to once ID check is complete.
+                  flags:
+                    type: object
+                    additionalProperties: true
+                    description: |
+                      Server-side feature flags for the client to apply to this journey. Clients must tolerate flags that are not described here, as adding a flag is not a breaking change.
+                    properties:
+                      disableBrpJourney:
+                        type: boolean
+                        description: |
+                          Whether the client must omit the biometric residence permit option from document selection.
+                    required:
+                      - disableBrpJourney
                 required:
                   - sessionId
                   - state
+                  - flags
         '400':
             description: Bad request
             content:

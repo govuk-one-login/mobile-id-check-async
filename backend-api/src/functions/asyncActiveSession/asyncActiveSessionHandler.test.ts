@@ -573,7 +573,58 @@ describe("Async Active Session", () => {
             sessionId: mockSessionId,
             redirectUri: "https://mockUrl.com/redirect",
             state: "mockClientState",
+            flags: { disableBrpJourney: false },
           }),
+        });
+      });
+
+      describe.each([
+        ["false", false],
+        ["true", true],
+      ])(
+        "Given DISABLE_BRP_JOURNEY is %s",
+        (envValue: string, expectedFlag: boolean) => {
+          beforeEach(async () => {
+            dependencies.env = JSON.parse(JSON.stringify(env));
+            dependencies.env["DISABLE_BRP_JOURNEY"] = envValue;
+
+            result = await lambdaHandlerConstructor(
+              dependencies,
+              validRequest,
+              context,
+            );
+          });
+
+          it(`Returns flags.disableBrpJourney as ${expectedFlag}`, () => {
+            expect(JSON.parse(result.body)).toStrictEqual({
+              sessionId: mockSessionId,
+              redirectUri: "https://mockUrl.com/redirect",
+              state: "mockClientState",
+              flags: { disableBrpJourney: expectedFlag },
+            });
+          });
+        },
+      );
+
+      describe("Given RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE is false", () => {
+        beforeEach(async () => {
+          dependencies.env = JSON.parse(JSON.stringify(env));
+          dependencies.env["RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE"] = "false";
+          dependencies.env["DISABLE_BRP_JOURNEY"] = "true";
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Omits the flags property from the response", () => {
+          expect(JSON.parse(result.body)).toStrictEqual({
+            sessionId: mockSessionId,
+            redirectUri: "https://mockUrl.com/redirect",
+            state: "mockClientState",
+          });
         });
       });
     });
