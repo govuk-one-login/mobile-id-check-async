@@ -216,10 +216,8 @@ async function handleOkResponse(
     sessionId,
     redirectUri,
     state,
+    flags
   };
-  if (flags) {
-    responseBody.flags = flags;
-  }
 
   return {
     headers: { "Content-Type": "application/json" },
