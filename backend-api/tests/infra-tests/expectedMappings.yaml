@@ -167,12 +167,6 @@ EnvironmentVariables:
     staging: 24
     integration: 24
     production: 24
-  ReturnFlagsInActiveSessionResponse:
-    dev: "true"
-    build: "true"
-    staging: "true"
-    integration: "true"
-    production: "true"
 
   # API Configuration
   PrivateApiBurstLimit:

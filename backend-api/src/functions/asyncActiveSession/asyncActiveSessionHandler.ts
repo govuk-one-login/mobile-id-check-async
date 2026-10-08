@@ -103,10 +103,9 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: session.govukSigninJourneyId,
   });
 
-  const flags: ActiveSessionFlags | undefined =
-    config.RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE === "true"
-      ? { disableBrpJourney: config.DISABLE_BRP_JOURNEY === "true" }
-      : undefined;
+  const flags: ActiveSessionFlags = {
+    disableBrpJourney: config.DISABLE_BRP_JOURNEY === "true",
+  };
 
   return await handleOkResponse(eventService, {
     session,
@@ -167,7 +166,7 @@ interface ActiveSessionResponseBody {
   sessionId: string;
   redirectUri?: string;
   state: string;
-  flags?: ActiveSessionFlags;
+  flags: ActiveSessionFlags;
 }
 
 interface HandleOkResponseData {
@@ -175,7 +174,7 @@ interface HandleOkResponseData {
   auditData: AuditData;
   sub: string;
   issuer: string;
-  flags: ActiveSessionFlags | undefined;
+  flags: ActiveSessionFlags;
 }
 
 async function handleOkResponse(

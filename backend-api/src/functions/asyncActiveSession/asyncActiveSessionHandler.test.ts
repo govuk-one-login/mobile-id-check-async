@@ -47,7 +47,6 @@ const env = {
   TXMA_SQS: "mockTxmaSqs",
   ISSUER: "https://mockIssuer.com/",
   DISABLE_BRP_JOURNEY: "false",
-  RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE: "true",
 };
 
 describe("Async Active Session", () => {
@@ -605,28 +604,6 @@ describe("Async Active Session", () => {
           });
         },
       );
-
-      describe("Given RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE is false", () => {
-        beforeEach(async () => {
-          dependencies.env = JSON.parse(JSON.stringify(env));
-          dependencies.env["RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE"] = "false";
-          dependencies.env["DISABLE_BRP_JOURNEY"] = "true";
-
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
-
-        it("Omits the flags property from the response", () => {
-          expect(JSON.parse(result.body)).toStrictEqual({
-            sessionId: mockSessionId,
-            redirectUri: "https://mockUrl.com/redirect",
-            state: "mockClientState",
-          });
-        });
-      });
     });
   });
 });
