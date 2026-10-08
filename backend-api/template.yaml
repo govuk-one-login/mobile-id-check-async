@@ -3338,7 +3338,7 @@ Resources:
                   Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
               MetricName: AsyncFinishBiometricSessionMessageCode
               Namespace: !Sub ${AWS::StackName}/LogMessages
-            Period: 60
+            Period: 300
             Stat: Sum
           ReturnData: false
         - Id: lambdaLogCompleted
@@ -3352,7 +3352,7 @@ Resources:
                   Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
               MetricName: AsyncFinishBiometricSessionMessageCode
               Namespace: !Sub ${AWS::StackName}/LogMessages
-            Period: 60
+            Period: 300
             Stat: Sum
           ReturnData: false
         - Expression: (lambdaLogCompleted/lambdaLogStarted)*100

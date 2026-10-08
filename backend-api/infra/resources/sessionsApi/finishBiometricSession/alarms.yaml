@@ -342,7 +342,7 @@ Resources:
                   Value: MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED
                 - Name: Version
                   Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
-            Period: 60
+            Period: 300
             Stat: Sum
         - Id: lambdaLogCompleted
           Label: "Sum of MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED messageCodes for latest Lambda version"
@@ -356,7 +356,7 @@ Resources:
                   Value: MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED
                 - Name: Version
                   Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
-            Period: 60
+            Period: 300
             Stat: Sum
         - Id: lambdaLogCompletePercentage
           Label: "Percentage of invocations that complete successfully"
