@@ -283,8 +283,8 @@ Mappings:
     ReturnFlagsInActiveSessionResponse:
       build: "true"
       dev: "true"
-      integration: "false"
-      production: "false"
+      integration: "true"
+      production: "true"
       staging: "true"
     SessionDurationInSeconds:
       build: 86400
