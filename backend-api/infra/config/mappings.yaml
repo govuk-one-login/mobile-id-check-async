@@ -168,12 +168,6 @@ Mappings:
       staging: "false"
       integration: "false"
       production: "false"
-    ReturnFlagsInActiveSessionResponse:
-      dev: "true"
-      build: "true"
-      staging: "true"
-      integration: "true"
-      production: "true"
 
     # API Configuration
     PrivateApiBurstLimit:

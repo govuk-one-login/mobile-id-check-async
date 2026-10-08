@@ -50,7 +50,6 @@ Resources:
             - !FindInMap [EnvironmentVariables, StsBaseUrl, !Ref Environment]
           AUDIENCE: !Sub https://${SessionsApiDomainName}
           DISABLE_BRP_JOURNEY: !FindInMap [EnvironmentVariables, DisableBrpJourney, !Ref Environment]
-          RETURN_FLAGS_IN_ACTIVE_SESSION_RESPONSE: !FindInMap [EnvironmentVariables, ReturnFlagsInActiveSessionResponse, !Ref Environment]
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
