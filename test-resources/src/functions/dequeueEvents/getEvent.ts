@@ -1,5 +1,5 @@
 import { SQSRecord } from "aws-lambda";
-import { errorResult, Result, successResult } from "../common/utils/result";
+import { errorResult, Result, successResult } from "../common/utils/result.js";
 
 export function getEvent(record: SQSRecord): Result<TxmaEvent> {
   let txmaEvent: TxmaEvent;

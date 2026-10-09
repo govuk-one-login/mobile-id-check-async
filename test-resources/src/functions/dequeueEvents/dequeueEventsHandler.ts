@@ -12,13 +12,13 @@ import {
   SQSEvent,
   SQSRecord,
 } from "aws-lambda";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
-import { setupLogger } from "../common/logging/setupLogger";
-import { Result } from "../common/utils/result";
-import { getConfig } from "./getConfig";
-import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent";
-import { getTimeToLiveInSeconds } from "../common/utils/utils";
+import { logger } from "../common/logging/logger.js";
+import { LogMessage } from "../common/logging/LogMessage.js";
+import { setupLogger } from "../common/logging/setupLogger.js";
+import { Result } from "../common/utils/result.js";
+import { getConfig } from "./getConfig.js";
+import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent.js";
+import { getTimeToLiveInSeconds } from "../common/utils/utils.js";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,

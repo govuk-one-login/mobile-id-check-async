@@ -3,7 +3,7 @@ import {
   Result,
   successResult,
   SuccessWithValue,
-} from "../utils/result";
+} from "../utils/result.js";
 
 export type MissingEnvVarError = {
   missingEnvVars: string[];

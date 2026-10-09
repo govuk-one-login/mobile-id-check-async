@@ -3,7 +3,7 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../common/utils/result";
+} from "../../../common/utils/result.js";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createPrivateKey, KeyObject, JsonWebKey } from "node:crypto";
 
