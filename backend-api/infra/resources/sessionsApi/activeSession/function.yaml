@@ -52,11 +52,15 @@ Resources:
           DISABLE_BRP_JOURNEY: !FindInMap [EnvironmentVariables, DisableBrpJourney, !Ref Environment]
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission

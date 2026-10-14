@@ -61,3 +61,8 @@ Parameters:
     Description: Do not update or override. This allows the definition of a resource that is never deployed.
     Type: String
     Default: unused
+
+  VpcStackName:
+    Description: Name of the VPC Stack
+    Type: String
+    Default: devplatform-vpc

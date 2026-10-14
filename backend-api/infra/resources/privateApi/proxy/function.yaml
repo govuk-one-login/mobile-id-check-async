@@ -31,9 +31,12 @@ Resources:
       Role: !GetAtt ProxyLambdaRole.Arn
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-PrivateSubnetIdB
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-PrivateSubnetIdC
         SecurityGroupIds:
           - !Ref ProxyLambdaSecurityGroup
     Condition: ProxyApiDeployment
@@ -103,12 +106,14 @@ Resources:
       GroupName: !Sub ${AWS::StackName}-proxy-sg
       GroupDescription: Lambda Security group ruleset.
       SecurityGroupEgress:
-        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
+        - CidrIp: !ImportValue
+            Fn::Sub: ${VpcStackName}-VpcCidr
           Description: TCP HTTPS outbound to vpc.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
-      VpcId: !ImportValue devplatform-vpc-VpcId
+      VpcId:  !ImportValue
+        Fn::Sub: ${VpcStackName}-VpcId
     Condition: ProxyApiDeployment
 
   ProxyLambdaPermission:
