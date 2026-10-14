@@ -618,6 +618,7 @@ describe("Backend application infrastructure", () => {
     describe("Globals", () => {
       test("Global environment variables are set", () => {
         const expectedGlobals = [
+          "TRIGGER_NUMBER",
           "SIGNING_KEY_ID",
           "ISSUER",
           "TXMA_SQS",
@@ -829,14 +830,28 @@ describe("Backend application infrastructure", () => {
           Handler: lambdaHandler,
           VpcConfig: {
             SubnetIds: [
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdA" },
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdB" },
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdC" },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdA",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdB",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdC",
+                },
+              },
             ],
             SecurityGroupIds: [
               {
-                "Fn::ImportValue":
-                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
+                "Fn::ImportValue": {
+                  "Fn::Sub":
+                    "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
+                },
               },
             ],
           },
@@ -855,14 +870,28 @@ describe("Backend application infrastructure", () => {
           Handler: lambdaHandler,
           VpcConfig: {
             SubnetIds: [
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdA",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdB",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdC",
+                },
+              },
             ],
             SecurityGroupIds: [
               {
-                "Fn::ImportValue":
-                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
+                "Fn::ImportValue": {
+                  "Fn::Sub":
+                    "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
+                },
               },
             ],
           },
