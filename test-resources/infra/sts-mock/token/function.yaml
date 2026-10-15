@@ -55,11 +55,15 @@ Resources:
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
