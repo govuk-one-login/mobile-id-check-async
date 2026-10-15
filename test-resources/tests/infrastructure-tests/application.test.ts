@@ -202,15 +202,28 @@ describe("STS mock infrastructure", () => {
           Handler: lambdaHandler,
           VpcConfig: {
             SubnetIds: [
-              { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdA" } },
-              { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdB" } },
-              { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdC" } },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdA",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdB",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdC",
+                },
+              },
             ],
             SecurityGroupIds: [
               {
                 "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-AWSServicesEndpointSecurityGroupId"
-                }
+                  "Fn::Sub":
+                    "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
+                },
               },
             ],
           },
@@ -251,15 +264,28 @@ describe("STS mock infrastructure", () => {
           Handler: lambdaHandler,
           VpcConfig: {
             SubnetIds: [
-              { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-PrivateSubnetIdA" } },
-              { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-PrivateSubnetIdB" } },
-              { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-PrivateSubnetIdC" } },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdA",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdB",
+                },
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdC",
+                },
+              },
             ],
             SecurityGroupIds: [
               {
                 "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-AWSServicesEndpointSecurityGroupId"
-                }
+                  "Fn::Sub":
+                    "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
+                },
               },
             ],
           },

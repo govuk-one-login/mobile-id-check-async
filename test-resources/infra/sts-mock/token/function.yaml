@@ -56,11 +56,11 @@ Resources:
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdA
+              !Sub ${VpcStackName}-ProtectedSubnetIdA
           - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdB
+              !Sub ${VpcStackName}-ProtectedSubnetIdB
           - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdC
+              !Sub ${VpcStackName}-ProtectedSubnetIdC
         SecurityGroupIds:
           - Fn::ImportValue:
               !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId

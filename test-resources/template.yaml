@@ -915,11 +915,11 @@ Resources:
             Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
           - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
           - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
           - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   TokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
