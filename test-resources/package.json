@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["./dist"],
   "license": "MIT",
   "scripts": {
     "build:env": "./generate_env_file.sh",

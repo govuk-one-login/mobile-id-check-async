@@ -3,10 +3,10 @@ import {
   GetKeysResponse,
   JwksCache,
   JwksCacheDependencies,
-} from "./types";
-import { getJwksFromJwksUri } from "./getJwksFromJwksUri";
-import { sendHttpRequest } from "../../http/sendHttpRequest";
-import { Result, successResult } from "../../utils/result";
+} from "./types.js";
+import { getJwksFromJwksUri } from "./getJwksFromJwksUri.js";
+import { sendHttpRequest } from "../../http/sendHttpRequest.js";
+import { Result, successResult } from "../../utils/result.js";
 
 export class InMemoryJwksCache implements JwksCache {
   private static INSTANCE: JwksCache;
