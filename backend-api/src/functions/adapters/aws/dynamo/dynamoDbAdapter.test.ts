@@ -554,6 +554,15 @@ describe("DynamoDbAdapter", () => {
             invalidAttributes: [
               { sessionState: SessionState.AUTH_SESSION_CREATED },
             ],
+            persistentIdentifiers: {
+              govukSigninJourneyId: "mockGovukSigninJourneyId",
+            },
+          });
+        });
+
+        it("Does not log the session attributes", () => {
+          expect(consoleErrorSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
             allSessionAttributes:
               invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           });
