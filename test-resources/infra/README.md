@@ -32,6 +32,12 @@ Merging templates requires rain to be installed. See https://github.com/aws-clou
 1. Delete the `infra/*.yaml` file if empty
 1. Generate the `template.yaml`
 
+### Forcing Lambda Function Update
+
+A change to the infrastructure of the lamdba without a backend change can cause a deployment error.
+`Resource handler returned message: "A version for this Lambda function exists. Modify the function to create a new version."`
+In this case, an arbitrary backend change can be made by updating the `TRIGGER_NUMBER` global environment variable, which will cause all the lambda functions to update with a new version.
+
 ### Infrastructure tests
 
 Infrastructure tests target the `test-resources/template.yaml` given this is the template that is deployed to AWS.

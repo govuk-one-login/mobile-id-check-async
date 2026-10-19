@@ -32,6 +32,7 @@ Globals:
       Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
+        TRIGGER_NUMBER: 1
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASqs.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSqs.QueueUrl

@@ -52,11 +52,15 @@ Resources:
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-ProtectedSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
   AsyncBiometricTokenFunctionPermission:
     Type: AWS::Lambda::Permission

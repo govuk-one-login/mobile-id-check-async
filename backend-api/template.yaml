@@ -66,6 +66,11 @@ Parameters:
     Type: String
     Default: unused
 
+  VpcStackName:
+    Description: Name of the VPC Stack
+    Type: String
+    Default: devplatform-vpc
+
 Mappings:
   EnvironmentVariables:
     AsyncCredentialReservedConcurrentExecutions:
@@ -508,6 +513,7 @@ Globals:
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
+        TRIGGER_NUMBER: 1
         TXMA_SQS: !GetAtt TxMASqs.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSqs.QueueUrl
     Layers:
@@ -879,11 +885,15 @@ Resources:
       Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncAbortSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -1313,11 +1323,15 @@ Resources:
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -1955,11 +1969,15 @@ Resources:
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   AsyncBiometricTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -2594,11 +2612,15 @@ Resources:
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
@@ -3203,11 +3225,15 @@ Resources:
       Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncFinishBiometricSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -3820,11 +3846,15 @@ Resources:
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4769,11 +4799,15 @@ Resources:
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
@@ -5371,11 +5405,15 @@ Resources:
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncTxmaEventFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -6067,11 +6105,15 @@ Resources:
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
@@ -6352,7 +6394,8 @@ Resources:
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
-            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-ExecuteApiGatewayEndpointId
             - !If
               - IntegrateIpvCore
               - !FindInMap
@@ -6614,9 +6657,12 @@ Resources:
         SecurityGroupIds:
           - !Ref ProxyLambdaSecurityGroup
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
     Condition: ProxyApiDeployment
 
   ProxyLambdaLogGroup:
@@ -6688,12 +6734,14 @@ Resources:
       GroupDescription: Lambda Security group ruleset.
       GroupName: !Sub ${AWS::StackName}-proxy-sg
       SecurityGroupEgress:
-        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
+        - CidrIp: !ImportValue
+            Fn::Sub: ${VpcStackName}-VpcCidr
           Description: TCP HTTPS outbound to vpc.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
-      VpcId: !ImportValue devplatform-vpc-VpcId
+      VpcId: !ImportValue
+        Fn::Sub: ${VpcStackName}-VpcId
     Condition: ProxyApiDeployment
 
   ProxyLambdaSubscriptionFilter:

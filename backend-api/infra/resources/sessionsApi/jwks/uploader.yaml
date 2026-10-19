@@ -39,11 +39,15 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-PrivateSubnetIdB
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-PrivateSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - Fn::ImportValue:
+              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
   
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
