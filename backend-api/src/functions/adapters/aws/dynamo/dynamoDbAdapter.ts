@@ -17,6 +17,7 @@ import {
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { appendPersistentIdentifiersToLogger } from "../../../common/logging/helpers/appendPersistentIdentifiersToLogger";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
@@ -351,8 +352,10 @@ export class DynamoDbAdapter implements SessionRegistry {
     allSessionAttributes,
     invalidAttributes,
   }: ValidateSessionErrorData): FailureWithValue<GetSessionSessionNotValidError> {
+    appendPersistentIdentifiersToLogger({
+      govukSigninJourneyId: allSessionAttributes.govukSigninJourneyId,
+    });
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
-      allSessionAttributes,
       invalidAttributes,
     });
 
