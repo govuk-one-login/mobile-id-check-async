@@ -229,7 +229,7 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-credential-result
-      RetentionInDays: 7
+      RetentionInDays: 30
 
   DequeueCredentialResultRole:
     Type: AWS::IAM::Role
@@ -357,7 +357,7 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-events
-      RetentionInDays: 7
+      RetentionInDays: 30
 
   DequeueEventsRole:
     Type: AWS::IAM::Role
@@ -575,7 +575,7 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sessions
-      RetentionInDays: 7
+      RetentionInDays: 30
 
   PutSessionFunctionRole:
     Type: AWS::IAM::Role
@@ -655,7 +655,7 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
-      RetentionInDays: 7
+      RetentionInDays: 30
 
   StsMockApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -741,7 +741,7 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
-      RetentionInDays: 7
+      RetentionInDays: 30
 
   TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -906,7 +906,7 @@ Resources:
             id: CKV_AWS_158
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sts-mock-token
-      RetentionInDays: 7
+      RetentionInDays: 30
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
