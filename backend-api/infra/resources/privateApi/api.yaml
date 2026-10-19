@@ -26,7 +26,8 @@ Resources:
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
-            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-ExecuteApiGatewayEndpointId
             - !If
               - IntegrateIpvCore
               - !FindInMap

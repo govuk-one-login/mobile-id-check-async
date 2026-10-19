@@ -50,7 +50,7 @@ All CloudWatch Alarms must have a runbook linked in the alarm description. The a
 
 A change to the infrastructure of the lamdba without a backend change can cause a deployment error.
 `Resource handler returned message: "A version for this Lambda function exists. Modify the function to create a new version."`
-In this case, an arbitrary backend change can be made by updating the `TRIGGER_NUMBER` global environment variable, which will cause all the lambda functions the update with a new version.
+In this case, an arbitrary backend change can be made by updating the `TRIGGER_NUMBER` global environment variable, which will cause all the lambda functions to update with a new version.
 
 ### Infrastructure tests
 
