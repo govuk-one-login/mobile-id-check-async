@@ -109,7 +109,7 @@ describe("STS mock infrastructure", () => {
 
     test("access log group has a retention period", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
+        RetentionInDays: 7,
         LogGroupName: {
           "Fn::Sub":
             "/aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs",
@@ -191,7 +191,7 @@ describe("STS mock infrastructure", () => {
       const logGroups = template.findResources("AWS::Logs::LogGroup");
       const logGroupList = Object.keys(logGroups);
       logGroupList.forEach((logGroup) => {
-        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(7);
       });
     });
 

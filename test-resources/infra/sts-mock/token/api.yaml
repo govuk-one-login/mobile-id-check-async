@@ -36,7 +36,7 @@ Resources:
             comment: KMS encryption not required as log group will not contain sensitive data.
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
-      RetentionInDays: 30
+      RetentionInDays: 7
 
   StsMockApiDomainName:
     Type: AWS::ApiGateway::DomainName

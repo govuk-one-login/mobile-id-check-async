@@ -82,7 +82,7 @@ Resources:
           - id: CKV_AWS_158
             comment: KMS encryption not required as log group will not contain sensitive data.
     Properties:
-      RetentionInDays: 30
+      RetentionInDays: 7
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sts-mock-token
 
   TokenFunctionRole:

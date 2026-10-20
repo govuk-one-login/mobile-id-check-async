@@ -92,7 +92,7 @@ Resources:
             comment: KMS encryption not required as log group will not contain sensitive data.
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
-      RetentionInDays: 30
+      RetentionInDays: 7
 
   TestResourcesApiDomainName:
     Type: AWS::ApiGateway::DomainName
