@@ -1,4 +1,4 @@
-import { errorResult, Result, successResult } from "../utils/result";
+import { errorResult, Result, successResult } from "../utils/result.js";
 
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_DELAY_IN_MILLIS = 100;
