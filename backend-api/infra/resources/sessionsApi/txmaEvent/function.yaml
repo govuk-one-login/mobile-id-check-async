@@ -43,16 +43,26 @@ Resources:
           - - !Ref AWS::NoValue
         Type: !Ref LambdaDeploymentPreference
       VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdA
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdB
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
   AsyncTxmaEventLogGroup:
     Type: AWS::Logs::LogGroup
