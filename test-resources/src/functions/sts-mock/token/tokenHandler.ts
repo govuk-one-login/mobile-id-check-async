@@ -3,12 +3,12 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { TokenDependencies, dependencies } from "./handlerDependencies";
-import { ConfigService } from "./configService/configService";
+import { TokenDependencies, dependencies } from "./handlerDependencies.js";
+import { ConfigService } from "./configService/configService.js";
 import { JWTPayload } from "jose";
-import { LogMessage } from "../../common/logging/LogMessage";
-import { logger } from "../../common/logging/logger";
-import { setupLogger } from "../../common/logging/setupLogger";
+import { LogMessage } from "../../common/logging/LogMessage.js";
+import { logger } from "../../common/logging/logger.js";
+import { setupLogger } from "../../common/logging/setupLogger.js";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_JWK_FILE_NAME = "private-key.json";

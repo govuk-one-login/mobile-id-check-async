@@ -2,10 +2,10 @@ import {
   Config,
   getRequiredEnvironmentVariables,
   MissingEnvVarError,
-} from "../common/config/environment";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
-import { Result } from "../common/utils/result";
+} from "../common/config/environment.js";
+import { logger } from "../common/logging/logger.js";
+import { LogMessage } from "../common/logging/LogMessage.js";
+import { Result } from "../common/utils/result.js";
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
   "CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS",
