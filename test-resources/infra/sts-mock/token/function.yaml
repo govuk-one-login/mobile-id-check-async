@@ -54,16 +54,26 @@ Resources:
             - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
       VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-ProtectedSubnetIdB
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-ProtectedSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-ProtectedSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-ProtectedSubnetIdC
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-ProtectedSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-ProtectedSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission

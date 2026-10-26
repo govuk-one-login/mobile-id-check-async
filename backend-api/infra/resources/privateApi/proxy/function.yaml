@@ -30,15 +30,24 @@ Resources:
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
       VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdA
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdB
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !Ref ProxyLambdaSecurityGroup
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !Ref SpokeVpcProxyLambdaSecurityGroup
+          - - !Ref ProxyLambdaSecurityGroup
     Condition: ProxyApiDeployment
 
   ProxyLambdaLogGroup:
@@ -114,6 +123,22 @@ Resources:
           ToPort: 443
       VpcId:  !ImportValue
         Fn::Sub: ${VpcStackName}-VpcId
+    Condition: ProxyApiDeployment
+
+  SpokeVpcProxyLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-spoke-vpc-proxy-sg
+      GroupDescription: Lambda Security group ruleset.
+      SecurityGroupEgress:
+        - CidrIp: !ImportValue
+            Fn::Sub: ${SpokeVpcStackName}-VpcCidr
+          Description: TCP HTTPS outbound to vpc.
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:  !ImportValue
+        Fn::Sub: ${SpokeVpcStackName}-VpcId
     Condition: ProxyApiDeployment
 
   ProxyLambdaPermission:
