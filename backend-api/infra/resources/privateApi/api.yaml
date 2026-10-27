@@ -28,6 +28,8 @@ Resources:
           IntrinsicVpceWhitelist:
             - !ImportValue
               Fn::Sub: ${VpcStackName}-ExecuteApiGatewayEndpointId
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-ExecuteApiGatewayEndpointId
             - !If
               - IntegrateIpvCore
               - !FindInMap
