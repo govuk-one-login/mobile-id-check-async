@@ -82,16 +82,22 @@ jobs:
         run: |
           npm run generate-proxy-open-api
 
+      - name: Install SAM
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+          version: 1.166.2
+
       - name: SAM Validate
         run: sam validate --lint --template ${{ inputs.TEMPLATE_NAME }}
 
       - name: SAM Build
         run: sam build --cached --template ${{ inputs.TEMPLATE_NAME }}
 
-      - name: Upload SAM Artifact into the Artifact Bucket
-        uses: govuk-one-login/devplatform-upload-action@v4.4.1
-        with:
-          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          template-file: .aws-sam/build/template.yaml
-          working-directory: ${{ inputs.WORKING_DIRECTORY }}
+      # - name: Upload SAM Artifact into the Artifact Bucket
+      #   uses: govuk-one-login/devplatform-upload-action@v4.4.1
+      #   with:
+      #     artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
+      #     signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+      #     template-file: .aws-sam/build/template.yaml
+      #     working-directory: ${{ inputs.WORKING_DIRECTORY }}
