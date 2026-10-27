@@ -5592,6 +5592,17 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  BiometricTokensIssuedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED }'
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+      MetricTransformations:
+        - MetricName: BiometricTokensIssued
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
   BrpBiometricSessionsNotReadyAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
