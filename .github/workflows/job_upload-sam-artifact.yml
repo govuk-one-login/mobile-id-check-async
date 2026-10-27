@@ -82,6 +82,12 @@ jobs:
         run: |
           npm run generate-proxy-open-api
 
+      - name: Install SAM
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+          version: 1.166.2
+
       - name: SAM Validate
         run: sam validate --lint --template ${{ inputs.TEMPLATE_NAME }}
 

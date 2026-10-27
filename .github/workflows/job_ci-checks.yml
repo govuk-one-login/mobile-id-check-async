@@ -109,6 +109,13 @@ jobs:
         if: inputs.RUN_RAIN_FORMAT_VERIFY == 'true'
         run: npm run infra:format:verify
 
+      - name: Install SAM
+        if: inputs.RUN_SAM_VALIDATE == 'true'
+        uses: aws-actions/setup-sam@v3
+        with:
+          use-installer: true
+          version: 1.166.2
+
       - name: Validate SAM template
         if: inputs.RUN_SAM_VALIDATE == 'true'
         run: |
