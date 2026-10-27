@@ -66,6 +66,11 @@ Parameters:
     Type: String
     Default: unused
 
+  SpokeVpcStackName:
+    Description: Name of the Spoke VPC Stack
+    Type: String
+    Default: devplatform-spoke-vpc
+
   VpcStackName:
     Description: Name of the VPC Stack
     Type: String
@@ -6507,6 +6512,8 @@ Resources:
           IntrinsicVpceWhitelist:
             - !ImportValue
               Fn::Sub: ${VpcStackName}-ExecuteApiGatewayEndpointId
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-ExecuteApiGatewayEndpointId
             - !If
               - IntegrateIpvCore
               - !FindInMap
