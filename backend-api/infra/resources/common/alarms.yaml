@@ -133,6 +133,100 @@ Resources:
           ReturnData: true
           Expression: IF(FILL(journeysStarted, 0) >= 40, journeyCompletionRate, 100)
 
+  LowDocumentSelectionRateLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "BiometricTokensIssuedMetricFilter"
+      - "JourneysStartedMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: [ ]
+      AlarmDescription: !Sub
+        - "Alarms when fewer than 50% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-low-document-selection-rate"
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 4
+      Threshold: 50
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      Metrics:
+        - Id: journeysStarted
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: JourneysStarted
+            Period: 300
+            Stat: Sum
+        - Id: biometricTokensIssued
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: BiometricTokensIssued
+            Period: 300
+            Stat: Sum
+        - Id: documentSelectionRate
+          ReturnData: false
+          Expression: (FILL(biometricTokensIssued, 0)/journeysStarted) * 100
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(FILL(journeysStarted, 0) >= 50, documentSelectionRate, 100)
+
+  LowDocumentSelectionRateHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "BiometricTokensIssuedMetricFilter"
+      - "JourneysStartedMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: [ ]
+      AlarmDescription: !Sub
+        - "Alarms when fewer than 20% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-low-document-selection-rate"
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 4
+      Threshold: 20
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      Metrics:
+        - Id: journeysStarted
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: JourneysStarted
+            Period: 300
+            Stat: Sum
+        - Id: biometricTokensIssued
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: BiometricTokensIssued
+            Period: 300
+            Stat: Sum
+        - Id: documentSelectionRate
+          ReturnData: false
+          Expression: (FILL(biometricTokensIssued, 0)/journeysStarted) * 100
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(FILL(journeysStarted, 0) >= 50, documentSelectionRate, 100)
+
   PassportBiometricSessionsNotReadyAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms

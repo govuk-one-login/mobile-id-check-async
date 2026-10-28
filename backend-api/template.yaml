@@ -5597,6 +5597,17 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  BiometricTokensIssuedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED }'
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+      MetricTransformations:
+        - MetricName: BiometricTokensIssued
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
   BrpBiometricSessionsNotReadyAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
@@ -6272,6 +6283,106 @@ Resources:
           LinearInterval: 1
           LinearPercentage: 20
         Type: TimeBasedLinear
+
+  LowDocumentSelectionRateHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - BiometricTokensIssuedMetricFilter
+      - JourneysStartedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when fewer than 20% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - WarningAlarmsRunbook
+            - value
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-low-document-selection-rate
+      ComparisonOperator: LessThanThreshold
+      DatapointsToAlarm: 4
+      EvaluationPeriods: 5
+      InsufficientDataActions: []
+      Metrics:
+        - Id: journeysStarted
+          MetricStat:
+            Metric:
+              MetricName: JourneysStarted
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: biometricTokensIssued
+          MetricStat:
+            Metric:
+              MetricName: BiometricTokensIssued
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Expression: (FILL(biometricTokensIssued, 0)/journeysStarted) * 100
+          Id: documentSelectionRate
+          ReturnData: false
+        - Expression: IF(FILL(journeysStarted, 0) >= 50, documentSelectionRate, 100)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 20
+      TreatMissingData: breaching
+    Condition: DeployAlarms
+
+  LowDocumentSelectionRateLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - BiometricTokensIssuedMetricFilter
+      - JourneysStartedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when fewer than 50% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - WarningAlarmsRunbook
+            - value
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-low-document-selection-rate
+      ComparisonOperator: LessThanThreshold
+      DatapointsToAlarm: 4
+      EvaluationPeriods: 5
+      InsufficientDataActions: []
+      Metrics:
+        - Id: journeysStarted
+          MetricStat:
+            Metric:
+              MetricName: JourneysStarted
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: biometricTokensIssued
+          MetricStat:
+            Metric:
+              MetricName: BiometricTokensIssued
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Expression: (FILL(biometricTokensIssued, 0)/journeysStarted) * 100
+          Id: documentSelectionRate
+          ReturnData: false
+        - Expression: IF(FILL(journeysStarted, 0) >= 50, documentSelectionRate, 100)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 50
+      TreatMissingData: breaching
+    Condition: DeployAlarms
 
   LowJourneyCompletionAlarm:
     Type: AWS::CloudWatch::Alarm

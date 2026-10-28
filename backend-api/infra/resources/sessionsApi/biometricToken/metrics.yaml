@@ -15,3 +15,14 @@ Resources:
               Value: $.messageCode
             - Key: Version
               Value: $.functionVersion
+
+  BiometricTokensIssuedMetricFilter:
+    Condition: DeployAlarms
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED }'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "BiometricTokensIssued"

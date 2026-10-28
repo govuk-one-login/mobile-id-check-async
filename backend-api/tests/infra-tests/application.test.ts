@@ -223,6 +223,8 @@ describe("Backend application infrastructure", () => {
           "async-issue-biometric-credential-vendor-likeness-disabled-low-threshold",
         ],
         ["issue-biometric-credential-lambda-not-ready-rate"],
+        ["low-threshold-low-document-selection-rate"],
+        ["high-threshold-low-document-selection-rate"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
