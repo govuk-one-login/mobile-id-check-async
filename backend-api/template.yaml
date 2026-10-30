@@ -150,7 +150,7 @@ Mappings:
       production: 80
       staging: 15
     DisableBrpJourney:
-      build: "false"
+      build: "true"
       dev: "false"
       integration: "false"
       production: "false"
