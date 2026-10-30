@@ -121,7 +121,7 @@ EnvironmentVariables:
   # Feature Flags
   DisableBrpJourney:
     dev: "false"
-    build: "false"
+    build: "true"
     staging: "false"
     integration: "false"
     production: "false"
