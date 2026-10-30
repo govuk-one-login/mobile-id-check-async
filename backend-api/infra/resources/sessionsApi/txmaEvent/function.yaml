@@ -65,15 +65,6 @@ Resources:
       RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
 
-  AsyncTxmaEventSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Condition: EgressLogsToSplunkUsingCsls
-    Properties:
-      DestinationArn:
-        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncTxmaEventLogGroup
-
   AsyncTxmaEventFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:

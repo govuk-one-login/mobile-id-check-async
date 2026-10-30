@@ -98,15 +98,6 @@ Conditions:
       - !Ref Environment
       - build
 
-  EgressLogsToSplunkUsingCsls: !Or
-    - !Equals [!Ref Environment, staging]
-    - !Equals [!Ref Environment, integration]
-    - !Equals [!Ref Environment, production]
-
-  DeployProxyCsls: !And
-    - Condition: ProxyApiDeployment
-    - Condition: EgressLogsToSplunkUsingCsls
-
   # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
