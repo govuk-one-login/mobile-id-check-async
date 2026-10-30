@@ -831,31 +831,66 @@ describe("Backend application infrastructure", () => {
         template.hasResourceProperties("AWS::Serverless::Function", {
           Handler: lambdaHandler,
           VpcConfig: {
-            SubnetIds: [
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdA",
-                },
-              },
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdB",
-                },
-              },
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-PrivateSubnetIdC",
-                },
-              },
-            ],
-            SecurityGroupIds: [
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub":
-                    "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
-                },
-              },
-            ],
+            SubnetIds: {
+              "Fn::If": [
+                "UseSpokeVpc",
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${SpokeVpcStackName}-PrivateSubnetIdA",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${SpokeVpcStackName}-PrivateSubnetIdB",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${SpokeVpcStackName}-PrivateSubnetIdC",
+                    },
+                  },
+                ],
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${VpcStackName}-PrivateSubnetIdA",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${VpcStackName}-PrivateSubnetIdB",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${VpcStackName}-PrivateSubnetIdC",
+                    },
+                  },
+                ],
+              ],
+            },
+            SecurityGroupIds: {
+              "Fn::If": [
+                "UseSpokeVpc",
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub":
+                        "${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId",
+                    },
+                  },
+                ],
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub":
+                        "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
+                    },
+                  },
+                ],
+              ],
+            },
           },
         });
       });
@@ -871,31 +906,66 @@ describe("Backend application infrastructure", () => {
         template.hasResourceProperties("AWS::Serverless::Function", {
           Handler: lambdaHandler,
           VpcConfig: {
-            SubnetIds: [
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdA",
-                },
-              },
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdB",
-                },
-              },
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdC",
-                },
-              },
-            ],
-            SecurityGroupIds: [
-              {
-                "Fn::ImportValue": {
-                  "Fn::Sub":
-                    "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
-                },
-              },
-            ],
+            SubnetIds: {
+              "Fn::If": [
+                "UseSpokeVpc",
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${SpokeVpcStackName}-ProtectedSubnetIdA",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${SpokeVpcStackName}-ProtectedSubnetIdB",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${SpokeVpcStackName}-ProtectedSubnetIdC",
+                    },
+                  },
+                ],
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdA",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdB",
+                    },
+                  },
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${VpcStackName}-ProtectedSubnetIdC",
+                    },
+                  },
+                ],
+              ],
+            },
+            SecurityGroupIds: {
+              "Fn::If": [
+                "UseSpokeVpc",
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub":
+                        "${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId",
+                    },
+                  },
+                ],
+                [
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub":
+                        "${VpcStackName}-AWSServicesEndpointSecurityGroupId",
+                    },
+                  },
+                ],
+              ],
+            },
           },
         });
       });

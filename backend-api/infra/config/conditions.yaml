@@ -9,6 +9,10 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
+  UseSpokeVpc: !Equals
+    - !Ref Environment
+    - dev
+
   isDev: !Equals
     - !Ref Environment
     - dev

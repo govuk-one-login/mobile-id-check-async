@@ -51,16 +51,26 @@ Resources:
           AUDIENCE: !Sub https://${SessionsApiDomainName}
           DISABLE_BRP_JOURNEY: !FindInMap [EnvironmentVariables, DisableBrpJourney, !Ref Environment]
       VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-ProtectedSubnetIdB
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue:
-              !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-ProtectedSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-ProtectedSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-ProtectedSubnetIdC
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-ProtectedSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-ProtectedSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
