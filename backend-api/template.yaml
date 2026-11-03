@@ -138,11 +138,6 @@ Mappings:
       integration: integration/clientRegistry
       production: production/clientRegistry
       staging: staging/clientRegistry
-    CslsEgress:
-      build: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-      integration: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-      production: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-      staging: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
     DefaultReservedConcurrentExecutions:
       build: 80
       dev: 0
@@ -344,10 +339,6 @@ Conditions:
     - !Condition DeployAlarms
     - !Condition ProxyApiDeployment
 
-  DeployProxyCsls: !And
-    - !Condition ProxyApiDeployment
-    - !Condition EgressLogsToSplunkUsingCsls
-
   DevelopmentStack: !And
     - !Equals
       - !Ref Environment
@@ -356,17 +347,6 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-async-backend
-
-  EgressLogsToSplunkUsingCsls: !Or
-    - !Equals
-      - !Ref Environment
-      - staging
-    - !Equals
-      - !Ref Environment
-      - integration
-    - !Equals
-      - !Ref Environment
-      - production
 
   IntegrateIpvCore: !Or
     - !Equals
@@ -993,17 +973,6 @@ Resources:
         - LogRetentionInDays
         - !Ref Environment
 
-  AsyncAbortSessionSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncAbortSessionLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
-
   AsyncAbortSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1497,17 +1466,6 @@ Resources:
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
-
-  AsyncActiveSessionSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncActiveSessionLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncActiveSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2148,17 +2106,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncBiometricTokenSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncBiometricTokenLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
-
   AsyncBiometricTokenThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2779,17 +2726,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncCredentialSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncCredentialLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
-
   AsyncCredentialThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -3389,17 +3325,6 @@ Resources:
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
-
-  AsyncFinishBiometricSessionSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncFinishBiometricSessionThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4211,17 +4136,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncIssueBiometricCredentialSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
-
   AsyncIssueBiometricCredentialTimeToIssueVcMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -4368,17 +4282,6 @@ Resources:
         - EnvironmentVariables
         - LogRetentionInDays
         - !Ref Environment
-
-  AsyncPrivateApiSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncPrivateApiAccessLogs
-    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4957,17 +4860,6 @@ Resources:
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
-
-  AsyncTokenSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncTokenLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncTokenThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5555,17 +5447,6 @@ Resources:
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
-
-  AsyncTxmaEventSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncTxmaEventLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
 
   AsyncTxmaEventThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -6203,17 +6084,6 @@ Resources:
         - LogRetentionInDays
         - !Ref Environment
 
-  JsonWebKeysFunctionSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref JsonWebKeysFunctionLogGroup
-    Condition: EgressLogsToSplunkUsingCsls
-
   KMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -6731,17 +6601,6 @@ Resources:
       Type: A
     Condition: ProxyApiDeployment
 
-  ProxyApiSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref ProxyApiAccessLogs
-    Condition: DeployProxyCsls
-
   ProxyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -6861,17 +6720,6 @@ Resources:
       VpcId: !ImportValue
         Fn::Sub: ${VpcStackName}-VpcId
     Condition: ProxyApiDeployment
-
-  ProxyLambdaSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref ProxyLambdaLogGroup
-    Condition: DeployProxyCsls
 
   ProxyLambdaThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -7052,17 +6900,6 @@ Resources:
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       Name: !Ref SessionsApiDomainName
       Type: A
-
-  SessionsApiSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !FindInMap
-        - EnvironmentVariables
-        - CslsEgress
-        - !Ref Environment
-      FilterPattern: ""
-      LogGroupName: !Ref SessionsApiAccessLogs
-    Condition: EgressLogsToSplunkUsingCsls
 
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
