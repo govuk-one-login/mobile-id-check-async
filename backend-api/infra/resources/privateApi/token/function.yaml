@@ -74,15 +74,6 @@ Resources:
       RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
 
-  AsyncTokenSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Condition: EgressLogsToSplunkUsingCsls
-    Properties:
-      DestinationArn:
-        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncTokenLogGroup
-
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
     Properties:

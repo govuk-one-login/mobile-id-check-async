@@ -82,15 +82,6 @@ Resources:
       RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
 
-  AsyncActiveSessionSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Condition: EgressLogsToSplunkUsingCsls
-    Properties:
-      DestinationArn:
-        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
-      FilterPattern: ""
-      LogGroupName: !Ref AsyncActiveSessionLogGroup
-
   AsyncActiveSessionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
