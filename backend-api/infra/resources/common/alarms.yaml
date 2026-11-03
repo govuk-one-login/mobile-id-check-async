@@ -147,12 +147,12 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
-        - "Alarms when fewer than 50% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}"
+        - "Alarms when fewer than 40% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [ StaticVariables, WarningAlarmsRunbook, value ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-low-document-selection-rate"
       EvaluationPeriods: 5
       DatapointsToAlarm: 4
-      Threshold: 50
+      Threshold: 40
       ComparisonOperator: LessThanThreshold
       TreatMissingData: breaching
       Metrics:
