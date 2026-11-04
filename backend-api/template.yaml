@@ -6164,7 +6164,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when fewer than 20% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}'
+        - 'Alarms when fewer than 20% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 150 journeys started. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - WarningAlarmsRunbook
@@ -6194,7 +6194,7 @@ Resources:
         - Expression: (FILL(biometricTokensIssued, 0)/journeysStarted) * 100
           Id: documentSelectionRate
           ReturnData: false
-        - Expression: IF(FILL(journeysStarted, 0) >= 50, documentSelectionRate, 100)
+        - Expression: IF(FILL(journeysStarted, 0) >= 150, documentSelectionRate, 100)
           Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
@@ -6214,7 +6214,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when fewer than 50% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 50 journeys started. See runbook: ${RunbookUrl}'
+        - 'Alarms when fewer than 50% of journeys started have been issued a biometric token, in 4 of the past 5 5-minute periods with at least 150 journeys started. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - WarningAlarmsRunbook
@@ -6244,7 +6244,7 @@ Resources:
         - Expression: (FILL(biometricTokensIssued, 0)/journeysStarted) * 100
           Id: documentSelectionRate
           ReturnData: false
-        - Expression: IF(FILL(journeysStarted, 0) >= 50, documentSelectionRate, 100)
+        - Expression: IF(FILL(journeysStarted, 0) >= 150, documentSelectionRate, 100)
           Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
