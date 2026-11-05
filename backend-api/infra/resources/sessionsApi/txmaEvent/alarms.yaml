@@ -22,7 +22,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
+          Expression: IF((invocations>=20) && (errorSum4XX>=4),errorPercentage4XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
@@ -85,7 +85,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage4XX,0)
+          Expression: IF(invocations>=20,errorPercentage4XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
@@ -148,7 +148,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+          Expression: IF((invocations>=20) && (errorSum5XX>=2),errorPercentage5XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
@@ -211,7 +211,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage5XX,0)
+          Expression: IF(invocations>=20,errorPercentage5XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
