@@ -146,10 +146,10 @@ Mappings:
       staging: 15
     DisableBrpJourney:
       build: "false"
-      dev: "false"
+      dev: "true"
       integration: "false"
       production: "false"
-      staging: "false"
+      staging: "true"
     DvlaDrivingLicenceExpiryGracePeriodInDays:
       build: 90
       dev: 90
