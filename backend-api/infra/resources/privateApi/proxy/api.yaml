@@ -64,6 +64,15 @@ Resources:
       RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
     Condition: ProxyApiDeployment
 
+  ProxyApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Condition: DeployProxyCsls
+    Properties:
+      DestinationArn:
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyApiAccessLogs
+
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
