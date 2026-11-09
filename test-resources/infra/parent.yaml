@@ -67,6 +67,11 @@ Parameters:
     Type: String
     Default: unused
 
+  SpokeVpcStackName:
+    Description: Name of the Spoke VPC Stack
+    Type: String
+    Default: devplatform-spoke-vpc
+
   VpcStackName:
     Description: Name of the VPC Stack
     Type: String
@@ -145,6 +150,10 @@ Conditions:
   isDev: !Equals
       - !Ref Environment
       - dev
+
+  UseSpokeVpc: !Equals
+    - !Ref Environment
+    - dev
 
 Resources:
   # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various

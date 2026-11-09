@@ -46,6 +46,11 @@ Parameters:
     Type: String
     Default: unused
 
+  SpokeVpcStackName:
+    Description: Name of the Spoke VPC Stack
+    Type: String
+    Default: devplatform-spoke-vpc
+
   VpcStackName:
     Description: Name of the VPC Stack
     Type: String
@@ -119,6 +124,10 @@ Conditions:
     - !Equals
       - !Ref PermissionsBoundary
       - none
+
+  UseSpokeVpc: !Equals
+    - !Ref Environment
+    - dev
 
   isDev: !Equals
     - !Ref Environment
@@ -221,16 +230,26 @@ Resources:
       Role: !GetAtt DequeueCredentialResultRole.Arn
       Timeout: 10
       VpcConfig:
-        SecurityGroupIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   DequeueCredentialResultLogGroup:
     Type: AWS::Logs::LogGroup
@@ -353,16 +372,26 @@ Resources:
       Role: !GetAtt DequeueEventsRole.Arn
       Timeout: 10
       VpcConfig:
-        SecurityGroupIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   DequeueEventsLogGroup:
     Type: AWS::Logs::LogGroup
@@ -575,16 +604,26 @@ Resources:
       Role: !GetAtt PutSessionFunctionRole.Arn
       Timeout: 5
       VpcConfig:
-        SecurityGroupIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   PutSessionFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -910,16 +949,26 @@ Resources:
       Role: !GetAtt TokenFunctionRole.Arn
       Timeout: 5
       VpcConfig:
-        SecurityGroupIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds:
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
-          - !ImportValue
-            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdC
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   TokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
