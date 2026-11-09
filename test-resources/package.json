@@ -52,6 +52,7 @@
     "jose": "5.10.0"
   },
   "overrides": {
-    "micromatch": "4.0.8"
+    "micromatch": "4.0.8",
+    "minimatch": "11.0.1"
   }
 }
