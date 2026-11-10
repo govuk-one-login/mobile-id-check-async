@@ -9,9 +9,13 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
-  UseSpokeVpc: !Equals
-    - !Ref Environment
-    - dev
+  UseSpokeVpc: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - staging
 
   isDev: !Equals
     - !Ref Environment

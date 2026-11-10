@@ -151,9 +151,13 @@ Conditions:
       - !Ref Environment
       - dev
 
-  UseSpokeVpc: !Equals
-    - !Ref Environment
-    - dev
+  UseSpokeVpc: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - staging
 
 Resources:
   # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various
