@@ -126,7 +126,7 @@ jobs:
 
       - name: Run Checkov
         if: inputs.RUN_CHECKOV == 'true'
-        uses: bridgecrewio/checkov-action@c10e2438743528f9e4549758fad8b7a62052541d # v12
+        uses: bridgecrewio/checkov-action@45edc9d8856b664db2ec251f5f8632361f0a67aa # v12
         with:
           directory: ${{ inputs.WORKING_DIRECTORY }}
           skip_path: ${{ inputs.WORKING_DIRECTORY }}/infra
