@@ -158,9 +158,9 @@ Mappings:
       integration: "true"
       production: "false"
     DisableBrpJourney:
-      dev: "true"
+      dev: "false"
       build: "false"
-      staging: "true"
+      staging: "false"
       integration: "false"
       production: "false"
 
