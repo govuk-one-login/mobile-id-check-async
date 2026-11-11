@@ -22,6 +22,9 @@ Conditions:
     - !Equals
       - !Ref Environment
       - integration
+    - !Equals
+      - !Ref Environment
+      - production
 
   isDev: !Equals
     - !Ref Environment
