@@ -430,7 +430,13 @@ Conditions:
       - dev
     - !Equals
       - !Ref Environment
+      - build
+    - !Equals
+      - !Ref Environment
       - staging
+    - !Equals
+      - !Ref Environment
+      - integration
 
   isDev: !Equals
     - !Ref Environment

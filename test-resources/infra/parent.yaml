@@ -157,7 +157,7 @@ Conditions:
       - dev
     - !Equals
       - !Ref Environment
-      - staging
+      - build
 
 Resources:
   # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various
