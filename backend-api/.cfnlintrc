@@ -2,3 +2,5 @@ ignore_checks:
 # temporary fix to unblock backend - ticket raised to look into fix https://govukverify.atlassian.net/browse/DCMAW-20549
   - E3001
   - W1031
+# temporary fix as part of TGW migration - to be removed in clean up ticket https://govukverify.atlassian.net/browse/DCMAW-24069 
+  - W1028
