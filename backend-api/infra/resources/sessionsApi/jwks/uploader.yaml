@@ -128,6 +128,15 @@ Resources:
       RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
 
+  JsonWebKeysFunctionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Condition: EgressLogsToSplunkUsingCsls
+    Properties:
+      DestinationArn:
+        !FindInMap [EnvironmentVariables, CslsEgress, !Ref Environment]
+      FilterPattern: ""
+      LogGroupName: !Ref JsonWebKeysFunctionLogGroup
+
   JsonWebKeysCustomResource:
     Type: AWS::CloudFormation::CustomResource
     Properties:
