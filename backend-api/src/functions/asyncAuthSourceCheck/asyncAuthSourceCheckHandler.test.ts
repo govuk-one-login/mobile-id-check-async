@@ -40,7 +40,7 @@ describe("Async Authoritative Source Check", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_STARTED",
         functionVersion: "1",
-        //function_arm: "arn:12345",  TODO: this isn't being set, track it down.
+        function_arn: "arn:12345",
         userAgent: {
           userAgentHeader: iphoneUserAgent,
           deviceType: "iPhone",
