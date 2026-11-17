@@ -1527,6 +1527,8 @@ Resources:
 
   AsyncAuthSourceCheckFunction:
     Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncAuthSourceCheckLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -1561,6 +1563,20 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
+
+  AsyncAuthSourceCheckLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-auth-source-check
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
