@@ -48,8 +48,8 @@ describe("Async Authoritative Source Check", () => {
       });
     });
 
-    it("Returns a 500 status code", () => {
-      expect(result.statusCode).toEqual(500);
+    it("Returns a NotImplemented status code", () => {
+      expect(result.statusCode).toEqual(501);
     });
   });
 });

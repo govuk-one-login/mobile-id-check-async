@@ -3,7 +3,7 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { serverErrorResponse } from "../common/lambdaResponses";
+import { notImplementedResponse } from "../common/lambdaResponses";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
@@ -17,5 +17,5 @@ export async function lambdaHandlerConstructor(
 
   logger.info(LogMessage.AUTH_SOURCE_CHECK_STARTED);
 
-  return serverErrorResponse;
+  return notImplementedResponse;
 }
