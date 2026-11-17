@@ -1556,7 +1556,10 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
         Version: "2012-10-17"
-      PermissionsBoundary: AWS::NoValue
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
 
   AsyncBiometricToken4XXHighThresholdAlarm:

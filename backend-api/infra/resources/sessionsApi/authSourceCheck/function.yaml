@@ -26,7 +26,10 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
-      PermissionsBoundary: AWS::NoValue
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
