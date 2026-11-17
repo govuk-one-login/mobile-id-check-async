@@ -23,6 +23,13 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-auth-source-check
       Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
       Handler: asyncAuthSourceCheckHandler.lambdaHandler
+      Events:
+        AsyncAuthSourceCheck:
+          Type: Api
+          Properties:
+            Path: /async/authSourceCheck
+            Method: post
+            RestApiId: !Ref SessionsApi
       DeploymentPreference:
         Enabled: true
         # TODO: return to this when Alarms are defined.

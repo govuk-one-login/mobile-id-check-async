@@ -1557,6 +1557,13 @@ Resources:
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
+      Events:
+        AsyncAuthSourceCheck:
+          Properties:
+            Method: post
+            Path: /async/authSourceCheck
+            RestApiId: !Ref SessionsApi
+          Type: Api
       FunctionName: !Sub ${AWS::StackName}-auth-source-check
       Handler: asyncAuthSourceCheckHandler.lambdaHandler
       ReservedConcurrentExecutions: !FindInMap

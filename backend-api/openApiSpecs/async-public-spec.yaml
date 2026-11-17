@@ -625,6 +625,48 @@ paths:
           application/json:
             statusCode: 200
 
+  /async/authSourceCheck:
+    post:
+      summary: Placeholder for authoritative source check for driving licence documents
+      description: >-
+        This endpoint will in future be used by mobile clients to initiate the process
+        of making an Authoritative Source Check of a user's Driving Licence record, with
+        either DVA or DVLA.  At present it's a stub endpoint returning only 501.
+      requestBody:
+        description: In the placeholder, the request body is ignored.
+        required: false
+        content:
+          text/plain:
+            schema:
+              type: string
+      tags:
+        - ASC
+      responses:
+        '501':
+          description: Not Implemented
+          content:
+            application/json:
+              examples:
+                notImplementedError:
+                  description: |
+                    This endpoint is not yet implemented.
+                  value:
+                    {
+                      "error": "not_implemented",
+                      "error_description": "Not Implemented"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncAuthSourceCheckFunction}:live/invocations"
+        requestTemplates:
+          application/json:
+            statusCode: 501
+
   /async/abortSession:
     post:
       summary: Mark an Auth Session as Aborted
