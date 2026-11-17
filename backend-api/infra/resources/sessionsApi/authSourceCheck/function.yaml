@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  AsyncAuthSourceCheckFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncAuthSourceCheck/asyncAuthSourceCheckHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-auth-source-check
+      Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
+      Handler: asyncAuthSourceCheckHandler.lambdaHandler
+
+  AsyncAuthSourceCheckLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
+      PermissionsBoundary: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole

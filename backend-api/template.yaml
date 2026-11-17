@@ -1525,6 +1525,40 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncAuthSourceCheckFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        EntryPoints:
+          - src/functions/asyncAuthSourceCheck/asyncAuthSourceCheckHandler.ts
+        Format: esm
+        Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-auth-source-check
+      Handler: asyncAuthSourceCheckHandler.lambdaHandler
+      Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
+
+  AsyncAuthSourceCheckLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: AWS::NoValue
+      RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
+
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
