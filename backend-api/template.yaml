@@ -1547,6 +1547,27 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-auth-source-check
       Handler: asyncAuthSourceCheckHandler.lambdaHandler
       Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
+      VpcConfig:
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncAuthSourceCheckLambdaRole:
     Type: AWS::IAM::Role
