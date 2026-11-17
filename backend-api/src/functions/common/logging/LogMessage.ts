@@ -419,6 +419,12 @@ export class LogMessage implements LogAttributes {
     "Failed to get credential - potential fraud detected when analysing vendor response",
   );
 
+  // Authoritative Source Check
+  static readonly AUTH_SOURCE_CHECK_STARTED = new LogMessage(
+    "MOBILE_ASYNC_AUTH_SOURCE_CHECK_STARTED",
+    "Lambda handler processing has started.",
+  );
+
   private constructor(
     public readonly messageCode: string,
     public readonly message: string,
