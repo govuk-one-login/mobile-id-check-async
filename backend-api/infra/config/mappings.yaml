@@ -228,6 +228,12 @@ Mappings:
       staging: 15
       integration: 15
       production: 160
+    AuthSourceCheckReservedConcurrentExecutions:
+      dev: 5
+      build: 5
+      staging: 5
+      integration: 0
+      production: 0
     JsonWebKeysReservedConcurrentExecutions:
       dev: 1
       build: 1

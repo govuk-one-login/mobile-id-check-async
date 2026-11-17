@@ -90,6 +90,12 @@ Mappings:
       integration: 15
       production: 160
       staging: 15
+    AuthSourceCheckReservedConcurrentExecutions:
+      build: 5
+      dev: 5
+      integration: 0
+      production: 0
+      staging: 5
     BaseDns:
       build: review-b-async.build.account.gov.uk
       dev: review-b-async.dev.account.gov.uk
@@ -1553,6 +1559,10 @@ Resources:
         Type: !Ref LambdaDeploymentPreference
       FunctionName: !Sub ${AWS::StackName}-auth-source-check
       Handler: asyncAuthSourceCheckHandler.lambdaHandler
+      ReservedConcurrentExecutions: !FindInMap
+        - EnvironmentVariables
+        - AuthSourceCheckReservedConcurrentExecutions
+        - !Ref Environment
       Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds: !If
