@@ -16,6 +16,7 @@ export async function lambdaHandlerConstructor(
   setupLogger(context, getHeader(event.headers, "User-Agent"));
 
   logger.info(LogMessage.AUTH_SOURCE_CHECK_STARTED);
+  logger.info(LogMessage.AUTH_SOURCE_CHECK_COMPLETED);
 
   return notImplementedResponse;
 }

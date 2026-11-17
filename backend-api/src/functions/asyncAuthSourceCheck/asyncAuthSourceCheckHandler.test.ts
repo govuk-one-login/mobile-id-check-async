@@ -48,7 +48,10 @@ describe("Async Authoritative Source Check", () => {
       });
     });
 
-    it("Returns a NotImplemented status code", () => {
+    it("Logs a completion code and returns a NotImplemented status", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_COMPLETED",
+      });
       expect(result.statusCode).toEqual(501);
     });
   });

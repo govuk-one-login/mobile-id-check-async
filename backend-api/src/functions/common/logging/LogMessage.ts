@@ -424,6 +424,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_AUTH_SOURCE_CHECK_STARTED",
     "Lambda handler processing has started.",
   );
+  static readonly AUTH_SOURCE_CHECK_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_AUTH_SOURCE_CHECK_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
 
   private constructor(
     public readonly messageCode: string,
