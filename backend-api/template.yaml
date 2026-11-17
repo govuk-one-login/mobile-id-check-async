@@ -1544,6 +1544,13 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AWS::NoValue
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       FunctionName: !Sub ${AWS::StackName}-auth-source-check
       Handler: asyncAuthSourceCheckHandler.lambdaHandler
       Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn

@@ -23,6 +23,14 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-auth-source-check
       Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
       Handler: asyncAuthSourceCheckHandler.lambdaHandler
+      DeploymentPreference:
+        Enabled: true
+        # TODO: return to this when Alarms are defined.
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AWS::NoValue
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       VpcConfig:
         SubnetIds: !If
           - UseSpokeVpc
