@@ -20,3 +20,5 @@ export async function lambdaHandlerConstructor(
 
   return notImplementedResponse;
 }
+
+export const lambdaHandler = lambdaHandlerConstructor.bind(null);
