@@ -19,7 +19,7 @@ CURL="/usr/bin/curl"
 EGREP="/usr/bin/grep -E"
 CAT="/bin/cat"
 
-LOGFILE_PREFIX="POST_async_authSourceCheck" # $(basename "$0")
+LOGFILE_PREFIX="POST_async_authSourceCheck"
 LOGFILE_SUFFIX="$(date -Iseconds)"
 
 LOGFILE=$(mktemp "${LOGFILE_PREFIX}"_"${LOGFILE_SUFFIX}".out)
