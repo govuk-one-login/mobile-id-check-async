@@ -8,11 +8,11 @@ describe("POST /async/authSourceCheck", () => {
     let response: AxiosResponse;
 
     beforeAll(async () => {
-      const requestBody = {unused: "unused"};
+      const requestBody = { unused: "unused" };
 
       response = await SESSIONS_API_INSTANCE.post(
         "/async/authSourceCheck",
-        requestBody,	
+        requestBody,
       );
     });
 
