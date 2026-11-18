@@ -9,7 +9,7 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getHeader } from "../common/request/getHeader/getHeader";
 
-export async function lambdaHandlerConstructor(
+export function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
