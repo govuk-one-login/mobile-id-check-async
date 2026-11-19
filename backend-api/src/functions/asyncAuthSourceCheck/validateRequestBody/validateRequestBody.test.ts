@@ -39,8 +39,123 @@ describe("Validate request body", () => {
       validUntil: "2027-12-31",
       issuingAuthority: "DVLA",
       licenceNumber: "DECER607085K912305",
-      postcode: "BA2 5AA"
+      postcode: "BA2 5AA",
     };
-    let invalidRequestBody: any;
+    describe.each([
+      {
+        scenario: "Given sessionId is missing",
+        requestBody: {},
+        expectedErrorMessage: `sessionId in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given opaqueId is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+        },
+        expectedErrorMessage: `opaqueId in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given userSurname is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+        },
+        expectedErrorMessage: `userSurname in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given userDateOfBirth is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+        },
+        expectedErrorMessage: `userDateOfBirth in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given validFrom is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+        },
+        expectedErrorMessage: `validFrom in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given validUntil is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+        },
+        expectedErrorMessage: `validUntil in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given issuingAuthority is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+        },
+        expectedErrorMessage: `issuingAuthority in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given licenceNumber is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: validRequestBody.issuingAuthority,
+        },
+        expectedErrorMessage: `licenceNumber in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given postcode is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: validRequestBody.issuingAuthority,
+          licenceNumber: validRequestBody.licenceNumber,
+        },
+        expectedErrorMessage: `postcode in request body is either null or undefined.`,
+      },
+      {
+        scenario: "Given userForenames is missing",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: validRequestBody.issuingAuthority,
+          licenceNumber: validRequestBody.licenceNumber,
+          postcode: validRequestBody.postcode,
+        },
+        expectedErrorMessage: `userForenames in request body is either null or undefined.`,
+      },
+    ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
+      it("Returns an error result", () => {
+        const result = validateRequestBody(JSON.stringify(requestBody));
+        expect(result).toStrictEqual({
+          isError: true,
+          value: {
+            errorMessage: expectedErrorMessage,
+          },
+        });
+      });
+    });
   });
 });
