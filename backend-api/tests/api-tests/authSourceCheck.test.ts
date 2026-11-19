@@ -23,8 +23,9 @@ describe("POST /async/authSourceCheck", () => {
 
     it("Returns a descriptive error message", async () => {
       expect(response.data).toStrictEqual({
-        "error": "invalid_request",
-        "error_description": "opaqueId in request body is either null or undefined.",
+        error: "invalid_request",
+        error_description:
+          "opaqueId in request body is either null or undefined.",
       });
     });
 
@@ -65,7 +66,7 @@ describe("POST /async/authSourceCheck", () => {
 
     it("Returns a descriptive error message", async () => {
       expect(response.data).toStrictEqual({
-        "error": "Not Implemented",
+        error: "Not Implemented",
       });
     });
 
