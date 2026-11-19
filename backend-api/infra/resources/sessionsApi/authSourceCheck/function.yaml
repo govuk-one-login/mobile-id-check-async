@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  AsyncAuthSourceCheckFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncAuthSourceCheckLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncAuthSourceCheck/asyncAuthSourceCheckHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-auth-source-check
+      Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
+      Handler: asyncAuthSourceCheckHandler.lambdaHandler
+      Events:
+        AsyncAuthSourceCheck:
+          Type: Api
+          Properties:
+            Path: /async/authSourceCheck
+            Method: post
+            RestApiId: !Ref SessionsApi
+      DeploymentPreference:
+        Enabled: true
+        # TODO: return to this when Alarms are defined.
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AWS::NoValue
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
+      VpcConfig:
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdA
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdB
+            - Fn::ImportValue:
+                !Sub ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - Fn::ImportValue:
+                !Sub ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - Fn::ImportValue:
+                !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+      ReservedConcurrentExecutions: !FindInMap
+        - EnvironmentVariables
+        - AuthSourceCheckReservedConcurrentExecutions
+        - !Ref Environment
+
+  AsyncAuthSourceCheckLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: KMS encryption not required as log group will not contain sensitive data.
+    Properties:
+      RetentionInDays: !FindInMap [EnvironmentVariables, LogRetentionInDays, !Ref Environment]
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-auth-source-check
+
+  AsyncAuthSourceCheckLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncAuthSourceCheckFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
