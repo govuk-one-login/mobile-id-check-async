@@ -1,5 +1,5 @@
 import { errorResult, Result, successResult } from "../../utils/result";
-import { isString } from "../../utils/utils";
+import { isString, isStringArray } from "../../utils/utils";
 
 export function validateRequestBody(
     body: string | null
@@ -57,23 +57,10 @@ export function validateRequestBody(
       errorMessage: `userForenames in request body is either null or undefined.`,
     });
   }
-  if (!Array.isArray(value)) {
+  if (!isStringArray(value)) {
     return errorResult({
-      errorMessage: `userForenames in request body is not of type Array. userForenames: ${JSON.stringify(value)}`,
+      errorMessage: `userForenames in request body is not an Array<string>. userForenames: ${JSON.stringify(value)}`,
     });
-  }
-  if (value.length === 0) {
-    return errorResult({
-      errorMessage: `userForenames in request body is an empty Array.`,
-    });
-  }
-  for (let i = 0; i < value.length; i++) {
-    const forename = value[i];
-    if (!isString(forename)) {
-      return errorResult({
-        errorMessage: `userForenames[${i}] in request body is not of type string: ${forename}`,
-      });
-    }
   }
 
   return successResult({
