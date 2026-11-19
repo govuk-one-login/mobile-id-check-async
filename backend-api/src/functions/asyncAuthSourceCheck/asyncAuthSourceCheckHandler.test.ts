@@ -86,7 +86,6 @@ const invalidPartialRequest = buildRequest({
   }),
 });
 
-
 const validDvlaRequest = buildRequest({
   body: JSON.stringify({
     sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
@@ -98,6 +97,6 @@ const validDvlaRequest = buildRequest({
     validUntil: "2027-12-31",
     issuingAuthority: "DVLA",
     licenceNumber: "DECER607085K912305",
-    postcode: "BA2 5AA"
+    postcode: "BA2 5AA",
   }),
 });

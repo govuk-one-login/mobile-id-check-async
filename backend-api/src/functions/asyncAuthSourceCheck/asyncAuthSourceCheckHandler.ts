@@ -3,7 +3,10 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { badRequestResponse, notImplementedResponse } from "../common/lambdaResponses";
+import {
+  badRequestResponse,
+  notImplementedResponse,
+} from "../common/lambdaResponses";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
