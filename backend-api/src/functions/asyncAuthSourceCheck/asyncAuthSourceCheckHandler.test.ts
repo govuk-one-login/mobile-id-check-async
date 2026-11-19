@@ -31,7 +31,7 @@ describe("Async Authoritative Source Check", () => {
         result = await lambdaHandlerConstructor(
           {
             ...validDvlaRequest,
-            ...{ headers: { "User-Agent": iphoneUserAgent } },
+            headers: { "User-Agent": iphoneUserAgent },
           },
           context,
         );
