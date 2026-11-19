@@ -4,8 +4,9 @@ set -eu
 echo "Auth Source Check - Endpoint manual tests."
 echo "--"
 echo "HTTP POST /async/authSourceCheck should:"
-echo "1. return status 501"
-echo "2. return body containing 'Not Implemented'"
+echo "- Given a valid, well-formned request body:"
+echo "  1. return status 501"
+echo "  2. return body containing 'Not Implemented'"
 
 BACKEND_STACK_NAME="${1:-mob}-async-backend"
 
@@ -27,7 +28,28 @@ LOGFILE=$(mktemp "${LOGFILE_PREFIX}"_"${LOGFILE_SUFFIX}".out)
 echo "Logging to ${LOGFILE}"
 echo
 
-if ! $CURL -iX POST $ENDPOINT_URL > $LOGFILE 2>&1
+INPUT_FILE=$(mktemp "${LOGFILE_PREFIX}"_"${LOGFILE_SUFFIX}".in)
+
+cat <<- EOF > $INPUT_FILE
+{
+  "sessionId": "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
+  "opaqueId": "4c5f83fc-4fae-41bf-88f9-03730119c77f",
+  "userSurname": "DECERQUEIRA",
+  "userForenames": ["KENNETH"],
+  "userDateOfBirth": "1965-07-08",
+  "validFrom": "2018-01-01",
+  "validUntil": "2027-12-31",
+  "issuingAuthority": "DVLA",
+  "licenceNumber": "DECER607085K912305",
+  "postcode": "BA2 5AA"
+}
+EOF
+
+CURL_COMMAND="$CURL -iX POST $ENDPOINT_URL -H 'Content-Type: application/json' -d @$INPUT_FILE"
+echo "Executing: ${CURL_COMMAND}"
+echo
+
+if ! $CURL -iX POST $ENDPOINT_URL -H 'Content-Type: application/json' -d @$INPUT_FILE > $LOGFILE 2>&1
 then
   echo "Failed to curl ${ENDPOINT_URL}"
   exit 3
