@@ -2,6 +2,14 @@ export function isString(field: unknown): field is string {
   return typeof field === "string";
 }
 
+export function isStringArray(field: unknown): field is Array<string> {
+  return field !== null
+    && field !== undefined
+    && Array.isArray(field)
+    && field.length > 0
+    && field.every(isString);
+}
+
 export function isValidUUIDv4(uuid: string): boolean {
   const uuidRegex =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
