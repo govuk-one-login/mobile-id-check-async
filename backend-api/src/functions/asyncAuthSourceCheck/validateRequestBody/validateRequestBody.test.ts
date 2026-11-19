@@ -159,6 +159,146 @@ describe("Validate request body", () => {
     });
   });
 
+  describe("Given body is valid JSON but has empty field values", () => {
+    const validRequestBody = {
+      sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
+      opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
+      userSurname: "DECERQUEIRA",
+      userForenames: ["KENNETH"],
+      userDateOfBirth: "1965-07-08",
+      validFrom: "2018-01-01",
+      validUntil: "2027-12-31",
+      issuingAuthority: "DVLA",
+      licenceNumber: "DECER607085K912305",
+      postcode: "BA2 5AA",
+    };
+    describe.each([
+      {
+        scenario: "Given sessionId is an empty string",
+        requestBody: { sessionId: "" },
+        expectedErrorMessage: `sessionId in request body is an empty string.`,
+      },
+      {
+        scenario: "Given opaqueId is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: "",
+        },
+        expectedErrorMessage: `opaqueId in request body is an empty string.`,
+      },
+      {
+        scenario: "Given userSurname is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: "",
+        },
+        expectedErrorMessage: `userSurname in request body is an empty string.`,
+      },
+      {
+        scenario: "Given userDateOfBirth is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: "",
+        },
+        expectedErrorMessage: `userDateOfBirth in request body is an empty string.`,
+      },
+      {
+        scenario: "Given validFrom is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: "",
+        },
+        expectedErrorMessage: `validFrom in request body is an empty string.`,
+      },
+      {
+        scenario: "Given validUntil is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: "",
+        },
+        expectedErrorMessage: `validUntil in request body is an empty string.`,
+      },
+      {
+        scenario: "Given issuingAuthority is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: "",
+        },
+        expectedErrorMessage: `issuingAuthority in request body is an empty string.`,
+      },
+      {
+        scenario: "Given licenceNumber is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: validRequestBody.issuingAuthority,
+          licenceNumber: "",
+        },
+        expectedErrorMessage: `licenceNumber in request body is an empty string.`,
+      },
+      {
+        scenario: "Given postcode is an empty string",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: validRequestBody.issuingAuthority,
+          licenceNumber: validRequestBody.licenceNumber,
+          postcode: "",
+        },
+        expectedErrorMessage: `postcode in request body is an empty string.`,
+      },
+      {
+        scenario: "Given userForenames is an empty array",
+        requestBody: {
+          sessionId: validRequestBody.sessionId,
+          opaqueId: validRequestBody.opaqueId,
+          userSurname: validRequestBody.userSurname,
+          userForenames: [],
+          userDateOfBirth: validRequestBody.userDateOfBirth,
+          validFrom: validRequestBody.validFrom,
+          validUntil: validRequestBody.validUntil,
+          issuingAuthority: validRequestBody.issuingAuthority,
+          licenceNumber: validRequestBody.licenceNumber,
+          postcode: validRequestBody.postcode,
+        },
+        expectedErrorMessage: `userForenames in request body is not an Array<string>. userForenames: []`,
+      },
+    ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
+      it("Returns an error result", () => {
+        const result = validateRequestBody(JSON.stringify(requestBody));
+        expect(result).toStrictEqual({
+          isError: true,
+          value: {
+            errorMessage: expectedErrorMessage,
+          },
+        });
+      });
+    });
+  });
+
   describe("Given body is valid JSON but has incorrect field types", () => {
     const validRequestBody = {
       sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
