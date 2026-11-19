@@ -2,11 +2,11 @@ import { errorResult, Result, successResult } from "../../utils/result";
 import { isString, isStringArray } from "../../utils/utils";
 
 export function validateRequestBody(
-    body: string | null
+  body: string | null,
 ): Result<IAsyncAuthSourceCheckRequestBody> {
   if (body == null) {
     return errorResult({
-      errorMessage: `Request body is either null or undefined.`
+      errorMessage: `Request body is either null or undefined.`,
     });
   }
 

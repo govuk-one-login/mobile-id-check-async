@@ -3,11 +3,13 @@ export function isString(field: unknown): field is string {
 }
 
 export function isStringArray(field: unknown): field is Array<string> {
-  return field !== null
-    && field !== undefined
-    && Array.isArray(field)
-    && field.length > 0
-    && field.every(isString);
+  return (
+    field !== null &&
+    field !== undefined &&
+    Array.isArray(field) &&
+    field.length > 0 &&
+    field.every(isString)
+  );
 }
 
 export function isValidUUIDv4(uuid: string): boolean {

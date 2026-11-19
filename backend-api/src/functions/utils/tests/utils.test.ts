@@ -32,7 +32,7 @@ describe("isStringArray", () => {
       scenario: "Given array of 2 strings",
       input: ["abc", "def"],
       expectedResult: true,
-    }
+    },
   ])("$scenario", ({ input, expectedResult }) => {
     it(`Checks the type ${expectedResult ? "is" : "is not"} a string array`, () => {
       expect(isStringArray(input)).toEqual(expectedResult);
