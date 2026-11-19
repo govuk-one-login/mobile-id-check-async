@@ -90,6 +90,12 @@ Mappings:
       integration: 15
       production: 160
       staging: 15
+    AuthSourceCheckReservedConcurrentExecutions:
+      build: 5
+      dev: 5
+      integration: 0
+      production: 0
+      staging: 5
     BaseDns:
       build: review-b-async.build.account.gov.uk
       dev: review-b-async.dev.account.gov.uk
@@ -1533,6 +1539,119 @@ Resources:
       Threshold: 1
       TreatMissingData: notBreaching
     Condition: DeployAlarms
+
+  AsyncAuthSourceCheckFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncAuthSourceCheckLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        EntryPoints:
+          - src/functions/asyncAuthSourceCheck/asyncAuthSourceCheckHandler.ts
+        Format: esm
+        Minify: true
+        OutExtension:
+          - .js=.mjs
+        Platform: node
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AWS::NoValue
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
+      Events:
+        AsyncAuthSourceCheck:
+          Properties:
+            Method: post
+            Path: /async/authSourceCheck
+            RestApiId: !Ref SessionsApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-auth-source-check
+      Handler: asyncAuthSourceCheckHandler.lambdaHandler
+      ReservedConcurrentExecutions: !FindInMap
+        - EnvironmentVariables
+        - AuthSourceCheckReservedConcurrentExecutions
+        - !Ref Environment
+      Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
+      VpcConfig:
+        SecurityGroupIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds: !If
+          - UseSpokeVpc
+          - - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
+          - - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+            - !ImportValue
+              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+
+  AsyncAuthSourceCheckLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncAuthSourceCheckFunctionLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+      RoleName: !Sub ${AWS::StackName}-auth-source-check-lambda
+
+  AsyncAuthSourceCheckLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - comment: KMS encryption not required as log group will not contain sensitive data.
+            id: CKV_AWS_158
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-auth-source-check
+      RetentionInDays: !FindInMap
+        - EnvironmentVariables
+        - LogRetentionInDays
+        - !Ref Environment
 
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
