@@ -4,7 +4,7 @@ set -eu
 echo "Auth Source Check - Endpoint manual tests."
 echo "--"
 echo "HTTP POST /async/authSourceCheck should:"
-echo "- Given a badly-formned request body:"
+echo "- Given a badly-formed request body:"
 echo "  1. return status 400"
 echo "  2. return body containing 'invalid_request'"
 
