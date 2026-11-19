@@ -65,7 +65,7 @@ describe("Async Authoritative Source Check", () => {
         result = await lambdaHandlerConstructor(
           {
             ...invalidPartialRequest,
-            ...{ headers: { "User-Agent": iphoneUserAgent } },
+            headers: { "User-Agent": iphoneUserAgent },
           },
           context,
         );
