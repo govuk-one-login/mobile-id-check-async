@@ -25,7 +25,7 @@ describe("POST /async/authSourceCheck", () => {
       expect(response.data).toStrictEqual({
         error: "invalid_request",
         error_description:
-          "opaqueId in request body is either null or undefined.",
+          "userSurname in request body is either null or undefined.",
       });
     });
 
@@ -42,7 +42,6 @@ describe("POST /async/authSourceCheck", () => {
     beforeAll(async () => {
       const requestBody = {
         sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-        opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
         userSurname: "DECERQUEIRA",
         userForenames: ["KENNETH"],
         userDateOfBirth: "1965-07-08",
