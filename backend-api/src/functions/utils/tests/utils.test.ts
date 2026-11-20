@@ -14,9 +14,22 @@ describe("isStringArray", () => {
       expectedResult: false,
     },
     {
-      scenario: "Given an empty array",
+      scenario: "Given an empty array, no options supplied",
       input: [],
+      options: undefined,
       expectedResult: false,
+    },
+    {
+      scenario: "Given an empty array, options doesn't allow empty",
+      input: [],
+      options: { allowEmpty: false },
+      expectedResult: false,
+    },
+    {
+      scenario: "Given an empty array, options allows empty",
+      input: [],
+      options: { allowEmpty: true },
+      expectedResult: true,
     },
     {
       scenario: "Given array of 2 numbers",
@@ -33,9 +46,9 @@ describe("isStringArray", () => {
       input: ["abc", "def"],
       expectedResult: true,
     },
-  ])("$scenario", ({ input, expectedResult }) => {
+  ])("$scenario", ({ input, options, expectedResult }) => {
     it(`Checks the type ${expectedResult ? "is" : "is not"} a string array`, () => {
-      expect(isStringArray(input)).toEqual(expectedResult);
+      expect(isStringArray(input, options)).toEqual(expectedResult);
     });
   });
 });
