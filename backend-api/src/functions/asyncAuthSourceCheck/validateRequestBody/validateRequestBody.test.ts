@@ -30,7 +30,6 @@ describe("Validate request body", () => {
 
   const validRequestBody = {
     sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-    opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
     userSurname: "DECERQUEIRA",
     userForenames: ["KENNETH"],
     userDateOfBirth: "1965-07-08",
@@ -59,17 +58,9 @@ describe("Validate request body", () => {
         expectedErrorMessage: `sessionId in request body is either null or undefined.`,
       },
       {
-        scenario: "Given opaqueId is missing",
-        requestBody: {
-          sessionId: validRequestBody.sessionId,
-        },
-        expectedErrorMessage: `opaqueId in request body is either null or undefined.`,
-      },
-      {
         scenario: "Given userSurname is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
         },
         expectedErrorMessage: `userSurname in request body is either null or undefined.`,
       },
@@ -77,7 +68,6 @@ describe("Validate request body", () => {
         scenario: "Given userDateOfBirth is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
         },
         expectedErrorMessage: `userDateOfBirth in request body is either null or undefined.`,
@@ -86,7 +76,6 @@ describe("Validate request body", () => {
         scenario: "Given validFrom is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
         },
@@ -96,7 +85,6 @@ describe("Validate request body", () => {
         scenario: "Given validUntil is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -107,7 +95,6 @@ describe("Validate request body", () => {
         scenario: "Given issuingAuthority is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -119,7 +106,6 @@ describe("Validate request body", () => {
         scenario: "Given licenceNumber is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -132,7 +118,6 @@ describe("Validate request body", () => {
         scenario: "Given postcode is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -146,7 +131,6 @@ describe("Validate request body", () => {
         scenario: "Given userForenames is missing",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -173,7 +157,6 @@ describe("Validate request body", () => {
   describe("Given body is valid JSON but has empty field values", () => {
     const validRequestBody = {
       sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-      opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
       userSurname: "DECERQUEIRA",
       userForenames: ["KENNETH"],
       userDateOfBirth: "1965-07-08",
@@ -190,18 +173,9 @@ describe("Validate request body", () => {
         expectedErrorMessage: `sessionId in request body is an empty string.`,
       },
       {
-        scenario: "Given opaqueId is an empty string",
-        requestBody: {
-          sessionId: validRequestBody.sessionId,
-          opaqueId: "",
-        },
-        expectedErrorMessage: `opaqueId in request body is an empty string.`,
-      },
-      {
         scenario: "Given userSurname is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: "",
         },
         expectedErrorMessage: `userSurname in request body is an empty string.`,
@@ -210,7 +184,6 @@ describe("Validate request body", () => {
         scenario: "Given userDateOfBirth is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: "",
         },
@@ -220,7 +193,6 @@ describe("Validate request body", () => {
         scenario: "Given validFrom is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: "",
@@ -231,7 +203,6 @@ describe("Validate request body", () => {
         scenario: "Given validUntil is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -243,7 +214,6 @@ describe("Validate request body", () => {
         scenario: "Given issuingAuthority is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -256,7 +226,6 @@ describe("Validate request body", () => {
         scenario: "Given licenceNumber is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -270,7 +239,6 @@ describe("Validate request body", () => {
         scenario: "Given postcode is an empty string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -285,7 +253,6 @@ describe("Validate request body", () => {
         scenario: "Given userForenames is an empty array",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userForenames: [],
           userDateOfBirth: validRequestBody.userDateOfBirth,
@@ -313,7 +280,6 @@ describe("Validate request body", () => {
   describe("Given body is valid JSON but has incorrect field types", () => {
     const validRequestBody = {
       sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-      opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
       userSurname: "DECERQUEIRA",
       userForenames: ["KENNETH"],
       userDateOfBirth: "1965-07-08",
@@ -330,18 +296,9 @@ describe("Validate request body", () => {
         expectedErrorMessage: `sessionId in request body is not of type string.`,
       },
       {
-        scenario: "Given opaqueId is not of type string",
-        requestBody: {
-          sessionId: validRequestBody.sessionId,
-          opaqueId: 123,
-        },
-        expectedErrorMessage: `opaqueId in request body is not of type string.`,
-      },
-      {
         scenario: "Given userSurname is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: 123,
         },
         expectedErrorMessage: `userSurname in request body is not of type string.`,
@@ -350,7 +307,6 @@ describe("Validate request body", () => {
         scenario: "Given userDateOfBirth is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: 123,
         },
@@ -360,7 +316,6 @@ describe("Validate request body", () => {
         scenario: "Given validFrom is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: 123,
@@ -371,7 +326,6 @@ describe("Validate request body", () => {
         scenario: "Given validUntil is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -383,7 +337,6 @@ describe("Validate request body", () => {
         scenario: "Given issuingAuthority is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -396,7 +349,6 @@ describe("Validate request body", () => {
         scenario: "Given licenceNumber is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -410,7 +362,6 @@ describe("Validate request body", () => {
         scenario: "Given postcode is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: validRequestBody.validFrom,
@@ -425,7 +376,6 @@ describe("Validate request body", () => {
         scenario: "Given userForenames is not of type string",
         requestBody: {
           sessionId: validRequestBody.sessionId,
-          opaqueId: validRequestBody.opaqueId,
           userSurname: validRequestBody.userSurname,
           userForenames: [123],
           userDateOfBirth: validRequestBody.userDateOfBirth,

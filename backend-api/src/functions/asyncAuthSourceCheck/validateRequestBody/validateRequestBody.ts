@@ -21,7 +21,6 @@ export function validateRequestBody(
 
   const stringFields = [
     "sessionId",
-    "opaqueId",
     "userSurname",
     "userDateOfBirth",
     "validFrom",
@@ -65,7 +64,6 @@ export function validateRequestBody(
 
   return successResult({
     sessionId: parsedBody.sessionId,
-    opaqueId: parsedBody.opaqueId,
     userSurname: parsedBody.userSurname,
     userForenames: parsedBody.userForenames,
     userDateOfBirth: parsedBody.userDateOfBirth,
@@ -79,7 +77,6 @@ export function validateRequestBody(
 
 export interface IAsyncAuthSourceCheckRequestBody {
   sessionId: string;
-  opaqueId: string;
   userSurname: string;
   userForenames: string[];
   userDateOfBirth: string;
