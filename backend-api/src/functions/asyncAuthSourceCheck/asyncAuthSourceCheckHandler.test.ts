@@ -14,11 +14,13 @@ import {
 
 describe("Async Authoritative Source Check", () => {
   let context: Context;
+  let consoleErrorSpy: MockInstance;
   let consoleInfoSpy: MockInstance;
   let result: APIGatewayProxyResult;
 
   beforeEach(() => {
     context = buildLambdaContext();
+    consoleErrorSpy = vi.spyOn(console, "error");
     consoleInfoSpy = vi.spyOn(console, "info");
   });
 
@@ -70,6 +72,12 @@ describe("Async Authoritative Source Check", () => {
           context,
         );
       });
+      it("Logs an error code", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_REQUEST_BODY_INVALID",
+          errorMessage: "validFrom in request body is either null or undefined.",
+        });
+      });
       it("Returns a ClientError status", () => {
         expect(result.statusCode).toEqual(400);
       });
@@ -80,9 +88,11 @@ describe("Async Authoritative Source Check", () => {
 const invalidPartialRequest = buildRequest({
   body: JSON.stringify({
     sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
+    opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
     userSurname: "DECERQUEIRA",
     userForenames: ["KENNETH"],
     userDateOfBirth: "1965-07-08",
+    // validFrom should come next, causing a 'field missing' validation error.
   }),
 });
 
