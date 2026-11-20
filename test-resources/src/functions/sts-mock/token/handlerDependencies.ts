@@ -1,13 +1,13 @@
-import { IKeyRetriever, KeyRetriever } from "./keyRetriever/keyRetriever";
+import { IKeyRetriever, KeyRetriever } from "./keyRetriever/keyRetriever.js";
 import {
   ITokenEncrypter,
   TokenEncrypter,
-} from "./tokenEncrypter/tokenEncrypter";
-import { ITokenSigner, TokenSigner } from "./tokenSigner/tokenSigner";
+} from "./tokenEncrypter/tokenEncrypter.js";
+import { ITokenSigner, TokenSigner } from "./tokenSigner/tokenSigner.js";
 import {
   IValidateServiceTokenRequest,
   validateServiceTokenRequest,
-} from "./validateServiceTokenRequest/validateServiceTokenRequest";
+} from "./validateServiceTokenRequest/validateServiceTokenRequest.js";
 
 export interface TokenDependencies {
   env: NodeJS.ProcessEnv;

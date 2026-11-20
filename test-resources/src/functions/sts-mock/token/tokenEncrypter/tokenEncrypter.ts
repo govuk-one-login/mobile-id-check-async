@@ -3,15 +3,15 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../common/utils/result";
+} from "../../../common/utils/result.js";
 import { createPublicKey, JsonWebKey, KeyObject } from "node:crypto";
 import { CompactEncrypt } from "jose";
-import { JWT } from "../tokenSigner/tokenSigner";
+import { JWT } from "../tokenSigner/tokenSigner.js";
 import {
   GetKeysResponse,
   IGetKeys,
-} from "../../../common/jwks/JwksCache/types";
-import { InMemoryJwksCache } from "../../../common/jwks/JwksCache/JwksCache";
+} from "../../../common/jwks/JwksCache/types.js";
+import { InMemoryJwksCache } from "../../../common/jwks/JwksCache/JwksCache.js";
 
 export type JWE = `${string}.${string}.${string}.${string}.${string}`;
 
