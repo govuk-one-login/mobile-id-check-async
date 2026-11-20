@@ -264,7 +264,7 @@ export const validResultSentAttributes = {
 };
 
 export const validAuthSourceCheckRequestBody = {
-  sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
+  sessionId: mockSessionId,
   userSurname: "DECERQUEIRA",
   userForenames: ["KENNETH"],
   userDateOfBirth: "1965-07-08",
