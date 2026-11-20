@@ -12,7 +12,7 @@ describe("Validate request body", () => {
       {
         scenario: "Given body cannot be parsed as JSON",
         requestBody: "invalidJSON",
-        expectedErrorMessage: `Request body could not be parsed as JSON. SyntaxError: Unexpected token 'i', "invalidJSON" is not valid JSON`,
+        expectedErrorMessage: `Request body could not be parsed as JSON.`,
       },
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {
