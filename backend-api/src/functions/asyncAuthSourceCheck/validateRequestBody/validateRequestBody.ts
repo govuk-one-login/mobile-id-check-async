@@ -13,9 +13,9 @@ export function validateRequestBody(
   let parsedBody;
   try {
     parsedBody = JSON.parse(body);
-  } catch (error: unknown) {
+  } catch {
     return errorResult({
-      errorMessage: `Request body could not be parsed as JSON. ${error}`,
+      errorMessage: `Request body could not be parsed as JSON.`,
     });
   }
 
