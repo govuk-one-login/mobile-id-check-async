@@ -56,7 +56,8 @@ export function validateRequestBody(
       errorMessage: `userForenames in request body is either null or undefined.`,
     });
   }
-  if (!isStringArray(value)) {
+  // We permit userForenames to be empty; this does sometimes occur.
+  if (!isStringArray(value, { allowEmpty: true })) {
     return errorResult({
       errorMessage: `userForenames in request body is not an Array<string>.`,
     });

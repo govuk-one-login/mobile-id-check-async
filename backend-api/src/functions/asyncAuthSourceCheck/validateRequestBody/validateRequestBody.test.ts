@@ -1,6 +1,6 @@
 import { validateRequestBody } from "./validateRequestBody";
 import { validAuthSourceCheckRequestBody } from "../../testUtils/unitTestData";
-import { expect, it, describe } from "vitest";
+import { expect, it, describe, beforeEach } from "vitest";
 
 describe("Validate request body", () => {
   describe("Given body is not valid JSON", () => {
@@ -29,14 +29,33 @@ describe("Validate request body", () => {
     });
   });
 
-  describe("Given body is valid JSON and has all required fields present", () => {
-    it("Returns an OK result", () => {
-      const result = validateRequestBody(
-        JSON.stringify(validAuthSourceCheckRequestBody),
-      );
-      expect(result).toStrictEqual({
-        isError: false,
-        value: validAuthSourceCheckRequestBody,
+  describe("Given body is valid JSON and is well-formed", () => {
+    describe("With a userForenames containing at least 1 element", () => {
+      it("Returns an OK result", () => {
+        const result = validateRequestBody(
+          JSON.stringify(validAuthSourceCheckRequestBody),
+        );
+        expect(result).toStrictEqual({
+          isError: false,
+          value: validAuthSourceCheckRequestBody,
+        });
+      });
+    });
+
+    describe("With a userForenames of 0 elements", () => {
+      let emptyUserForenamesRequestBody;
+      beforeEach(() => {
+        emptyUserForenamesRequestBody = { ...validAuthSourceCheckRequestBody };
+        emptyUserForenamesRequestBody.userForenames = [];
+      });
+      it("Returns an OK result", () => {
+        const result = validateRequestBody(
+          JSON.stringify(emptyUserForenamesRequestBody),
+        );
+        expect(result).toStrictEqual({
+          isError: false,
+          value: emptyUserForenamesRequestBody,
+        });
       });
     });
   });
@@ -229,21 +248,7 @@ describe("Validate request body", () => {
         },
         expectedErrorMessage: `postcode in request body is an empty string.`,
       },
-      {
-        scenario: "Given userForenames is an empty array",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userForenames: [],
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
-          postcode: validAuthSourceCheckRequestBody.postcode,
-        },
-        expectedErrorMessage: `userForenames in request body is not an Array<string>.`,
-      },
+      // Note that 'Given userForenames is an empty array' is supported, not an error.
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {
         const result = validateRequestBody(JSON.stringify(requestBody));

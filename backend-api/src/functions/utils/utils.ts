@@ -2,12 +2,16 @@ export function isString(field: unknown): field is string {
   return typeof field === "string";
 }
 
-export function isStringArray(field: unknown): field is Array<string> {
+export function isStringArray(
+  field: unknown,
+  options?: { allowEmpty: boolean },
+): field is Array<string> {
+  const minLength = options?.allowEmpty ? 0 : 1;
   return (
     field !== null &&
     field !== undefined &&
     Array.isArray(field) &&
-    field.length > 0 &&
+    field.length >= minLength &&
     field.every(isString)
   );
 }
