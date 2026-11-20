@@ -25,41 +25,29 @@ describe("Async Authoritative Source Check", () => {
     consoleInfoSpy = vi.spyOn(console, "info");
   });
 
-  describe("On every invocation", () => {
+  describe("On every lambda invocation", () => {
     const iphoneUserAgent =
       "OneLogin/1.9.0 iPhone14,3 iOS/16.4 CFNetwork/1.2.3 Darwin/4.5.6";
 
-    describe("With an valid request to DVLA", () => {
-      beforeEach(async () => {
-        result = await lambdaHandlerConstructor(
-          {
-            ...validDvlaRequest,
-            headers: { "User-Agent": iphoneUserAgent },
-          },
-          context,
-        );
-      });
+    beforeEach(async () => {
+      result = await lambdaHandlerConstructor(
+        {
+          ...validRequest,
+          headers: { "User-Agent": iphoneUserAgent },
+        },
+        context,
+      );
+    });
 
-      it("Adds context, version and User-Agent to log attributes and logs STARTED message", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_STARTED",
-          functionVersion: "1",
-          function_arn: "arn:12345",
-          userAgent: {
-            userAgentHeader: iphoneUserAgent,
-            deviceType: "iPhone",
-          },
-        });
-      });
-
-      it("Logs a completion code", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_COMPLETED",
-        });
-      });
-
-      it("Returns a NotImplemented status", () => {
-        expect(result.statusCode).toEqual(501);
+    it("Logs a STARTED message, including version and User-Agent", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345",
+        userAgent: {
+          userAgentHeader: iphoneUserAgent,
+          deviceType: "iPhone",
+        },
       });
     });
 
@@ -84,6 +72,18 @@ describe("Async Authoritative Source Check", () => {
         expect(result.statusCode).toEqual(400);
       });
     });
+
+    describe("With an valid request", () => {
+      it("Logs a completion code", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_COMPLETED",
+        });
+      });
+
+      it("Returns a NotImplemented status", () => {
+        expect(result.statusCode).toEqual(501);
+      });
+    });
   });
 });
 
@@ -97,6 +97,6 @@ const invalidPartialRequest = buildRequest({
   }),
 });
 
-const validDvlaRequest = buildRequest({
+const validRequest = buildRequest({
   body: JSON.stringify(validAuthSourceCheckRequestBody),
 });
