@@ -284,7 +284,7 @@ describe("Validate request body", () => {
           licenceNumber: validRequestBody.licenceNumber,
           postcode: validRequestBody.postcode,
         },
-        expectedErrorMessage: `userForenames in request body is not an Array<string>. userForenames: []`,
+        expectedErrorMessage: `userForenames in request body is not an Array<string>.`,
       },
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {
@@ -316,7 +316,7 @@ describe("Validate request body", () => {
       {
         scenario: "Given sessionId is not of type string",
         requestBody: { sessionId: 123 },
-        expectedErrorMessage: `sessionId in request body is not of type string. sessionId: 123`,
+        expectedErrorMessage: `sessionId in request body is not of type string.`,
       },
       {
         scenario: "Given opaqueId is not of type string",
@@ -324,7 +324,7 @@ describe("Validate request body", () => {
           sessionId: validRequestBody.sessionId,
           opaqueId: 123,
         },
-        expectedErrorMessage: `opaqueId in request body is not of type string. opaqueId: 123`,
+        expectedErrorMessage: `opaqueId in request body is not of type string.`,
       },
       {
         scenario: "Given userSurname is not of type string",
@@ -333,7 +333,7 @@ describe("Validate request body", () => {
           opaqueId: validRequestBody.opaqueId,
           userSurname: 123,
         },
-        expectedErrorMessage: `userSurname in request body is not of type string. userSurname: 123`,
+        expectedErrorMessage: `userSurname in request body is not of type string.`,
       },
       {
         scenario: "Given userDateOfBirth is not of type string",
@@ -343,7 +343,7 @@ describe("Validate request body", () => {
           userSurname: validRequestBody.userSurname,
           userDateOfBirth: 123,
         },
-        expectedErrorMessage: `userDateOfBirth in request body is not of type string. userDateOfBirth: 123`,
+        expectedErrorMessage: `userDateOfBirth in request body is not of type string.`,
       },
       {
         scenario: "Given validFrom is not of type string",
@@ -354,7 +354,7 @@ describe("Validate request body", () => {
           userDateOfBirth: validRequestBody.userDateOfBirth,
           validFrom: 123,
         },
-        expectedErrorMessage: `validFrom in request body is not of type string. validFrom: 123`,
+        expectedErrorMessage: `validFrom in request body is not of type string.`,
       },
       {
         scenario: "Given validUntil is not of type string",
@@ -366,7 +366,7 @@ describe("Validate request body", () => {
           validFrom: validRequestBody.validFrom,
           validUntil: 123,
         },
-        expectedErrorMessage: `validUntil in request body is not of type string. validUntil: 123`,
+        expectedErrorMessage: `validUntil in request body is not of type string.`,
       },
       {
         scenario: "Given issuingAuthority is not of type string",
@@ -379,7 +379,7 @@ describe("Validate request body", () => {
           validUntil: validRequestBody.validUntil,
           issuingAuthority: 123,
         },
-        expectedErrorMessage: `issuingAuthority in request body is not of type string. issuingAuthority: 123`,
+        expectedErrorMessage: `issuingAuthority in request body is not of type string.`,
       },
       {
         scenario: "Given licenceNumber is not of type string",
@@ -393,7 +393,7 @@ describe("Validate request body", () => {
           issuingAuthority: validRequestBody.issuingAuthority,
           licenceNumber: 123,
         },
-        expectedErrorMessage: `licenceNumber in request body is not of type string. licenceNumber: 123`,
+        expectedErrorMessage: `licenceNumber in request body is not of type string.`,
       },
       {
         scenario: "Given postcode is not of type string",
@@ -408,7 +408,7 @@ describe("Validate request body", () => {
           licenceNumber: validRequestBody.licenceNumber,
           postcode: 123,
         },
-        expectedErrorMessage: `postcode in request body is not of type string. postcode: 123`,
+        expectedErrorMessage: `postcode in request body is not of type string.`,
       },
       {
         scenario: "Given userForenames is not of type string",
@@ -424,7 +424,7 @@ describe("Validate request body", () => {
           licenceNumber: validRequestBody.licenceNumber,
           postcode: validRequestBody.postcode,
         },
-        expectedErrorMessage: `userForenames in request body is not an Array<string>. userForenames: [123]`,
+        expectedErrorMessage: `userForenames in request body is not an Array<string>.`,
       },
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {

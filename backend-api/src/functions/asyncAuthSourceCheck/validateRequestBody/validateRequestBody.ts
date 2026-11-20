@@ -41,7 +41,7 @@ export function validateRequestBody(
     }
     if (!isString(value)) {
       return errorResult({
-        errorMessage: `${field} in request body is not of type string. ${field}: ${value}`,
+        errorMessage: `${field} in request body is not of type string.`,
       });
     }
     if (value === "") {
@@ -59,7 +59,7 @@ export function validateRequestBody(
   }
   if (!isStringArray(value)) {
     return errorResult({
-      errorMessage: `userForenames in request body is not an Array<string>. userForenames: ${JSON.stringify(value)}`,
+      errorMessage: `userForenames in request body is not an Array<string>.`,
     });
   }
 
