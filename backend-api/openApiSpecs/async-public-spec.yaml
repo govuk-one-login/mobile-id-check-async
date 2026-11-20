@@ -698,6 +698,21 @@ paths:
       tags:
         - ASC
       responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                errorInvalidRequest:
+                  description: |
+                    Invalid request body
+                  value:
+                    {
+                      "error": "invalid_request",
+                      "error_description": "Invalid request body"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
         '501':
           description: Not Implemented
           content:
