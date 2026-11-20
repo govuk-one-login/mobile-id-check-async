@@ -75,7 +75,8 @@ describe("Async Authoritative Source Check", () => {
       it("Logs an error code", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_AUTH_SOURCE_CHECK_REQUEST_BODY_INVALID",
-          errorMessage: "validFrom in request body is either null or undefined.",
+          errorMessage:
+            "validFrom in request body is either null or undefined.",
         });
       });
       it("Returns a ClientError status", () => {
