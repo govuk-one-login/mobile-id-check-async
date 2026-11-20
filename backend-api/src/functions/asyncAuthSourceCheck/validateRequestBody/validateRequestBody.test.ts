@@ -28,19 +28,30 @@ describe("Validate request body", () => {
     });
   });
 
-  describe("Given body is valid JSON but has required fields missing", () => {
-    const validRequestBody = {
-      sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-      opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
-      userSurname: "DECERQUEIRA",
-      userForenames: ["KENNETH"],
-      userDateOfBirth: "1965-07-08",
-      validFrom: "2018-01-01",
-      validUntil: "2027-12-31",
-      issuingAuthority: "DVLA",
-      licenceNumber: "DECER607085K912305",
-      postcode: "BA2 5AA",
-    };
+  const validRequestBody = {
+    sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
+    opaqueId: "4c5f83fc-4fae-41bf-88f9-03730119c77f",
+    userSurname: "DECERQUEIRA",
+    userForenames: ["KENNETH"],
+    userDateOfBirth: "1965-07-08",
+    validFrom: "2018-01-01",
+    validUntil: "2027-12-31",
+    issuingAuthority: "DVLA",
+    licenceNumber: "DECER607085K912305",
+    postcode: "BA2 5AA",
+  };
+
+  describe("Given body is valid JSON and has all required fields present", () => {
+    it("Returns an OK result", () => {
+      const result = validateRequestBody(JSON.stringify(validRequestBody));
+      expect(result).toStrictEqual({
+        isError: false,
+        value: validRequestBody,
+      });
+    });
+  });
+
+  describe("Given body is valid JSON but has one or more required fields missing", () => {
     describe.each([
       {
         scenario: "Given sessionId is missing",
