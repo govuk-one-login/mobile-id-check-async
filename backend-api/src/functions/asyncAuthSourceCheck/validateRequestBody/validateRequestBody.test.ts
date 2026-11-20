@@ -1,4 +1,5 @@
 import { validateRequestBody } from "./validateRequestBody";
+import { validAuthSourceCheckRequestBody } from "../../testUtils/unitTestData";
 import { expect, it, describe } from "vitest";
 
 describe("Validate request body", () => {
@@ -28,24 +29,14 @@ describe("Validate request body", () => {
     });
   });
 
-  const validRequestBody = {
-    sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-    userSurname: "DECERQUEIRA",
-    userForenames: ["KENNETH"],
-    userDateOfBirth: "1965-07-08",
-    validFrom: "2018-01-01",
-    validUntil: "2027-12-31",
-    issuingAuthority: "DVLA",
-    licenceNumber: "DECER607085K912305",
-    postcode: "BA2 5AA",
-  };
-
   describe("Given body is valid JSON and has all required fields present", () => {
     it("Returns an OK result", () => {
-      const result = validateRequestBody(JSON.stringify(validRequestBody));
+      const result = validateRequestBody(
+        JSON.stringify(validAuthSourceCheckRequestBody),
+      );
       expect(result).toStrictEqual({
         isError: false,
-        value: validRequestBody,
+        value: validAuthSourceCheckRequestBody,
       });
     });
   });
@@ -60,84 +51,84 @@ describe("Validate request body", () => {
       {
         scenario: "Given userSurname is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
         },
         expectedErrorMessage: `userSurname in request body is either null or undefined.`,
       },
       {
         scenario: "Given userDateOfBirth is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
         },
         expectedErrorMessage: `userDateOfBirth in request body is either null or undefined.`,
       },
       {
         scenario: "Given validFrom is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
         },
         expectedErrorMessage: `validFrom in request body is either null or undefined.`,
       },
       {
         scenario: "Given validUntil is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
         },
         expectedErrorMessage: `validUntil in request body is either null or undefined.`,
       },
       {
         scenario: "Given issuingAuthority is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
         },
         expectedErrorMessage: `issuingAuthority in request body is either null or undefined.`,
       },
       {
         scenario: "Given licenceNumber is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
         },
         expectedErrorMessage: `licenceNumber in request body is either null or undefined.`,
       },
       {
         scenario: "Given postcode is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
-          licenceNumber: validRequestBody.licenceNumber,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
+          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
         },
         expectedErrorMessage: `postcode in request body is either null or undefined.`,
       },
       {
         scenario: "Given userForenames is missing",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
-          licenceNumber: validRequestBody.licenceNumber,
-          postcode: validRequestBody.postcode,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
+          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
+          postcode: validAuthSourceCheckRequestBody.postcode,
         },
         expectedErrorMessage: `userForenames in request body is either null or undefined.`,
       },
@@ -155,17 +146,6 @@ describe("Validate request body", () => {
   });
 
   describe("Given body is valid JSON but has empty field values", () => {
-    const validRequestBody = {
-      sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-      userSurname: "DECERQUEIRA",
-      userForenames: ["KENNETH"],
-      userDateOfBirth: "1965-07-08",
-      validFrom: "2018-01-01",
-      validUntil: "2027-12-31",
-      issuingAuthority: "DVLA",
-      licenceNumber: "DECER607085K912305",
-      postcode: "BA2 5AA",
-    };
     describe.each([
       {
         scenario: "Given sessionId is an empty string",
@@ -175,7 +155,7 @@ describe("Validate request body", () => {
       {
         scenario: "Given userSurname is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
           userSurname: "",
         },
         expectedErrorMessage: `userSurname in request body is an empty string.`,
@@ -183,8 +163,8 @@ describe("Validate request body", () => {
       {
         scenario: "Given userDateOfBirth is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
           userDateOfBirth: "",
         },
         expectedErrorMessage: `userDateOfBirth in request body is an empty string.`,
@@ -192,9 +172,9 @@ describe("Validate request body", () => {
       {
         scenario: "Given validFrom is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
           validFrom: "",
         },
         expectedErrorMessage: `validFrom in request body is an empty string.`,
@@ -202,10 +182,10 @@ describe("Validate request body", () => {
       {
         scenario: "Given validUntil is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
           validUntil: "",
         },
         expectedErrorMessage: `validUntil in request body is an empty string.`,
@@ -213,11 +193,11 @@ describe("Validate request body", () => {
       {
         scenario: "Given issuingAuthority is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
           issuingAuthority: "",
         },
         expectedErrorMessage: `issuingAuthority in request body is an empty string.`,
@@ -225,12 +205,12 @@ describe("Validate request body", () => {
       {
         scenario: "Given licenceNumber is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
           licenceNumber: "",
         },
         expectedErrorMessage: `licenceNumber in request body is an empty string.`,
@@ -238,13 +218,13 @@ describe("Validate request body", () => {
       {
         scenario: "Given postcode is an empty string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
-          licenceNumber: validRequestBody.licenceNumber,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
+          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
           postcode: "",
         },
         expectedErrorMessage: `postcode in request body is an empty string.`,
@@ -252,15 +232,15 @@ describe("Validate request body", () => {
       {
         scenario: "Given userForenames is an empty array",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
           userForenames: [],
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
-          licenceNumber: validRequestBody.licenceNumber,
-          postcode: validRequestBody.postcode,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
+          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
+          postcode: validAuthSourceCheckRequestBody.postcode,
         },
         expectedErrorMessage: `userForenames in request body is not an Array<string>.`,
       },
@@ -278,17 +258,6 @@ describe("Validate request body", () => {
   });
 
   describe("Given body is valid JSON but has incorrect field types", () => {
-    const validRequestBody = {
-      sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-      userSurname: "DECERQUEIRA",
-      userForenames: ["KENNETH"],
-      userDateOfBirth: "1965-07-08",
-      validFrom: "2018-01-01",
-      validUntil: "2027-12-31",
-      issuingAuthority: "DVLA",
-      licenceNumber: "DECER607085K912305",
-      postcode: "BA2 5AA",
-    };
     describe.each([
       {
         scenario: "Given sessionId is not of type string",
@@ -298,7 +267,7 @@ describe("Validate request body", () => {
       {
         scenario: "Given userSurname is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
           userSurname: 123,
         },
         expectedErrorMessage: `userSurname in request body is not of type string.`,
@@ -306,8 +275,8 @@ describe("Validate request body", () => {
       {
         scenario: "Given userDateOfBirth is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
           userDateOfBirth: 123,
         },
         expectedErrorMessage: `userDateOfBirth in request body is not of type string.`,
@@ -315,9 +284,9 @@ describe("Validate request body", () => {
       {
         scenario: "Given validFrom is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
           validFrom: 123,
         },
         expectedErrorMessage: `validFrom in request body is not of type string.`,
@@ -325,10 +294,10 @@ describe("Validate request body", () => {
       {
         scenario: "Given validUntil is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
           validUntil: 123,
         },
         expectedErrorMessage: `validUntil in request body is not of type string.`,
@@ -336,11 +305,11 @@ describe("Validate request body", () => {
       {
         scenario: "Given issuingAuthority is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
           issuingAuthority: 123,
         },
         expectedErrorMessage: `issuingAuthority in request body is not of type string.`,
@@ -348,12 +317,12 @@ describe("Validate request body", () => {
       {
         scenario: "Given licenceNumber is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
           licenceNumber: 123,
         },
         expectedErrorMessage: `licenceNumber in request body is not of type string.`,
@@ -361,13 +330,13 @@ describe("Validate request body", () => {
       {
         scenario: "Given postcode is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
-          licenceNumber: validRequestBody.licenceNumber,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
+          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
           postcode: 123,
         },
         expectedErrorMessage: `postcode in request body is not of type string.`,
@@ -375,15 +344,15 @@ describe("Validate request body", () => {
       {
         scenario: "Given userForenames is not of type string",
         requestBody: {
-          sessionId: validRequestBody.sessionId,
-          userSurname: validRequestBody.userSurname,
+          sessionId: validAuthSourceCheckRequestBody.sessionId,
+          userSurname: validAuthSourceCheckRequestBody.userSurname,
           userForenames: [123],
-          userDateOfBirth: validRequestBody.userDateOfBirth,
-          validFrom: validRequestBody.validFrom,
-          validUntil: validRequestBody.validUntil,
-          issuingAuthority: validRequestBody.issuingAuthority,
-          licenceNumber: validRequestBody.licenceNumber,
-          postcode: validRequestBody.postcode,
+          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
+          validFrom: validAuthSourceCheckRequestBody.validFrom,
+          validUntil: validAuthSourceCheckRequestBody.validUntil,
+          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
+          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
+          postcode: validAuthSourceCheckRequestBody.postcode,
         },
         expectedErrorMessage: `userForenames in request body is not an Array<string>.`,
       },
