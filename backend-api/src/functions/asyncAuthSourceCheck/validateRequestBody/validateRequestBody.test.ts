@@ -60,6 +60,36 @@ describe("Validate request body", () => {
     });
   });
 
+  describe("Given body is valid JSON but not an Object", () => {
+    describe.each([
+      {
+        requestBody: "null",
+      },
+      {
+        requestBody: "true",
+      },
+      {
+        requestBody: "false",
+      },
+      {
+        requestBody: "[]",
+      },
+      {
+        requestBody: "123",
+      },
+    ])("Top-level element is $requestBody", ({ requestBody }) => {
+      it("Returns an error result", () => {
+        const result = validateRequestBody(requestBody);
+        expect(result).toStrictEqual({
+          isError: true,
+          value: {
+            errorMessage: "Request body JSON is not structured as an Object",
+          },
+        });
+      });
+    });
+  });
+
   describe("Given body is valid JSON but has one or more required fields missing", () => {
     describe.each([
       {

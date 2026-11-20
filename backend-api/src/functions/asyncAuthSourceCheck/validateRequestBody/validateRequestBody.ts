@@ -19,6 +19,13 @@ export function validateRequestBody(
     });
   }
 
+  if (!(parsedBody instanceof Object) || parsedBody instanceof Array) {
+    // Reject JSON docs: "null" "true" "false" "123" "[ ... ]"
+    return errorResult({
+      errorMessage: `Request body JSON is not structured as an Object`,
+    });
+  }
+
   const stringFields = [
     "sessionId",
     "userSurname",
