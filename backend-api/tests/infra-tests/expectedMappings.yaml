@@ -115,9 +115,9 @@ EnvironmentVariables:
 
   # Feature Flags
   DisableBrpJourney:
-    dev: "false"
+    dev: "true"
     build: "false"
-    staging: "false"
+    staging: "true"
     integration: "false"
     production: "false"
   DvlaDrivingLicenceExpiryGracePeriodInDays:
