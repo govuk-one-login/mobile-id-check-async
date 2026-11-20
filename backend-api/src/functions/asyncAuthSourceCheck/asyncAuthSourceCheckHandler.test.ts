@@ -2,6 +2,7 @@ import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
+import { validAuthSourceCheckRequestBody } from "../testUtils/unitTestData";
 import { lambdaHandlerConstructor } from "./asyncAuthSourceCheckHandler";
 import {
   vi,
@@ -97,15 +98,5 @@ const invalidPartialRequest = buildRequest({
 });
 
 const validDvlaRequest = buildRequest({
-  body: JSON.stringify({
-    sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-    userSurname: "DECERQUEIRA",
-    userForenames: ["KENNETH"],
-    userDateOfBirth: "1965-07-08",
-    validFrom: "2018-01-01",
-    validUntil: "2027-12-31",
-    issuingAuthority: "DVLA",
-    licenceNumber: "DECER607085K912305",
-    postcode: "BA2 5AA",
-  }),
+  body: JSON.stringify(validAuthSourceCheckRequestBody),
 });

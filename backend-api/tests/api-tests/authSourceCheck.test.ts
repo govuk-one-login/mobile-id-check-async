@@ -1,6 +1,7 @@
 import { AxiosResponse } from "axios";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders } from "./utils/apiTestData";
+import { validAuthSourceCheckRequestBody } from "../../src/functions/testUtils/unitTestData";
 import { expect, it, describe, beforeAll } from "vitest";
 
 describe("POST /async/authSourceCheck", () => {
@@ -40,21 +41,9 @@ describe("POST /async/authSourceCheck", () => {
     let response: AxiosResponse;
 
     beforeAll(async () => {
-      const requestBody = {
-        sessionId: "fe4b8e97-fe75-4a61-b85e-f0a2c5cea446",
-        userSurname: "DECERQUEIRA",
-        userForenames: ["KENNETH"],
-        userDateOfBirth: "1965-07-08",
-        validFrom: "2018-01-01",
-        validUntil: "2027-12-31",
-        issuingAuthority: "DVLA",
-        licenceNumber: "DECER607085K912305",
-        postcode: "BA2 5AA",
-      };
-
       response = await SESSIONS_API_INSTANCE.post(
         "/async/authSourceCheck",
-        requestBody,
+        validAuthSourceCheckRequestBody,
       );
     });
 
