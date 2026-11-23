@@ -138,7 +138,7 @@ describe("Validate request body", () => {
         mutateRequest: (request: mutableRequestBody) => { delete request.postcode },
       },
     ])("Given $scenario is missing", ({ scenario, mutateRequest }) => {
-      it("Returns an OK result", () => {
+      it("Returns an error result", () => {
         const requestBodyWithMissingField = {
           ...validAuthSourceCheckRequestBody,
         } as mutableRequestBody;
@@ -159,98 +159,53 @@ describe("Validate request body", () => {
     });
   });
 
-  describe("Given body is valid JSON but has empty field values", () => {
+  describe("Given body is valid JSON but has one or more empty fields", () => {
     describe.each([
       {
-        scenario: "Given sessionId is an empty string",
-        requestBody: { sessionId: "" },
-        expectedErrorMessage: `sessionId in request body is an empty string.`,
+        scenario: "sessionId",
+        mutateRequest: (request: mutableRequestBody) => { request.sessionId = "" },
       },
       {
-        scenario: "Given userSurname is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: "",
-        },
-        expectedErrorMessage: `userSurname in request body is an empty string.`,
+        scenario: "userSurname",
+        mutateRequest: (request: mutableRequestBody) => { request.userSurname = "" },
+      },
+      // Note: no scenario 'userForenames' as we accept an empty array here.
+      {
+        scenario: "userDateOfBirth",
+        mutateRequest: (request: mutableRequestBody) => { request.userDateOfBirth = "" },
       },
       {
-        scenario: "Given userDateOfBirth is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: "",
-        },
-        expectedErrorMessage: `userDateOfBirth in request body is an empty string.`,
+        scenario: "validFrom",
+        mutateRequest: (request: mutableRequestBody) => { request.validFrom = "" },
       },
       {
-        scenario: "Given validFrom is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: "",
-        },
-        expectedErrorMessage: `validFrom in request body is an empty string.`,
+        scenario: "validUntil",
+        mutateRequest: (request: mutableRequestBody) => { request.validUntil = "" },
       },
       {
-        scenario: "Given validUntil is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: "",
-        },
-        expectedErrorMessage: `validUntil in request body is an empty string.`,
+        scenario: "licenceNumber",
+        mutateRequest: (request: mutableRequestBody) => { request.licenceNumber = "" },
       },
       {
-        scenario: "Given issuingAuthority is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: "",
-        },
-        expectedErrorMessage: `issuingAuthority in request body is an empty string.`,
+        scenario: "postcode",
+        mutateRequest: (request: mutableRequestBody) => { request.postcode = "" },
       },
-      {
-        scenario: "Given licenceNumber is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: "",
-        },
-        expectedErrorMessage: `licenceNumber in request body is an empty string.`,
-      },
-      {
-        scenario: "Given postcode is an empty string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
-          postcode: "",
-        },
-        expectedErrorMessage: `postcode in request body is an empty string.`,
-      },
-      // Note that 'Given userForenames is an empty array' is supported, not an error.
-    ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
+    ])("Given $scenario is present but empty", ({ scenario, mutateRequest }) => {
       it("Returns an error result", () => {
-        const result = validateRequestBody(JSON.stringify(requestBody));
+        const requestBodyWithMissingField = {
+          ...validAuthSourceCheckRequestBody,
+        } as mutableRequestBody;
+
+        mutateRequest(requestBodyWithMissingField);
+
+        const result = validateRequestBody(
+          JSON.stringify(requestBodyWithMissingField),
+        );
+
         expect(result).toStrictEqual({
           isError: true,
           value: {
-            errorMessage: expectedErrorMessage,
+            errorMessage: `${scenario} in request body is an empty string.`,
           },
         });
       });
