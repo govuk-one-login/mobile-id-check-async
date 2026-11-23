@@ -106,20 +106,17 @@ describe("Validate request body", () => {
     "postcode",
   ])("Given an AuthSourceCheck request body with valid JSON", (field) => {
     type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
+    let mutatedRequestBody: mutableRequestBody = {};
+
+    beforeAll(() => {
+      mutatedRequestBody = structuredClone(validAuthSourceCheckRequestBody);
+    });
 
     describe(`Given field ${field} is missing`, () => {
-      let requestBodyWithMissingField: mutableRequestBody = {};
-
-      beforeAll(() => {
-        requestBodyWithMissingField = structuredClone(validAuthSourceCheckRequestBody);
-      });
-
       it("Returns an error", () => {
-        delete requestBodyWithMissingField[field];
+        delete mutatedRequestBody[field];
 
-        const result = validateRequestBody(
-          JSON.stringify(requestBodyWithMissingField),
-        );
+        const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
 
         expect(result).toStrictEqual({
           isError: true,
@@ -131,20 +128,12 @@ describe("Validate request body", () => {
     });
 
     describe(`Given field ${field} is empty`, () => {
-      let requestBodyWithEmptyField: mutableRequestBody = {};
-
-      beforeAll(() => {
-        requestBodyWithEmptyField = structuredClone(validAuthSourceCheckRequestBody);
-      });
-
       it("Returns an error result", () => {
         // Special-case userForenames, which can be empty.
         if (field === "userForenames") return;
-        requestBodyWithEmptyField[field] = "";
+        mutatedRequestBody[field] = "";
 
-        const result = validateRequestBody(
-          JSON.stringify(requestBodyWithEmptyField),
-        );
+        const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
 
         expect(result).toStrictEqual({
           isError: true,
@@ -156,22 +145,14 @@ describe("Validate request body", () => {
     });
 
     describe(`Given field ${field} is has wrong type`, () => {
-      let requestBodyWithWrongFieldType: mutableRequestBody = {};
-
-      beforeAll(() => {
-        requestBodyWithWrongFieldType = structuredClone(validAuthSourceCheckRequestBody);
-      });
-
       it("Returns an error result", () => {
         // Special-case userForenames, the only Array field in the response struct.
-        (requestBodyWithWrongFieldType[field] as unknown) =
+        (mutatedRequestBody[field] as unknown) =
           field === "userForenames" ? [123] : 123;
         const errMsgType =
           field === "userForenames" ? "Array<string>" : "string";
 
-        const result = validateRequestBody(
-          JSON.stringify(requestBodyWithWrongFieldType),
-        );
+        const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
 
         expect(result).toStrictEqual({
           isError: true,
