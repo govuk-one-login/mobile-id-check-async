@@ -32,7 +32,74 @@ describe("Validate request body", () => {
     });
   });
 
-  describe("Given body is valid JSON and is well-formed", () => {
+  describe("Given body is valid JSON but userForenames is not well-formed", () => {
+    type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
+    let mutatedRequestBody: mutableRequestBody = {};
+
+    beforeAll(() => {
+      mutatedRequestBody = structuredClone(validAuthSourceCheckRequestBody);
+    });
+
+    describe.each([
+      {
+        scenario: "userForenames is missing",
+        mutator: (reqBody: mutableRequestBody) => {
+          delete reqBody["userForenames"];
+        },
+        expectedError: "either null or undefined",
+      },
+      {
+        scenario: "userForenames is a bare empty string",
+        mutator: (reqBody: mutableRequestBody) => {
+          (reqBody.userForenames as unknown) = "";
+        },
+        expectedError: "not of type Array<string>",
+      },
+      {
+        scenario: "userForenames is a bare non-empty string",
+        mutator: (reqBody: mutableRequestBody) => {
+          (reqBody.userForenames as unknown) = "dave";
+        },
+        expectedError: "not of type Array<string>",
+      },
+      {
+        scenario: "userForenames is a bare number",
+        mutator: (reqBody: mutableRequestBody) => {
+          (reqBody.userForenames as unknown) = 123;
+        },
+        expectedError: "not of type Array<string>",
+      },
+      {
+        scenario: "userForenames is an array of numbers",
+        mutator: (reqBody: mutableRequestBody) => {
+          (reqBody.userForenames as unknown) = [123];
+        },
+        expectedError: "not of type Array<string>",
+      },
+    ])("Given $scenario", ({ mutator, expectedError }) => {
+      it("Returns an error", () => {
+        mutator(mutatedRequestBody);
+
+        const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
+
+        expect(result).toStrictEqual({
+          isError: true,
+          value: {
+            errorMessage: `userForenames in request body is ${expectedError}.`,
+          },
+        });
+      });
+    });
+  });
+
+  describe("Given body is valid JSON and userForenames is well-formed", () => {
+    type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
+    let mutatedRequestBody: mutableRequestBody = {};
+
+    beforeAll(() => {
+      mutatedRequestBody = structuredClone(validAuthSourceCheckRequestBody);
+    });
+
     describe("With a userForenames containing at least 1 element", () => {
       it("Returns an OK result", () => {
         const result = validateRequestBody(
@@ -47,18 +114,13 @@ describe("Validate request body", () => {
 
     describe("With a userForenames of 0 elements", () => {
       it("Returns an OK result", () => {
-        const emptyUserForenamesRequestBody = {
-          ...validAuthSourceCheckRequestBody,
-        };
-        emptyUserForenamesRequestBody.userForenames = [];
+        mutatedRequestBody.userForenames = [];
 
-        const result = validateRequestBody(
-          JSON.stringify(emptyUserForenamesRequestBody),
-        );
+        const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
 
         expect(result).toStrictEqual({
           isError: false,
-          value: emptyUserForenamesRequestBody,
+          value: mutatedRequestBody,
         });
       });
     });
@@ -97,7 +159,7 @@ describe("Validate request body", () => {
   describe.each<keyof IAsyncAuthSourceCheckRequestBody>([
     "sessionId",
     "userSurname",
-    "userForenames",
+    // Note 'userForenames' is an Array so handled separately in this suite.
     "userDateOfBirth",
     "validFrom",
     "validUntil",
@@ -128,9 +190,9 @@ describe("Validate request body", () => {
     });
 
     describe(`Given field ${field} is empty`, () => {
+      if (field === "userForenames") return; // pacify Typescript on next line.
+
       it("Returns an error result", () => {
-        // Special-case userForenames, which can be empty.
-        if (field === "userForenames") return;
         mutatedRequestBody[field] = "";
 
         const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
@@ -146,18 +208,14 @@ describe("Validate request body", () => {
 
     describe(`Given field ${field} is has wrong type`, () => {
       it("Returns an error result", () => {
-        // Special-case userForenames, the only Array field in the response struct.
-        (mutatedRequestBody[field] as unknown) =
-          field === "userForenames" ? [123] : 123;
-        const errMsgType =
-          field === "userForenames" ? "Array<string>" : "string";
+        (mutatedRequestBody[field] as unknown) = 123;
 
         const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
 
         expect(result).toStrictEqual({
           isError: true,
           value: {
-            errorMessage: `${field} in request body is not of type ${errMsgType}.`,
+            errorMessage: `${field} in request body is not of type string.`,
           },
         });
       });
