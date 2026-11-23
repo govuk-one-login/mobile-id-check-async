@@ -92,15 +92,15 @@ describe("Validate request body", () => {
   });
 
   interface mutableRequestBody {
-    sessionId?: string;
-    userSurname?: string;
-    userForenames?: string[];
-    userDateOfBirth?: string;
-    validFrom?: string;
-    validUntil?: string;
-    issuingAuthority?: string;
-    licenceNumber?: string;
-    postcode?: string;
+    sessionId?: string|number;
+    userSurname?: string|number;
+    userForenames?: string[]|number[];
+    userDateOfBirth?: string|number;
+    validFrom?: string|number;
+    validUntil?: string|number;
+    issuingAuthority?: string|number;
+    licenceNumber?: string|number;
+    postcode?: string|number;
   }
 
   describe("Given body is valid JSON but has one or more required fields missing", () => {
@@ -192,14 +192,14 @@ describe("Validate request body", () => {
       },
     ])("Given $scenario is present but empty", ({ scenario, mutateRequest }) => {
       it("Returns an error result", () => {
-        const requestBodyWithMissingField = {
+        const requestBodyWithEmptyField = {
           ...validAuthSourceCheckRequestBody,
         } as mutableRequestBody;
 
-        mutateRequest(requestBodyWithMissingField);
+        mutateRequest(requestBodyWithEmptyField);
 
         const result = validateRequestBody(
-          JSON.stringify(requestBodyWithMissingField),
+          JSON.stringify(requestBodyWithEmptyField),
         );
 
         expect(result).toStrictEqual({
@@ -212,112 +212,57 @@ describe("Validate request body", () => {
     });
   });
 
-  describe("Given body is valid JSON but has incorrect field types", () => {
+  describe("Given body is valid JSON but has a field of the incorrect type", () => {
     describe.each([
       {
-        scenario: "Given sessionId is not of type string",
-        requestBody: { sessionId: 123 },
-        expectedErrorMessage: `sessionId in request body is not of type string.`,
+        scenario: "sessionId",
+        mutateRequest: (request: mutableRequestBody) => { request.sessionId = 123 },
       },
       {
-        scenario: "Given userSurname is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: 123,
-        },
-        expectedErrorMessage: `userSurname in request body is not of type string.`,
+        scenario: "userSurname",
+        mutateRequest: (request: mutableRequestBody) => { request.userSurname = 123 },
       },
       {
-        scenario: "Given userDateOfBirth is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: 123,
-        },
-        expectedErrorMessage: `userDateOfBirth in request body is not of type string.`,
+        scenario: "userForenames",
+        mutateRequest: (request: mutableRequestBody) => { request.userForenames = [123] },
+        errorTypeIfNotString: "Array<string>",
       },
       {
-        scenario: "Given validFrom is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: 123,
-        },
-        expectedErrorMessage: `validFrom in request body is not of type string.`,
+        scenario: "userDateOfBirth",
+        mutateRequest: (request: mutableRequestBody) => { request.userDateOfBirth = 123 },
       },
       {
-        scenario: "Given validUntil is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: 123,
-        },
-        expectedErrorMessage: `validUntil in request body is not of type string.`,
+        scenario: "validFrom",
+        mutateRequest: (request: mutableRequestBody) => { request.validFrom = 123 },
       },
       {
-        scenario: "Given issuingAuthority is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: 123,
-        },
-        expectedErrorMessage: `issuingAuthority in request body is not of type string.`,
+        scenario: "validUntil",
+        mutateRequest: (request: mutableRequestBody) => { request.validUntil = 123 },
       },
       {
-        scenario: "Given licenceNumber is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: 123,
-        },
-        expectedErrorMessage: `licenceNumber in request body is not of type string.`,
+        scenario: "licenceNumber",
+        mutateRequest: (request: mutableRequestBody) => { request.licenceNumber = 123 },
       },
       {
-        scenario: "Given postcode is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
-          postcode: 123,
-        },
-        expectedErrorMessage: `postcode in request body is not of type string.`,
+        scenario: "postcode",
+        mutateRequest: (request: mutableRequestBody) => { request.postcode = 123 },
       },
-      {
-        scenario: "Given userForenames is not of type string",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userForenames: [123],
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
-          postcode: validAuthSourceCheckRequestBody.postcode,
-        },
-        expectedErrorMessage: `userForenames in request body is not an Array<string>.`,
-      },
-    ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
+    ])("Given $scenario is not of type string", ({ scenario, mutateRequest, errorTypeIfNotString }) => {
       it("Returns an error result", () => {
-        const result = validateRequestBody(JSON.stringify(requestBody));
+        const requestBodyWithWrongFieldType = {
+          ...validAuthSourceCheckRequestBody,
+        } as mutableRequestBody;
+
+        mutateRequest(requestBodyWithWrongFieldType);
+
+        const result = validateRequestBody(
+          JSON.stringify(requestBodyWithWrongFieldType),
+        );
+
         expect(result).toStrictEqual({
           isError: true,
           value: {
-            errorMessage: expectedErrorMessage,
+            errorMessage: `${scenario} in request body is not of type ${errorTypeIfNotString || "string"}.`,
           },
         });
       });
