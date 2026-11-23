@@ -19,7 +19,13 @@ export function validateRequestBody(
     });
   }
 
-  if (!(parsedBody instanceof Object) || parsedBody instanceof Array) {
+  if (
+    parsedBody === null ||
+    typeof parsedBody === "number" ||
+    typeof parsedBody === "string" ||
+    typeof parsedBody === "boolean" ||
+    Array.isArray(parsedBody)
+  ) {
     // Reject JSON docs: "null" "true" "false" "123" "[ ... ]"
     return errorResult({
       errorMessage: `Request body JSON is not structured as an Object`,
