@@ -91,104 +91,68 @@ describe("Validate request body", () => {
     });
   });
 
+  interface mutableRequestBody {
+    sessionId?: string;
+    userSurname?: string;
+    userForenames?: string[];
+    userDateOfBirth?: string;
+    validFrom?: string;
+    validUntil?: string;
+    issuingAuthority?: string;
+    licenceNumber?: string;
+    postcode?: string;
+  }
+
   describe("Given body is valid JSON but has one or more required fields missing", () => {
     describe.each([
       {
-        scenario: "Given sessionId is missing",
-        requestBody: {},
-        expectedErrorMessage: `sessionId in request body is either null or undefined.`,
+        scenario: "sessionId",
+        mutateRequest: (request: mutableRequestBody) => { delete request.sessionId },
       },
       {
-        scenario: "Given userSurname is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-        },
-        expectedErrorMessage: `userSurname in request body is either null or undefined.`,
+        scenario: "userSurname",
+        mutateRequest: (request: mutableRequestBody) => { delete request.userSurname },
       },
       {
-        scenario: "Given userDateOfBirth is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-        },
-        expectedErrorMessage: `userDateOfBirth in request body is either null or undefined.`,
+        scenario: "userForenames",
+        mutateRequest: (request: mutableRequestBody) => { delete request.userForenames },
       },
       {
-        scenario: "Given validFrom is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-        },
-        expectedErrorMessage: `validFrom in request body is either null or undefined.`,
+        scenario: "userDateOfBirth",
+        mutateRequest: (request: mutableRequestBody) => { delete request.userDateOfBirth },
       },
       {
-        scenario: "Given validUntil is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-        },
-        expectedErrorMessage: `validUntil in request body is either null or undefined.`,
+        scenario: "validFrom",
+        mutateRequest: (request: mutableRequestBody) => { delete request.validFrom },
       },
       {
-        scenario: "Given issuingAuthority is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-        },
-        expectedErrorMessage: `issuingAuthority in request body is either null or undefined.`,
+        scenario: "validUntil",
+        mutateRequest: (request: mutableRequestBody) => { delete request.validUntil },
       },
       {
-        scenario: "Given licenceNumber is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-        },
-        expectedErrorMessage: `licenceNumber in request body is either null or undefined.`,
+        scenario: "licenceNumber",
+        mutateRequest: (request: mutableRequestBody) => { delete request.licenceNumber },
       },
       {
-        scenario: "Given postcode is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
-        },
-        expectedErrorMessage: `postcode in request body is either null or undefined.`,
+        scenario: "postcode",
+        mutateRequest: (request: mutableRequestBody) => { delete request.postcode },
       },
-      {
-        scenario: "Given userForenames is missing",
-        requestBody: {
-          sessionId: validAuthSourceCheckRequestBody.sessionId,
-          userSurname: validAuthSourceCheckRequestBody.userSurname,
-          userDateOfBirth: validAuthSourceCheckRequestBody.userDateOfBirth,
-          validFrom: validAuthSourceCheckRequestBody.validFrom,
-          validUntil: validAuthSourceCheckRequestBody.validUntil,
-          issuingAuthority: validAuthSourceCheckRequestBody.issuingAuthority,
-          licenceNumber: validAuthSourceCheckRequestBody.licenceNumber,
-          postcode: validAuthSourceCheckRequestBody.postcode,
-        },
-        expectedErrorMessage: `userForenames in request body is either null or undefined.`,
-      },
-    ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
-      it("Returns an error result", () => {
-        const result = validateRequestBody(JSON.stringify(requestBody));
+    ])("Given $scenario is missing", ({ scenario, mutateRequest }) => {
+      it("Returns an OK result", () => {
+        const requestBodyWithMissingField = {
+          ...validAuthSourceCheckRequestBody,
+        } as mutableRequestBody;
+        // delete emptyUserForenamesRequestBody.userForenames;
+        mutateRequest(requestBodyWithMissingField);
+
+        const result = validateRequestBody(
+          JSON.stringify(requestBodyWithMissingField),
+        );
+
         expect(result).toStrictEqual({
           isError: true,
           value: {
-            errorMessage: expectedErrorMessage,
+            errorMessage: `${scenario} in request body is either null or undefined.`,
           },
         });
       });
