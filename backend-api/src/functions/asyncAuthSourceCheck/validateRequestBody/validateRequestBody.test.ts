@@ -3,7 +3,7 @@ import {
   validateRequestBody,
 } from "./validateRequestBody";
 import { validAuthSourceCheckRequestBody } from "../../testUtils/unitTestData";
-import { expect, it, describe } from "vitest";
+import { beforeAll, expect, describe, it } from "vitest";
 
 describe("Validate request body", () => {
   describe("Given body is not valid JSON", () => {
@@ -108,11 +108,13 @@ describe("Validate request body", () => {
     type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
 
     describe(`Given field ${field} is missing`, () => {
-      it("Returns an error", () => {
-        const requestBodyWithMissingField = {
-          ...validAuthSourceCheckRequestBody,
-        } as mutableRequestBody;
+      let requestBodyWithMissingField: mutableRequestBody = {};
 
+      beforeAll(() => {
+        requestBodyWithMissingField = structuredClone(validAuthSourceCheckRequestBody);
+      });
+
+      it("Returns an error", () => {
         delete requestBodyWithMissingField[field];
 
         const result = validateRequestBody(
@@ -129,12 +131,15 @@ describe("Validate request body", () => {
     });
 
     describe(`Given field ${field} is empty`, () => {
-      it("Returns an error result", () => {
-        const requestBodyWithEmptyField = {
-          ...validAuthSourceCheckRequestBody,
-        } as mutableRequestBody;
+      let requestBodyWithEmptyField: mutableRequestBody = {};
 
-        if (field === "userForenames") return; // it's OK for userForenames to be empty.
+      beforeAll(() => {
+        requestBodyWithEmptyField = structuredClone(validAuthSourceCheckRequestBody);
+      });
+
+      it("Returns an error result", () => {
+        // Special-case userForenames, which can be empty.
+        if (field === "userForenames") return;
         requestBodyWithEmptyField[field] = "";
 
         const result = validateRequestBody(
@@ -151,11 +156,13 @@ describe("Validate request body", () => {
     });
 
     describe(`Given field ${field} is has wrong type`, () => {
-      it("noop", () => {
-        const requestBodyWithWrongFieldType = {
-          ...validAuthSourceCheckRequestBody,
-        } as mutableRequestBody;
+      let requestBodyWithWrongFieldType: mutableRequestBody = {};
 
+      beforeAll(() => {
+        requestBodyWithWrongFieldType = structuredClone(validAuthSourceCheckRequestBody);
+      });
+
+      it("Returns an error result", () => {
         // Special-case userForenames, the only Array field in the response struct.
         (requestBodyWithWrongFieldType[field] as unknown) =
           field === "userForenames" ? [123] : 123;
