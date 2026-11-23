@@ -1,4 +1,4 @@
-import { validateRequestBody } from "./validateRequestBody";
+import { IAsyncAuthSourceCheckRequestBody, validateRequestBody } from "./validateRequestBody";
 import { validAuthSourceCheckRequestBody } from "../../testUtils/unitTestData";
 import { expect, it, describe } from "vitest";
 
@@ -91,69 +91,59 @@ describe("Validate request body", () => {
     });
   });
 
-  interface mutableRequestBody {
-    sessionId?: string | number;
-    userSurname?: string | number;
-    userForenames?: string[] | number[];
-    userDateOfBirth?: string | number;
-    validFrom?: string | number;
-    validUntil?: string | number;
-    issuingAuthority?: string | number;
-    licenceNumber?: string | number;
-    postcode?: string | number;
-  }
+  type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
 
   describe("Given body is valid JSON but has one or more required fields missing", () => {
     describe.each([
       {
-        scenario: "sessionId",
+        missingField: "sessionId",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.sessionId;
         },
       },
       {
-        scenario: "userSurname",
+        missingField: "userSurname",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.userSurname;
         },
       },
       {
-        scenario: "userForenames",
+        missingField: "userForenames",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.userForenames;
         },
       },
       {
-        scenario: "userDateOfBirth",
+        missingField: "userDateOfBirth",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.userDateOfBirth;
         },
       },
       {
-        scenario: "validFrom",
+        missingField: "validFrom",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.validFrom;
         },
       },
       {
-        scenario: "validUntil",
+        missingField: "validUntil",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.validUntil;
         },
       },
       {
-        scenario: "licenceNumber",
+        missingField: "licenceNumber",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.licenceNumber;
         },
       },
       {
-        scenario: "postcode",
+        missingField: "postcode",
         mutateRequest: (request: mutableRequestBody) => {
           delete request.postcode;
         },
       },
-    ])("Given $scenario is missing", ({ scenario, mutateRequest }) => {
+    ])("Given $missingField is missing", ({ missingField, mutateRequest }) => {
       it("Returns an error result", () => {
         const requestBodyWithMissingField = {
           ...validAuthSourceCheckRequestBody,
@@ -168,7 +158,7 @@ describe("Validate request body", () => {
         expect(result).toStrictEqual({
           isError: true,
           value: {
-            errorMessage: `${scenario} in request body is either null or undefined.`,
+            errorMessage: `${missingField} in request body is either null or undefined.`,
           },
         });
       });
@@ -178,51 +168,51 @@ describe("Validate request body", () => {
   describe("Given body is valid JSON but has one or more empty fields", () => {
     describe.each([
       {
-        scenario: "sessionId",
+        emptyField: "sessionId",
         mutateRequest: (request: mutableRequestBody) => {
           request.sessionId = "";
         },
       },
       {
-        scenario: "userSurname",
+        emptyField: "userSurname",
         mutateRequest: (request: mutableRequestBody) => {
           request.userSurname = "";
         },
       },
-      // Note: no scenario 'userForenames' as we accept an empty array here.
+      // Note: no emptyField 'userForenames' as we accept an empty array here.
       {
-        scenario: "userDateOfBirth",
+        emptyField: "userDateOfBirth",
         mutateRequest: (request: mutableRequestBody) => {
           request.userDateOfBirth = "";
         },
       },
       {
-        scenario: "validFrom",
+        emptyField: "validFrom",
         mutateRequest: (request: mutableRequestBody) => {
           request.validFrom = "";
         },
       },
       {
-        scenario: "validUntil",
+        emptyField: "validUntil",
         mutateRequest: (request: mutableRequestBody) => {
           request.validUntil = "";
         },
       },
       {
-        scenario: "licenceNumber",
+        emptyField: "licenceNumber",
         mutateRequest: (request: mutableRequestBody) => {
           request.licenceNumber = "";
         },
       },
       {
-        scenario: "postcode",
+        emptyField: "postcode",
         mutateRequest: (request: mutableRequestBody) => {
           request.postcode = "";
         },
       },
     ])(
-      "Given $scenario is present but empty",
-      ({ scenario, mutateRequest }) => {
+      "Given $emptyField is present but empty",
+      ({ emptyField, mutateRequest }) => {
         it("Returns an error result", () => {
           const requestBodyWithEmptyField = {
             ...validAuthSourceCheckRequestBody,
@@ -237,7 +227,7 @@ describe("Validate request body", () => {
           expect(result).toStrictEqual({
             isError: true,
             value: {
-              errorMessage: `${scenario} in request body is an empty string.`,
+              errorMessage: `${emptyField} in request body is an empty string.`,
             },
           });
         });
@@ -248,57 +238,57 @@ describe("Validate request body", () => {
   describe("Given body is valid JSON but has a field of the incorrect type", () => {
     describe.each([
       {
-        scenario: "sessionId",
+        wrongTypeField: "sessionId",
         mutateRequest: (request: mutableRequestBody) => {
-          request.sessionId = 123;
+          (request.sessionId as unknown) = 123;
         },
       },
       {
-        scenario: "userSurname",
+        wrongTypeField: "userSurname",
         mutateRequest: (request: mutableRequestBody) => {
-          request.userSurname = 123;
+          (request.userSurname as unknown) = 123;
         },
       },
       {
-        scenario: "userForenames",
+        wrongTypeField: "userForenames",
         mutateRequest: (request: mutableRequestBody) => {
-          request.userForenames = [123];
+          (request.userForenames as unknown)  = [123];
         },
         errorTypeIfNotString: "Array<string>",
       },
       {
-        scenario: "userDateOfBirth",
+        wrongTypeField: "userDateOfBirth",
         mutateRequest: (request: mutableRequestBody) => {
-          request.userDateOfBirth = 123;
+          (request.userDateOfBirth as unknown)  = 123;
         },
       },
       {
-        scenario: "validFrom",
+        wrongTypeField: "validFrom",
         mutateRequest: (request: mutableRequestBody) => {
-          request.validFrom = 123;
+          (request.validFrom as unknown)  = 123;
         },
       },
       {
-        scenario: "validUntil",
+        wrongTypeField: "validUntil",
         mutateRequest: (request: mutableRequestBody) => {
-          request.validUntil = 123;
+          (request.validUntil as unknown)  = 123;
         },
       },
       {
-        scenario: "licenceNumber",
+        wrongTypeField: "licenceNumber",
         mutateRequest: (request: mutableRequestBody) => {
-          request.licenceNumber = 123;
+          (request.licenceNumber as unknown)  = 123;
         },
       },
       {
-        scenario: "postcode",
+        wrongTypeField: "postcode",
         mutateRequest: (request: mutableRequestBody) => {
-          request.postcode = 123;
+          (request.postcode as unknown)  = 123;
         },
       },
     ])(
-      "Given $scenario is not of type string",
-      ({ scenario, mutateRequest, errorTypeIfNotString }) => {
+      "Given $wrongTypeField is not of type string",
+      ({ wrongTypeField, mutateRequest, errorTypeIfNotString }) => {
         it("Returns an error result", () => {
           const requestBodyWithWrongFieldType = {
             ...validAuthSourceCheckRequestBody,
@@ -313,7 +303,7 @@ describe("Validate request body", () => {
           expect(result).toStrictEqual({
             isError: true,
             value: {
-              errorMessage: `${scenario} in request body is not of type ${errorTypeIfNotString || "string"}.`,
+              errorMessage: `${wrongTypeField} in request body is not of type ${errorTypeIfNotString || "string"}.`,
             },
           });
         });
