@@ -142,7 +142,7 @@ describe("Validate request body", () => {
         const requestBodyWithMissingField = {
           ...validAuthSourceCheckRequestBody,
         } as mutableRequestBody;
-        // delete emptyUserForenamesRequestBody.userForenames;
+
         mutateRequest(requestBodyWithMissingField);
 
         const result = validateRequestBody(
