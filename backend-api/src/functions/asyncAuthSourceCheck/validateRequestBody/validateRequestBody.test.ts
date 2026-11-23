@@ -1,6 +1,6 @@
 import { validateRequestBody } from "./validateRequestBody";
 import { validAuthSourceCheckRequestBody } from "../../testUtils/unitTestData";
-import { expect, it, describe, beforeEach } from "vitest";
+import { expect, it, describe } from "vitest";
 
 describe("Validate request body", () => {
   describe("Given body is not valid JSON", () => {
@@ -43,15 +43,16 @@ describe("Validate request body", () => {
     });
 
     describe("With a userForenames of 0 elements", () => {
-      let emptyUserForenamesRequestBody;
-      beforeEach(() => {
-        emptyUserForenamesRequestBody = { ...validAuthSourceCheckRequestBody };
-        emptyUserForenamesRequestBody.userForenames = [];
-      });
       it("Returns an OK result", () => {
+        const emptyUserForenamesRequestBody = {
+          ...validAuthSourceCheckRequestBody,
+        };
+        emptyUserForenamesRequestBody.userForenames = [];
+
         const result = validateRequestBody(
           JSON.stringify(emptyUserForenamesRequestBody),
         );
+
         expect(result).toStrictEqual({
           isError: false,
           value: emptyUserForenamesRequestBody,
