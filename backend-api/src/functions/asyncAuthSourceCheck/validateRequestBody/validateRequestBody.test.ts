@@ -92,50 +92,66 @@ describe("Validate request body", () => {
   });
 
   interface mutableRequestBody {
-    sessionId?: string|number;
-    userSurname?: string|number;
-    userForenames?: string[]|number[];
-    userDateOfBirth?: string|number;
-    validFrom?: string|number;
-    validUntil?: string|number;
-    issuingAuthority?: string|number;
-    licenceNumber?: string|number;
-    postcode?: string|number;
+    sessionId?: string | number;
+    userSurname?: string | number;
+    userForenames?: string[] | number[];
+    userDateOfBirth?: string | number;
+    validFrom?: string | number;
+    validUntil?: string | number;
+    issuingAuthority?: string | number;
+    licenceNumber?: string | number;
+    postcode?: string | number;
   }
 
   describe("Given body is valid JSON but has one or more required fields missing", () => {
     describe.each([
       {
         scenario: "sessionId",
-        mutateRequest: (request: mutableRequestBody) => { delete request.sessionId },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.sessionId;
+        },
       },
       {
         scenario: "userSurname",
-        mutateRequest: (request: mutableRequestBody) => { delete request.userSurname },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.userSurname;
+        },
       },
       {
         scenario: "userForenames",
-        mutateRequest: (request: mutableRequestBody) => { delete request.userForenames },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.userForenames;
+        },
       },
       {
         scenario: "userDateOfBirth",
-        mutateRequest: (request: mutableRequestBody) => { delete request.userDateOfBirth },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.userDateOfBirth;
+        },
       },
       {
         scenario: "validFrom",
-        mutateRequest: (request: mutableRequestBody) => { delete request.validFrom },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.validFrom;
+        },
       },
       {
         scenario: "validUntil",
-        mutateRequest: (request: mutableRequestBody) => { delete request.validUntil },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.validUntil;
+        },
       },
       {
         scenario: "licenceNumber",
-        mutateRequest: (request: mutableRequestBody) => { delete request.licenceNumber },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.licenceNumber;
+        },
       },
       {
         scenario: "postcode",
-        mutateRequest: (request: mutableRequestBody) => { delete request.postcode },
+        mutateRequest: (request: mutableRequestBody) => {
+          delete request.postcode;
+        },
       },
     ])("Given $scenario is missing", ({ scenario, mutateRequest }) => {
       it("Returns an error result", () => {
@@ -163,109 +179,145 @@ describe("Validate request body", () => {
     describe.each([
       {
         scenario: "sessionId",
-        mutateRequest: (request: mutableRequestBody) => { request.sessionId = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.sessionId = "";
+        },
       },
       {
         scenario: "userSurname",
-        mutateRequest: (request: mutableRequestBody) => { request.userSurname = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.userSurname = "";
+        },
       },
       // Note: no scenario 'userForenames' as we accept an empty array here.
       {
         scenario: "userDateOfBirth",
-        mutateRequest: (request: mutableRequestBody) => { request.userDateOfBirth = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.userDateOfBirth = "";
+        },
       },
       {
         scenario: "validFrom",
-        mutateRequest: (request: mutableRequestBody) => { request.validFrom = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.validFrom = "";
+        },
       },
       {
         scenario: "validUntil",
-        mutateRequest: (request: mutableRequestBody) => { request.validUntil = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.validUntil = "";
+        },
       },
       {
         scenario: "licenceNumber",
-        mutateRequest: (request: mutableRequestBody) => { request.licenceNumber = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.licenceNumber = "";
+        },
       },
       {
         scenario: "postcode",
-        mutateRequest: (request: mutableRequestBody) => { request.postcode = "" },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.postcode = "";
+        },
       },
-    ])("Given $scenario is present but empty", ({ scenario, mutateRequest }) => {
-      it("Returns an error result", () => {
-        const requestBodyWithEmptyField = {
-          ...validAuthSourceCheckRequestBody,
-        } as mutableRequestBody;
+    ])(
+      "Given $scenario is present but empty",
+      ({ scenario, mutateRequest }) => {
+        it("Returns an error result", () => {
+          const requestBodyWithEmptyField = {
+            ...validAuthSourceCheckRequestBody,
+          } as mutableRequestBody;
 
-        mutateRequest(requestBodyWithEmptyField);
+          mutateRequest(requestBodyWithEmptyField);
 
-        const result = validateRequestBody(
-          JSON.stringify(requestBodyWithEmptyField),
-        );
+          const result = validateRequestBody(
+            JSON.stringify(requestBodyWithEmptyField),
+          );
 
-        expect(result).toStrictEqual({
-          isError: true,
-          value: {
-            errorMessage: `${scenario} in request body is an empty string.`,
-          },
+          expect(result).toStrictEqual({
+            isError: true,
+            value: {
+              errorMessage: `${scenario} in request body is an empty string.`,
+            },
+          });
         });
-      });
-    });
+      },
+    );
   });
 
   describe("Given body is valid JSON but has a field of the incorrect type", () => {
     describe.each([
       {
         scenario: "sessionId",
-        mutateRequest: (request: mutableRequestBody) => { request.sessionId = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.sessionId = 123;
+        },
       },
       {
         scenario: "userSurname",
-        mutateRequest: (request: mutableRequestBody) => { request.userSurname = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.userSurname = 123;
+        },
       },
       {
         scenario: "userForenames",
-        mutateRequest: (request: mutableRequestBody) => { request.userForenames = [123] },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.userForenames = [123];
+        },
         errorTypeIfNotString: "Array<string>",
       },
       {
         scenario: "userDateOfBirth",
-        mutateRequest: (request: mutableRequestBody) => { request.userDateOfBirth = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.userDateOfBirth = 123;
+        },
       },
       {
         scenario: "validFrom",
-        mutateRequest: (request: mutableRequestBody) => { request.validFrom = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.validFrom = 123;
+        },
       },
       {
         scenario: "validUntil",
-        mutateRequest: (request: mutableRequestBody) => { request.validUntil = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.validUntil = 123;
+        },
       },
       {
         scenario: "licenceNumber",
-        mutateRequest: (request: mutableRequestBody) => { request.licenceNumber = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.licenceNumber = 123;
+        },
       },
       {
         scenario: "postcode",
-        mutateRequest: (request: mutableRequestBody) => { request.postcode = 123 },
+        mutateRequest: (request: mutableRequestBody) => {
+          request.postcode = 123;
+        },
       },
-    ])("Given $scenario is not of type string", ({ scenario, mutateRequest, errorTypeIfNotString }) => {
-      it("Returns an error result", () => {
-        const requestBodyWithWrongFieldType = {
-          ...validAuthSourceCheckRequestBody,
-        } as mutableRequestBody;
+    ])(
+      "Given $scenario is not of type string",
+      ({ scenario, mutateRequest, errorTypeIfNotString }) => {
+        it("Returns an error result", () => {
+          const requestBodyWithWrongFieldType = {
+            ...validAuthSourceCheckRequestBody,
+          } as mutableRequestBody;
 
-        mutateRequest(requestBodyWithWrongFieldType);
+          mutateRequest(requestBodyWithWrongFieldType);
 
-        const result = validateRequestBody(
-          JSON.stringify(requestBodyWithWrongFieldType),
-        );
+          const result = validateRequestBody(
+            JSON.stringify(requestBodyWithWrongFieldType),
+          );
 
-        expect(result).toStrictEqual({
-          isError: true,
-          value: {
-            errorMessage: `${scenario} in request body is not of type ${errorTypeIfNotString || "string"}.`,
-          },
+          expect(result).toStrictEqual({
+            isError: true,
+            value: {
+              errorMessage: `${scenario} in request body is not of type ${errorTypeIfNotString || "string"}.`,
+            },
+          });
         });
-      });
-    });
+      },
+    );
   });
 });
