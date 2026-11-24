@@ -2,20 +2,6 @@ export function isString(field: unknown): field is string {
   return typeof field === "string";
 }
 
-export function isStringArray(
-  field: unknown,
-  options?: { allowEmpty: boolean },
-): field is Array<string> {
-  const minLength = options?.allowEmpty ? 0 : 1;
-  return (
-    field !== null &&
-    field !== undefined &&
-    Array.isArray(field) &&
-    field.length >= minLength &&
-    field.every(isString)
-  );
-}
-
 export function isValidUUIDv4(uuid: string): boolean {
   const uuidRegex =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;

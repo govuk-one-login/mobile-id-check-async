@@ -263,18 +263,6 @@ export const validResultSentAttributes = {
   sessionState: SessionState.RESULT_SENT,
 };
 
-export const validAuthSourceCheckRequestBody = {
-  sessionId: mockSessionId,
-  userSurname: "DECERQUEIRA",
-  userForenames: ["KENNETH"],
-  userDateOfBirth: "1965-07-08",
-  validFrom: "2018-01-01",
-  validUntil: "2027-12-31",
-  issuingAuthority: "DVLA",
-  licenceNumber: "DECER607085K912305",
-  postcode: "BA2 5AA",
-};
-
 export const mockInertSessionRegistry: SessionRegistry = {
   updateSession: vi.fn(() => {
     throw new Error("Not implemented");

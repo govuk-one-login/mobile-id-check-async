@@ -424,10 +424,6 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_AUTH_SOURCE_CHECK_STARTED",
     "Lambda handler processing has started.",
   );
-  static readonly AUTH_SOURCE_CHECK_REQUEST_BODY_INVALID = new LogMessage(
-    "MOBILE_ASYNC_AUTH_SOURCE_CHECK_REQUEST_BODY_INVALID",
-    "The incoming request body was missing or invalid.",
-  );
   static readonly AUTH_SOURCE_CHECK_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_AUTH_SOURCE_CHECK_COMPLETED",
     "Lambda handler processing has completed successfully.",
