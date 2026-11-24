@@ -1,8 +1,19 @@
 import { AxiosResponse } from "axios";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders } from "./utils/apiTestData";
-import { validAuthSourceCheckRequestBody } from "../../src/functions/testUtils/unitTestData";
 import { expect, it, describe, beforeAll } from "vitest";
+
+const validAuthSourceCheckRequestBody = {
+  sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+  userSurname: "DECERQUEIRA",
+  userForenames: ["KENNETH"],
+  userDateOfBirth: "1965-07-08",
+  validFrom: "2018-01-01",
+  validUntil: "2027-12-31",
+  issuingAuthority: "DVLA",
+  licenceNumber: "DECER607085K912305",
+  postcode: "BA2 5AA",
+};
 
 describe("POST /async/authSourceCheck", () => {
   describe("Given a request body with missing fields", () => {
