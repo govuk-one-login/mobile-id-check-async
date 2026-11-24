@@ -3,7 +3,7 @@ import {
   validateRequestBody,
 } from "./validateRequestBody";
 import { validAuthSourceCheckRequestBody } from "../../testUtils/unitTestData";
-import { beforeAll, expect, describe, it } from "vitest";
+import { beforeEach, expect, describe, it } from "vitest";
 
 describe("Validate request body", () => {
   describe("Given body is not valid JSON", () => {
@@ -33,45 +33,45 @@ describe("Validate request body", () => {
   });
 
   describe("Given body is valid JSON but userForenames is not well-formed", () => {
-    type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
-    let mutatedRequestBody: mutableRequestBody = {};
+    type MutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
+    let mutatedRequestBody: MutableRequestBody = {};
 
-    beforeAll(() => {
+    beforeEach(() => {
       mutatedRequestBody = structuredClone(validAuthSourceCheckRequestBody);
     });
 
     describe.each([
       {
         scenario: "userForenames is missing",
-        mutator: (reqBody: mutableRequestBody) => {
+        mutator: (reqBody: MutableRequestBody) => {
           delete reqBody["userForenames"];
         },
         expectedError: "either null or undefined",
       },
       {
         scenario: "userForenames is a bare empty string",
-        mutator: (reqBody: mutableRequestBody) => {
+        mutator: (reqBody: MutableRequestBody) => {
           (reqBody.userForenames as unknown) = "";
         },
         expectedError: "not of type Array<string>",
       },
       {
         scenario: "userForenames is a bare non-empty string",
-        mutator: (reqBody: mutableRequestBody) => {
+        mutator: (reqBody: MutableRequestBody) => {
           (reqBody.userForenames as unknown) = "dave";
         },
         expectedError: "not of type Array<string>",
       },
       {
         scenario: "userForenames is a bare number",
-        mutator: (reqBody: mutableRequestBody) => {
+        mutator: (reqBody: MutableRequestBody) => {
           (reqBody.userForenames as unknown) = 123;
         },
         expectedError: "not of type Array<string>",
       },
       {
         scenario: "userForenames is an array of numbers",
-        mutator: (reqBody: mutableRequestBody) => {
+        mutator: (reqBody: MutableRequestBody) => {
           (reqBody.userForenames as unknown) = [123];
         },
         expectedError: "not of type Array<string>",
@@ -93,17 +93,16 @@ describe("Validate request body", () => {
   });
 
   describe("Given body is valid JSON and userForenames is well-formed", () => {
-    type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
-    let mutatedRequestBody: mutableRequestBody = {};
+    let requestBody: IAsyncAuthSourceCheckRequestBody;
 
-    beforeAll(() => {
-      mutatedRequestBody = structuredClone(validAuthSourceCheckRequestBody);
+    beforeEach(() => {
+      requestBody = { ...validAuthSourceCheckRequestBody };
     });
 
     describe("With a userForenames containing at least 1 element", () => {
       it("Returns an OK result", () => {
         const result = validateRequestBody(
-          JSON.stringify(validAuthSourceCheckRequestBody),
+          JSON.stringify(requestBody),
         );
         expect(result).toStrictEqual({
           isError: false,
@@ -114,13 +113,13 @@ describe("Validate request body", () => {
 
     describe("With a userForenames of 0 elements", () => {
       it("Returns an OK result", () => {
-        mutatedRequestBody.userForenames = [];
+        requestBody.userForenames = [];
 
-        const result = validateRequestBody(JSON.stringify(mutatedRequestBody));
+        const result = validateRequestBody(JSON.stringify(requestBody));
 
         expect(result).toStrictEqual({
           isError: false,
-          value: mutatedRequestBody,
+          value: requestBody,
         });
       });
     });
@@ -167,10 +166,10 @@ describe("Validate request body", () => {
     "licenceNumber",
     "postcode",
   ])("Given an AuthSourceCheck request body with valid JSON", (field) => {
-    type mutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
-    let mutatedRequestBody: mutableRequestBody = {};
+    type MutableRequestBody = Partial<IAsyncAuthSourceCheckRequestBody>;
+    let mutatedRequestBody: MutableRequestBody = {};
 
-    beforeAll(() => {
+    beforeEach(() => {
       mutatedRequestBody = structuredClone(validAuthSourceCheckRequestBody);
     });
 
