@@ -101,9 +101,7 @@ describe("Validate request body", () => {
 
     describe("With a userForenames containing at least 1 element", () => {
       it("Returns an OK result", () => {
-        const result = validateRequestBody(
-          JSON.stringify(requestBody),
-        );
+        const result = validateRequestBody(JSON.stringify(requestBody));
         expect(result).toStrictEqual({
           isError: false,
           value: validAuthSourceCheckRequestBody,
