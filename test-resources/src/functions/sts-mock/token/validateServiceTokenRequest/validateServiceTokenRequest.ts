@@ -3,7 +3,7 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../common/utils/result";
+} from "../../../common/utils/result.js";
 
 export type IValidateServiceTokenRequest = (
   requestBody: string | null,

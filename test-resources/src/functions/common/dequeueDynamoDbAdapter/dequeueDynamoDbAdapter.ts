@@ -1,10 +1,10 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { emptyFailure, emptySuccess, Result } from "../utils/result";
-import { LogMessage } from "../logging/LogMessage";
-import { logger } from "../logging/logger";
-import { getTimeToLiveInSeconds } from "../utils/utils";
+import { emptyFailure, emptySuccess, Result } from "../utils/result.js";
+import { LogMessage } from "../logging/LogMessage.js";
+import { logger } from "../logging/logger.js";
+import { getTimeToLiveInSeconds } from "../utils/utils.js";
 
 export interface IDequeueDynamoDbPutItemInput {
   pk: string;
