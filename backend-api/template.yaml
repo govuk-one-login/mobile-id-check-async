@@ -66,15 +66,10 @@ Parameters:
     Type: String
     Default: unused
 
-  SpokeVpcStackName:
-    Description: Name of the Spoke VPC Stack
-    Type: String
-    Default: devplatform-spoke-vpc
-
   VpcStackName:
     Description: Name of the VPC Stack
     Type: String
-    Default: devplatform-vpc
+    Default: devplatform-spoke-vpc
 
 Mappings:
   EnvironmentVariables:
@@ -429,23 +424,6 @@ Conditions:
     - !Equals
       - !Ref PermissionsBoundary
       - none
-
-  UseSpokeVpc: !Or
-    - !Equals
-      - !Ref Environment
-      - dev
-    - !Equals
-      - !Ref Environment
-      - build
-    - !Equals
-      - !Ref Environment
-      - staging
-    - !Equals
-      - !Ref Environment
-      - integration
-    - !Equals
-      - !Ref Environment
-      - production
 
   isDev: !Equals
     - !Ref Environment
@@ -892,26 +870,16 @@ Resources:
       Handler: asyncAbortSessionHandler.lambdaHandler
       Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncAbortSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -1329,26 +1297,16 @@ Resources:
       Handler: asyncActiveSessionHandler.lambdaHandler
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -1581,26 +1539,16 @@ Resources:
         - !Ref Environment
       Role: !GetAtt AsyncAuthSourceCheckLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncAuthSourceCheckLambdaRole:
     Type: AWS::IAM::Role
@@ -2087,26 +2035,16 @@ Resources:
       Handler: asyncBiometricTokenHandler.lambdaHandler
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   AsyncBiometricTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -2729,26 +2667,16 @@ Resources:
           - !Ref Environment
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
@@ -3341,26 +3269,16 @@ Resources:
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
       Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncFinishBiometricSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -3961,26 +3879,16 @@ Resources:
           - !Ref Environment
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ProtectedSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-ProtectedSubnetIdC
 
   AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4902,26 +4810,16 @@ Resources:
           - !Ref Environment
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
@@ -5507,26 +5405,16 @@ Resources:
       Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   AsyncTxmaEventFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -6217,26 +6105,16 @@ Resources:
         - !Ref Environment
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-AWSServicesEndpointSecurityGroupId
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
@@ -6608,8 +6486,6 @@ Resources:
           IntrinsicVpceWhitelist:
             - !ImportValue
               Fn::Sub: ${VpcStackName}-ExecuteApiGatewayEndpointId
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-ExecuteApiGatewayEndpointId
             - !If
               - IntegrateIpvCore
               - !FindInMap
@@ -6857,24 +6733,15 @@ Resources:
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
       VpcConfig:
-        SecurityGroupIds: !If
-          - UseSpokeVpc
-          - - !Ref SpokeVpcProxyLambdaSecurityGroup
-          - - !Ref ProxyLambdaSecurityGroup
-        SubnetIds: !If
-          - UseSpokeVpc
-          - - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${SpokeVpcStackName}-PrivateSubnetIdC
-          - - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
-            - !ImportValue
-              Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !Ref SpokeVpcProxyLambdaSecurityGroup
+        SubnetIds:
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdA
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdB
+          - !ImportValue
+            Fn::Sub: ${VpcStackName}-PrivateSubnetIdC
     Condition: ProxyApiDeployment
 
   ProxyLambdaLogGroup:
@@ -6938,22 +6805,6 @@ Resources:
             Version: "2012-10-17"
           PolicyName: VpcPolicy
       RoleName: !Sub ${AWS::StackName}-proxy-lambda-role
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Lambda Security group ruleset.
-      GroupName: !Sub ${AWS::StackName}-proxy-sg
-      SecurityGroupEgress:
-        - CidrIp: !ImportValue
-            Fn::Sub: ${VpcStackName}-VpcCidr
-          Description: TCP HTTPS outbound to vpc.
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId: !ImportValue
-        Fn::Sub: ${VpcStackName}-VpcId
     Condition: ProxyApiDeployment
 
   ProxyLambdaThrottleAlarm:
@@ -7208,13 +7059,13 @@ Resources:
       GroupName: !Sub ${AWS::StackName}-spoke-vpc-proxy-sg
       SecurityGroupEgress:
         - CidrIp: !ImportValue
-            Fn::Sub: ${SpokeVpcStackName}-VpcCidr
+            Fn::Sub: ${VpcStackName}-VpcCidr
           Description: TCP HTTPS outbound to vpc.
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
       VpcId: !ImportValue
-        Fn::Sub: ${SpokeVpcStackName}-VpcId
+        Fn::Sub: ${VpcStackName}-VpcId
     Condition: ProxyApiDeployment
 
   TxMAKMSEncryptionKey:
